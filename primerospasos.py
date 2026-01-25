@@ -1,5 +1,6 @@
 #Imports
 import numpy as np
+import matplotlib.pyplot as plt
 
 #Global variables and aminoacid dictionary
 CHAIN_LENGTH = 298
@@ -27,6 +28,30 @@ aminoacids = {
     "W": 19,
     "Y": 20,
     #B, J, X, Z, U y O no las añado de momento
+}
+
+reverse_aminoacids = {
+    0: '-',
+    1: 'A',
+    2: 'C',
+    3: 'D',
+    4: 'E',
+    5: 'F',
+    6: 'G',
+    7: 'H',
+    8: 'I',
+    9: 'K',
+    10: 'L',
+    11: 'M',
+    12: 'N',
+    13: 'P',
+    14: 'Q',
+    15: 'R',
+    16: 'S',
+    17: 'T',
+    18: 'V',
+    19: 'W',
+    20: 'Y'
 }
 
 #Given a file, determine whether all its lines are the same length or not:
@@ -126,5 +151,72 @@ else:
     for i in range(CHAIN_LENGTH):
         sum = 0
         for j in range(AMINOACID_NUMBER):
-            sum += frequency[i][j]
+            sum += frequency[i, j]
         print(sum)
+    
+    #We could make the color map MEAN something; that is, give all aminoacids that are hydrophobic a red-ish color, etc. 
+    # - that way we could uncover "hidden" patterns relating to the chemical properties of each aminoacid in our chains
+    x = range(CHAIN_LENGTH)
+    random_color = np.zeros((AMINOACID_NUMBER,3))
+    for i in range(AMINOACID_NUMBER):
+        random_color[i] = np.random.rand(3,)
+        plt.plot(range(CHAIN_LENGTH), frequency[:, i], 
+                 marker=".", ms = 4, color=random_color[i],
+                 linestyle = "solid",
+                 label = reverse_aminoacids.get(i))
+    
+    #Plot customization:
+    plt.title("Human Chains", fontsize=18, color ="black")
+    plt.xlabel("Chain Position", fontsize = 12)
+    plt.ylabel("Aminoacid Frequency", fontsize = 12)
+    plt.xticks(range(0,301,25))
+    plt.legend(
+    bbox_to_anchor=(1.05, 1),
+    loc='best',
+    fontsize=4,
+    ncol=2,
+    title="Aminoacids"
+    )
+    plt.tight_layout()
+
+    # plt.show()
+    plt.savefig("human.png", dpi = 600)
+    plt.close()
+
+filename = "testing_mouse.seqs"
+if PreviousComprobations(filename) == False:
+    print(f"There was an error, stopping the program...")
+else:
+    appearance, frequency = AminoacidFrequency(filename)
+    for i in range(CHAIN_LENGTH):
+        sum = 0
+        for j in range(AMINOACID_NUMBER):
+            sum += frequency[i, j]
+        print(sum)
+    
+    #We could make the color map MEAN something; that is, give all aminoacids that are hydrophobic a red-ish color, etc. 
+    # - that way we could uncover "hidden" patterns relating to the chemical properties of each aminoacid in our chains
+    x = range(CHAIN_LENGTH)
+    for i in range(AMINOACID_NUMBER):
+        plt.plot(range(CHAIN_LENGTH), frequency[:, i], 
+                 marker=".", ms = 4, color=random_color[i],
+                 linestyle = "solid",
+                 label = reverse_aminoacids.get(i))
+    
+    #Plot customization:
+    plt.title("Mouse Chains", fontsize=18, color ="black")
+    plt.xlabel("Chain Position", fontsize = 12)
+    plt.ylabel("Aminoacid Frequency", fontsize = 12)
+    plt.xticks(range(0,301,25))
+    plt.legend(
+    bbox_to_anchor=(1.05, 1),
+    loc='best',
+    fontsize=4,
+    ncol=2,
+    title="Aminoacids"
+    )
+    plt.tight_layout()
+
+    # plt.show()
+    plt.savefig("mouse.png", dpi = 600)
+    plt.close()
