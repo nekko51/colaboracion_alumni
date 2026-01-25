@@ -95,7 +95,8 @@ def AmbiguousAminoacids(f):
 def AmbigousAminoacids2 (f):
     f.seek(0)
 
-    valid = set (aminoacids.keys + "\n")
+    valid = set (aminoacids.keys)
+    valid.add ("\n")
     sequence = set(f.read())
 
     ambigous = sequence - valid
