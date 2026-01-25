@@ -92,20 +92,21 @@ def AmbiguousAminoacids(f):
 
 #Possible alternative for the analysis of amb aminoacids. It should be more efficient.
 #Lo malo de este código es que no detecta la posición en la que se ha encontrado el aminoácido erróneo, pero detecta más rápido
-def AmbigousAminoacids2 (f):
+def AmbiguousAminoacids2 (f):
     f.seek(0)
 
-    valid = set (aminoacids.keys)
+    valid = set(aminoacids.keys())
     valid.add ("\n")
     sequence = set(f.read())
 
-    ambigous = sequence - valid
+    ambiguous = sequence - valid
 
-    if ambigous:
-        errorMsg = f"There appears an (aminoácido ambigüo)"
-        return False, errorMsg
+    if ambiguous:
+        ambiguousAminoacidsSuccesful, aminoacidsErrorMsg = AmbiguousAminoacids(f)
+        if ambiguousAminoacidsSuccesful == True:
+            print(f"Weird... Ambiguous Aminoacids function nº2 returned false but nº1 returned true")
+        return ambiguousAminoacidsSuccesful, aminoacidsErrorMsg
     return True, ""
-
 
 
 #Given a filename, run all previous checks before starting to work on it:
@@ -123,7 +124,7 @@ def PreviousComprobations(filename):
         print(lengthErrorMsg)
         return False
     
-    ambiguousAminoacidsSuccesful, aminoacidsErrorMsg = AmbiguousAminoacids(f)
+    ambiguousAminoacidsSuccesful, aminoacidsErrorMsg = AmbiguousAminoacids2(f)
     if ambiguousAminoacidsSuccesful == False:
         print(aminoacidsErrorMsg)
         return False
