@@ -138,85 +138,55 @@ def AminoacidFrequency(filename):
     return appearance, frequency
 
 
-
-
-
-
-# filename = "testing_adulterated1.seqs"
-filename = "testing_human.seqs"
-if PreviousComprobations(filename) == False:
-    print(f"There was an error, stopping the program...")
-else:
+#Main function; checks whether a filename contains chains of aminoacids (of the same length) without
+# any ambiguous aminoacids, and generates a plot for the frequency of each aminoacid in each position.
+def GeneratePlot(filename, title, filename_output, colors):
+    if PreviousComprobations(filename) == False:
+        print(f"There was an error, stopping plot for {filename}")
+        return
     appearance, frequency = AminoacidFrequency(filename)
-    for i in range(CHAIN_LENGTH):
-        sum = 0
-        for j in range(AMINOACID_NUMBER):
-            sum += frequency[i, j]
-        print(sum)
-    
+
     #We could make the color map MEAN something; that is, give all aminoacids that are hydrophobic a red-ish color, etc. 
     # - that way we could uncover "hidden" patterns relating to the chemical properties of each aminoacid in our chains
-    x = range(CHAIN_LENGTH)
-    random_color = np.zeros((AMINOACID_NUMBER,3))
-    for i in range(AMINOACID_NUMBER):
-        random_color[i] = np.random.rand(3,)
-        plt.plot(range(CHAIN_LENGTH), frequency[:, i], 
-                 marker=".", ms = 4, color=random_color[i],
-                 linestyle = "solid",
-                 label = reverse_aminoacids.get(i))
     
-    #Plot customization:
-    plt.title("Human Chains", fontsize=18, color ="black")
-    plt.xlabel("Chain Position", fontsize = 12)
-    plt.ylabel("Aminoacid Frequency", fontsize = 12)
-    plt.xticks(range(0,301,25))
-    plt.legend(
-    bbox_to_anchor=(1.05, 1),
-    loc='best',
-    fontsize=4,
-    ncol=2,
-    title="Aminoacids"
-    )
-    plt.tight_layout()
-
-    # plt.show()
-    plt.savefig("human.png", dpi = 600)
-    plt.close()
-
-filename = "testing_mouse.seqs"
-if PreviousComprobations(filename) == False:
-    print(f"There was an error, stopping the program...")
-else:
-    appearance, frequency = AminoacidFrequency(filename)
-    for i in range(CHAIN_LENGTH):
-        sum = 0
-        for j in range(AMINOACID_NUMBER):
-            sum += frequency[i, j]
-        print(sum)
-    
-    #We could make the color map MEAN something; that is, give all aminoacids that are hydrophobic a red-ish color, etc. 
-    # - that way we could uncover "hidden" patterns relating to the chemical properties of each aminoacid in our chains
+    #Plot generation:
+    plt.figure(figsize=(16, 8))
     x = range(CHAIN_LENGTH)
     for i in range(AMINOACID_NUMBER):
-        plt.plot(range(CHAIN_LENGTH), frequency[:, i], 
-                 marker=".", ms = 4, color=random_color[i],
-                 linestyle = "solid",
-                 label = reverse_aminoacids.get(i))
+        plt.plot(x, frequency[:, i], 
+                    marker=".", ms = 4, color=colors[i],
+                    linestyle = "solid", alpha = 0.5,
+                    label = reverse_aminoacids.get(i))
     
     #Plot customization:
-    plt.title("Mouse Chains", fontsize=18, color ="black")
+    plt.title(title, fontsize=18, weight='bold')
     plt.xlabel("Chain Position", fontsize = 12)
     plt.ylabel("Aminoacid Frequency", fontsize = 12)
-    plt.xticks(range(0,301,25))
+    plt.xticks(range(0, CHAIN_LENGTH+1, 25))
+    #Legend:
     plt.legend(
-    bbox_to_anchor=(1.05, 1),
-    loc='best',
-    fontsize=4,
-    ncol=2,
-    title="Aminoacids"
-    )
+        bbox_to_anchor=(1.02, 1),
+        loc='upper left',
+        fontsize=15,
+        ncol=1,
+        title="Aminoacids",
+        title_fontsize = 10
+        )
+    #Saving
     plt.tight_layout()
-
-    # plt.show()
-    plt.savefig("mouse.png", dpi = 600)
+    plt.savefig(filename_output, dpi = 1200)
     plt.close()
+    print(f"Image {filename_output} created")
+
+colormap = np.zeros((AMINOACID_NUMBER,3))
+for i in range(AMINOACID_NUMBER):
+    colormap[i] = np.random.rand(3,)
+
+GeneratePlot("seqs/testing_human.seqs", "Human Chains", "images/human.png", colormap)
+GeneratePlot("seqs/testing_mouse.seqs", "Mouse Chains", "images/mouse.png", colormap)
+
+#   Next steps:
+#       Make it so the name of the aminoacid shows up in its correspondig point on the graph 
+#           if its frequency is higher than some value (e.g. 0.5)
+#       Create a fixed, meaningful colormap (for example color corresponding to chem properties)
+#       Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
