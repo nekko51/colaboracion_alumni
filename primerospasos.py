@@ -1,3 +1,34 @@
+#Imports
+import numpy as np
+
+#Global variables and aminoacid dictionary
+CHAIN_LENGTH = 298
+AMINOACID_NUMBER = 21
+aminoacids = {
+    "-": 0,
+    "A": 1,
+    "C": 2,
+    "D": 3,
+    "E": 4,
+    "F": 5,
+    "G": 6,
+    "H" : 7,
+    "I": 8,
+    "K": 9,
+    "L": 10,
+    "M": 11,
+    "N": 12,
+    "P": 13,
+    "Q": 14,
+    "R": 15,
+    "S": 16,
+    "T": 17,
+    "V": 18,
+    "W": 19,
+    "Y": 20,
+    #B, J, X, Z, U y O no las añado de momento
+}
+
 #Given a file, determine whether all its lines are the same length or not:
 def SameLength(f):
     f.seek(0)
@@ -57,9 +88,43 @@ def PreviousComprobations(filename):
     return True
 
 
+#Calculate each aminoacid's frequency in every position
+def AminoacidFrequency(filename):
+    #Try to open file:
+    try:
+        f = open(filename, "r")
+    except FileNotFoundError:
+        print(f"Couldn't open {filename}")
+        return False
+    
+    appearance = np.zeros((CHAIN_LENGTH, AMINOACID_NUMBER), dtype = int)
+    total_chains = 0
+
+    for line in f:          #Would prefer ranges (for i in range)
+        line = line.strip()
+        total_chains += 1
+        pos = 0
+        for letter in line:
+            appearance[pos, aminoacids.get(letter)] += 1
+            pos += 1
+
+    #Calculate frequencies
+    frequency = appearance/total_chains
+    return appearance, frequency
+
+
+
+
+
+
 # filename = "testing_adulterated1.seqs"
 filename = "testing_human.seqs"
 if PreviousComprobations(filename) == False:
     print(f"There was an error, stopping the program...")
 else:
-    print(f"Rest of the program")
+    appearance, frequency = AminoacidFrequency(filename)
+    for i in range(CHAIN_LENGTH):
+        sum = 0
+        for j in range(AMINOACID_NUMBER):
+            sum += frequency[i][j]
+        print(sum)
