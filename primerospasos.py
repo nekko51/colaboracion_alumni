@@ -251,7 +251,7 @@ GenerateComparativePlot("seqs/testing_human.seqs", "seqs/testing_mouse.seqs", "R
 #           if its frequency is higher than some value (e.g. 0.5)
 #       Create a fixed, meaningful colormap (for example color corresponding to chem properties)
 #       Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
-#       Come up with more ways to compare the two plots
+#       Come up with more ways to compare the two plots.
 #       Try poking around and tweaking the sequences so that there exists an offset between the data 
 #           (don't know what that'd be good for, but I'll just throw it in the list i guess)
 #       Maybe rethink the functions so that we can work with the "frequency" and "appearance" arrays
