@@ -49,8 +49,8 @@ def PreviousComprobations(filename):
         print(lengthErrorMsg)
         return False
     
-    AmbiguousAminoacidsSuccesful, aminoacidsErrorMsg = AmbiguousAminoacids(f)
-    if AmbiguousAminoacidsSuccesful == False:
+    ambiguousAminoacidsSuccesful, aminoacidsErrorMsg = AmbiguousAminoacids(f)
+    if ambiguousAminoacidsSuccesful == False:
         print(aminoacidsErrorMsg)
         return False
     
