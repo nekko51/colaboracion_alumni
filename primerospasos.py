@@ -197,15 +197,58 @@ def GeneratePlot(filename, title, filename_output, colors):
     plt.close()
     print(f"Image {filename_output} created")
 
+
+def GenerateComparativePlot(filename1, filename2, title, filename_output, colors):
+    if PreviousComprobations(filename1) == False:
+        print(f"There was an error, stopping plot for {filename1}")
+        return
+    appearance1, frequency1 = AminoacidFrequency(filename1)
+    if PreviousComprobations(filename2) == False:
+        print(f"There was an error, stopping plot for {filename2}")
+        return
+    appearance2, frequency2 = AminoacidFrequency(filename2)
+
+    frequency = np.absolute(frequency1-frequency2)
+    #Plot generation:
+    plt.figure(figsize=(16, 8))
+    x = range(CHAIN_LENGTH)
+    for i in range(AMINOACID_NUMBER):
+        plt.plot(x, frequency[:, i], 
+                    marker=".", ms = 4, color=colors[i],
+                    linestyle = "solid", alpha = 0.5,
+                    label = reverse_aminoacids.get(i))
+    
+    #Plot customization:
+    plt.title(title, fontsize=18, weight='bold')
+    plt.xlabel("Chain Position", fontsize = 12)
+    plt.ylabel("Aminoacid Frequency", fontsize = 12)
+    plt.xticks(range(0, CHAIN_LENGTH+1, 25))
+    #Legend:
+    plt.legend(
+        bbox_to_anchor=(1.02, 1),
+        loc='upper left',
+        fontsize=15,
+        ncol=1,
+        title="Aminoacids",
+        title_fontsize = 10
+        )
+    #Saving
+    plt.tight_layout()
+    plt.savefig(filename_output, dpi = 1200)
+    plt.close()
+    print(f"Image {filename_output} created")
+
 colormap = np.zeros((AMINOACID_NUMBER,3))
 for i in range(AMINOACID_NUMBER):
     colormap[i] = np.random.rand(3,)
 
 GeneratePlot("seqs/testing_human.seqs", "Human Chains", "images/human.png", colormap)
 GeneratePlot("seqs/testing_mouse.seqs", "Mouse Chains", "images/mouse.png", colormap)
+GenerateComparativePlot("seqs/testing_human.seqs", "seqs/testing_mouse.seqs", "Relative Frequency", "images/relative.png", colormap)
 
 #   Next steps:
 #       Make it so the name of the aminoacid shows up in its correspondig point on the graph 
 #           if its frequency is higher than some value (e.g. 0.5)
 #       Create a fixed, meaningful colormap (for example color corresponding to chem properties)
 #       Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
+#       Come up with a way to compare the two plots
