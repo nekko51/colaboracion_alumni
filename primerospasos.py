@@ -193,7 +193,7 @@ def GeneratePlot(filename, title, filename_output, colors):
         )
     #Saving
     plt.tight_layout()
-    plt.savefig(filename_output, dpi = 1200)
+    plt.savefig(filename_output, dpi = 480)
     plt.close()
     print(f"Image {filename_output} created")
 
