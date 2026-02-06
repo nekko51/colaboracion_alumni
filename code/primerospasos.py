@@ -187,6 +187,7 @@ def GenerateComparativePlot(filename1, filename2, title, filename_output, colors
     plt.close()
     print(f"Image {filename_output} created")
 
+#Colormap importation - pay attention to the structure in "colormap.txt" when changing it; or rewrite this section entirely. PAY ATTENTION MARTA >:(
 colormap = np.loadtxt("colormap/colormap.txt")
 
 GeneratePlot("seqs/testing_human.seqs", "Human Chains", "images/human.png", colormap)
