@@ -198,7 +198,6 @@ GenerateComparativePlot("seqs/testing_human.seqs", "seqs/testing_mouse.seqs", "R
 #     LP - Low priority; MP - Medium Priority; HP - High Priority; UHP - Critical Priority
 #       [VISUAL - LP] Make it so the name of the aminoacid shows up in its correspondig point on the graph 
 #           if its frequency is higher than some value (e.g. 0.5)
-#       [HP] Create a fixed, meaningful colormap (for example color corresponding to chem properties)
 #       [DATA - MP] Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
 #       [HP] Come up with more ways to compare the two plots.
 #       [TOYING AROUND - LP] Try poking around and tweaking the sequences so that there exists an offset between the data 

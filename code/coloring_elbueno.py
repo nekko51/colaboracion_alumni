@@ -11,7 +11,7 @@ def coloring_function (orden):
         'D': [230, 10, 10],    # Bright Red 
         'E': [230, 10, 10],    # Bright Red
         'F': [50, 50, 170],    # Mid Blue
-        'G': [235, 235, 235],  # Light Grey
+        'G': [128, 128, 185],  # Medium Grey
         'H': [130, 130, 210],  # Pale Blue
         'I': [15, 130, 15],    # Green
         'K': [20, 90, 255],    # Blue
