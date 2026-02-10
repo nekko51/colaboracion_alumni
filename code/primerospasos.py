@@ -2,6 +2,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from constants import *
+import colormap as cm
+
 
 #Given a file, determine whether all its lines are the same length or not:
 def SameLength(f):
@@ -108,7 +110,7 @@ def AminoacidFrequency(filename):
 
 #Main function; checks whether a filename contains chains of aminoacids (of the same length) without
 # any ambiguous aminoacids, and generates a plot for the frequency of each aminoacid in each position.
-def GeneratePlot(filename, title, filename_output, colors):
+def GeneratePlot(filename, title, filename_output, colormap):
     if PreviousComprobations(filename) == False:
         print(f"There was an error, stopping plot for {filename}")
         return
@@ -122,7 +124,7 @@ def GeneratePlot(filename, title, filename_output, colors):
     x = range(CHAIN_LENGTH)
     for i in range(AMINOACID_NUMBER):
         plt.plot(x, frequency[:, i], 
-                    marker=".", ms = 4, color=colors[i],
+                    marker=".", ms = 4, color=colormap[i],
                     linestyle = "solid", alpha = 0.5,
                     label = reverse_aminoacids.get(i))
     
@@ -130,6 +132,7 @@ def GeneratePlot(filename, title, filename_output, colors):
     plt.title(title, fontsize=18, weight='bold')
     plt.xlabel("Chain Position", fontsize = 12)
     plt.ylabel("Aminoacid Frequency", fontsize = 12)
+    plt.ylim(-0.05, 1.05)
     plt.xticks(range(0, CHAIN_LENGTH+1, 25))
     #Legend:
     plt.legend(
@@ -147,7 +150,7 @@ def GeneratePlot(filename, title, filename_output, colors):
     print(f"Image {filename_output} created")
 
 
-def GenerateComparativePlot(filename1, filename2, title, filename_output, colors):
+def GenerateComparativePlot(filename1, filename2, title, filename_output, colormap):
     if PreviousComprobations(filename1) == False:
         print(f"There was an error, stopping plot for {filename1}")
         return
@@ -163,7 +166,7 @@ def GenerateComparativePlot(filename1, filename2, title, filename_output, colors
     x = range(CHAIN_LENGTH)
     for i in range(AMINOACID_NUMBER):
         plt.plot(x, frequency[:, i], 
-                    marker=".", ms = 4, color=colors[i],
+                    marker=".", ms = 4, color=colormap[i],
                     linestyle = "solid", alpha = 0.5,
                     label = reverse_aminoacids.get(i))
     
@@ -171,6 +174,7 @@ def GenerateComparativePlot(filename1, filename2, title, filename_output, colors
     plt.title(title, fontsize=18, weight='bold')
     plt.xlabel("Chain Position", fontsize = 12)
     plt.ylabel("Aminoacid Frequency", fontsize = 12)
+    plt.ylim(-0.05, 1.05)
     plt.xticks(range(0, CHAIN_LENGTH+1, 25))
     #Legend:
     plt.legend(
@@ -188,7 +192,7 @@ def GenerateComparativePlot(filename1, filename2, title, filename_output, colors
     print(f"Image {filename_output} created")
 
 #Colormap importation - pay attention to the structure in "colormap.txt" when changing it; or rewrite this section entirely. PAY ATTENTION MARTA >:(
-colormap = np.loadtxt("colormap/colormap.txt")
+colormap = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "rasmol")
 
 GeneratePlot("seqs/testing_human.seqs", "Human Chains", "images/human.png", colormap)
 GeneratePlot("seqs/testing_mouse.seqs", "Mouse Chains", "images/mouse.png", colormap)
@@ -204,3 +208,4 @@ GenerateComparativePlot("seqs/testing_human.seqs", "seqs/testing_mouse.seqs", "R
 #           (don't know what that'd be good for, but I'll just throw it in the list i guess)
 #       [MP] Maybe rethink the functions so that we can work with the "frequency" and "appearance" arrays
 #           (e.g. to generate various plots with different colormaps efficiently, without calculating them for every plot)
+#       [MP] Create a mini-graph that's a grid where all the aa's appear individually (like Alejandro's but in a single plot)
