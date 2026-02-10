@@ -194,9 +194,12 @@ def GenerateComparativePlot(filename1, filename2, title, filename_output, colorm
 #Colormap importation - pay attention to the structure in "colormap.txt" when changing it; or rewrite this section entirely. PAY ATTENTION MARTA >:(
 colormap = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "rasmol")
 
-GeneratePlot("seqs/testing_human.seqs", "Human Chains", "images/human.png", colormap)
-GeneratePlot("seqs/testing_mouse.seqs", "Mouse Chains", "images/mouse.png", colormap)
-GenerateComparativePlot("seqs/testing_human.seqs", "seqs/testing_mouse.seqs", "Relative Frequency", "images/relative.png", colormap)
+GeneratePlot("seqs/learn_human.txt", "Human Chains", "images/learn_human.png", colormap)
+GeneratePlot("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse.png", colormap)
+GenerateComparativePlot("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", "images/learn_relative.png", colormap)
+GeneratePlot("seqs/test_human.txt", "Human Chains", "images/test_human.png", colormap)
+GeneratePlot("seqs/test_mouse.txt", "Mouse Chains", "images/test_mouse.png", colormap)
+GenerateComparativePlot("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", "images/test_relative.png", colormap)
 
 #   Next steps:
 #     LP - Low priority; MP - Medium Priority; HP - High Priority; UHP - Critical Priority
