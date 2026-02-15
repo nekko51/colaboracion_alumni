@@ -111,7 +111,7 @@ def AminoacidFrequency(filename):
 def GeneratePlot(title, filename_output, colormap, frequency, dpi):
     #Plot generation:
     plt.figure(figsize=(16, 8))
-    x = range(CHAIN_LENGTH)
+    x = range(1, CHAIN_LENGTH+1)
     for i in range(AMINOACID_NUMBER):
         plt.plot(x, frequency[:, i], 
                     marker=".", ms = 4, color=colormap[i],
@@ -123,7 +123,7 @@ def GeneratePlot(title, filename_output, colormap, frequency, dpi):
     plt.xlabel("Chain Position", fontsize = 12)
     plt.ylabel("Aminoacid Frequency", fontsize = 12)
     plt.ylim(-0.05, 1.05)
-    plt.xticks(range(0, CHAIN_LENGTH+1, 25))
+    plt.xticks(range(1, CHAIN_LENGTH+1, 25))
     #Legend:
     plt.legend(
         bbox_to_anchor=(1.02, 1),
@@ -139,6 +139,23 @@ def GeneratePlot(title, filename_output, colormap, frequency, dpi):
     plt.close()
     print(f"Image {filename_output} created")
 
+#Graph, given a frequency array, the frequencies of each aminoacid on its own (and join them all in a single graph)
+def GenerateMiniPlot(title, filename_output, colormap, frequency, dpi):
+    fig, axs = plt.subplots(3,7, sharey=True)
+    fig.suptitle(title)
+    axes = axs.flatten()
+    x = range(1, CHAIN_LENGTH+1)
+
+    for i in range(0, AMINOACID_NUMBER):
+        ax = axes[i]
+        ax.bar(x, frequency[:, i], color = colormap[i])
+        ax.set_title(reverse_aminoacids.get(i))
+    
+    plt.tight_layout()
+    plt.savefig(filename_output, dpi = dpi)
+    plt.close
+    print(f"Image {filename_output} created")
+
 #Main function; checks whether a filename contains chains of aminoacids (of the same length) without
 # any ambiguous aminoacids, and calls the graphing function.
 def GenerateImage(filename, title, filename_output, colormap, dpi):
@@ -148,7 +165,7 @@ def GenerateImage(filename, title, filename_output, colormap, dpi):
     frequency = AminoacidFrequency(filename)
     GeneratePlot(title, filename_output, colormap, frequency, dpi)
 
-def GenerateComparativeImage(filename1, filename2, title, filename_output, colormap, dpi):
+def GenerateComparativeImage(filename1, filename2, title, filename_output, comparative_filename_output, colormap, dpi):
     if PreviousComprobations(filename1) == False:
         print(f"There was an error, stopping plot for {filename1}")
         return
@@ -161,25 +178,27 @@ def GenerateComparativeImage(filename1, filename2, title, filename_output, color
     frequency = np.absolute(frequency1-frequency2)
 
     GeneratePlot(title, filename_output, colormap, frequency, dpi)
+    GenerateMiniPlot(title, comparative_filename_output, colormap, frequency, dpi)
 
 #Colormap selection
 colormap = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "rasmol")
 
 GenerateImage("seqs/learn_human.txt", "Human Chains", "images/learn_human.png", colormap, 480)
 GenerateImage("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse.png", colormap, 480)
-GenerateComparativeImage("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", "images/learn_relative.png", colormap, 1200)
+GenerateComparativeImage("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", 
+                         "images/learn_relative.png", "images/learn_mini.png", colormap, 1200)
 GenerateImage("seqs/test_human.txt", "Human Chains", "images/test_human.png", colormap, 480)
 GenerateImage("seqs/test_mouse.txt", "Mouse Chains", "images/test_mouse.png", colormap, 480)
-GenerateComparativeImage("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", "images/test_relative.png", colormap, 1200)
+GenerateComparativeImage("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", 
+                         "images/test_relative.png", "images/test_mini.png", colormap, 1200)
 
 #   Next steps:
 #     LP - Low priority; MP - Medium Priority; HP - High Priority; UHP - Critical Priority
 #       [VISUAL - LP] Make it so the name of the aminoacid shows up in its correspondig point on the graph 
 #           if its frequency is higher than some value (e.g. 0.5)
-#       [DATA - MP] Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
+#       DISCARDED - [DATA - MP] Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
 #       [HP] Come up with more ways to compare the two plots.
 #       [TOYING AROUND - LP] Try poking around and tweaking the sequences so that there exists an offset between the data 
 #           (don't know what that'd be good for, but I'll just throw it in the list i guess)
 #       [MP] Maybe rethink the functions so that we can work with the "frequency" and "appearance" arrays
 #           (e.g. to generate various plots with different colormaps efficiently, without calculating them for every plot)
-#       [MP] Create a mini-graph that's a grid where all the aa's appear individually (like Alejandro's but in a single plot)
