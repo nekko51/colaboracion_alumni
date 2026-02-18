@@ -1,0 +1,4 @@
+seqs/learn_human.txt
+seqs/test_human.txt
+seqs/test_mouse.txt
+seqs/learn_mouse.txt
