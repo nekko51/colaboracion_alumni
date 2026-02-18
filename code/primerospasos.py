@@ -2,6 +2,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from constants import *
+import colormap as cm
+
 
 #Given a file, determine whether all its lines are the same length or not:
 def SameLength(f):
@@ -103,102 +105,98 @@ def AminoacidFrequency(filename):
 
     #Calculate frequencies
     frequency = appearance/total_chains
-    return appearance, frequency
+    return(frequency) #We could also return "appearance" if needed
 
+#Graph, given a frequency array, the frequencies with the specified filename output and dpi
+def GeneratePlot(title, filename_output, colormap, frequency, dpi):
+    #Plot generation:
+    plt.figure(figsize=(16, 8))
+    x = range(1, CHAIN_LENGTH+1)
+    for i in range(AMINOACID_NUMBER):
+        plt.plot(x, frequency[:, i], 
+                    marker=".", ms = 4, color=colormap[i],
+                    linestyle = "solid", alpha = 0.5,
+                    label = reverse_aminoacids.get(i))
+    
+    #Plot customization:
+    plt.title(title, fontsize=18, weight='bold')
+    plt.xlabel("Chain Position", fontsize = 12)
+    plt.ylabel("Aminoacid Frequency", fontsize = 12)
+    plt.ylim(-0.05, 1.05)
+    plt.xticks(range(1, CHAIN_LENGTH+1, 25))
+    #Legend:
+    plt.legend(
+        bbox_to_anchor=(1.02, 1),
+        loc='upper left',
+        fontsize=15,
+        ncol=1,
+        title="Aminoacids",
+        title_fontsize = 10
+        )
+    #Saving
+    plt.tight_layout()
+    plt.savefig(filename_output, dpi = dpi)
+    plt.close()
+    print(f"Image {filename_output} created")
+
+#Graph, given a frequency array, the frequencies of each aminoacid on its own (and join them all in a single graph)
+def GenerateMiniPlot(title, filename_output, colormap, frequency, dpi):
+    fig, axs = plt.subplots(3,7, sharey=True)
+    fig.suptitle(title)
+    axes = axs.flatten()
+    x = range(1, CHAIN_LENGTH+1)
+
+    for i in range(0, AMINOACID_NUMBER):
+        ax = axes[i]
+        ax.bar(x, frequency[:, i], color = colormap[i])
+        ax.set_title(reverse_aminoacids.get(i))
+    
+    plt.tight_layout()
+    plt.savefig(filename_output, dpi = dpi)
+    plt.close
+    print(f"Image {filename_output} created")
 
 #Main function; checks whether a filename contains chains of aminoacids (of the same length) without
-# any ambiguous aminoacids, and generates a plot for the frequency of each aminoacid in each position.
-def GeneratePlot(filename, title, filename_output, colors):
+# any ambiguous aminoacids, and calls the graphing function.
+def GenerateImage(filename, title, filename_output, colormap, dpi):
     if PreviousComprobations(filename) == False:
         print(f"There was an error, stopping plot for {filename}")
         return
-    appearance, frequency = AminoacidFrequency(filename)
+    frequency = AminoacidFrequency(filename)
+    GeneratePlot(title, filename_output, colormap, frequency, dpi)
 
-    #We could make the color map MEAN something; that is, give all aminoacids that are hydrophobic a red-ish color, etc. 
-    # - that way we could uncover "hidden" patterns relating to the chemical properties of each aminoacid in our chains
-    
-    #Plot generation:
-    plt.figure(figsize=(16, 8))
-    x = range(CHAIN_LENGTH)
-    for i in range(AMINOACID_NUMBER):
-        plt.plot(x, frequency[:, i], 
-                    marker=".", ms = 4, color=colors[i],
-                    linestyle = "solid", alpha = 0.5,
-                    label = reverse_aminoacids.get(i))
-    
-    #Plot customization:
-    plt.title(title, fontsize=18, weight='bold')
-    plt.xlabel("Chain Position", fontsize = 12)
-    plt.ylabel("Aminoacid Frequency", fontsize = 12)
-    plt.xticks(range(0, CHAIN_LENGTH+1, 25))
-    #Legend:
-    plt.legend(
-        bbox_to_anchor=(1.02, 1),
-        loc='upper left',
-        fontsize=15,
-        ncol=1,
-        title="Aminoacids",
-        title_fontsize = 10
-        )
-    #Saving
-    plt.tight_layout()
-    plt.savefig(filename_output, dpi = 480)
-    plt.close()
-    print(f"Image {filename_output} created")
-
-
-def GenerateComparativePlot(filename1, filename2, title, filename_output, colors):
+def GenerateComparativeImage(filename1, filename2, title, filename_output, comparative_filename_output, colormap, dpi):
     if PreviousComprobations(filename1) == False:
         print(f"There was an error, stopping plot for {filename1}")
         return
-    appearance1, frequency1 = AminoacidFrequency(filename1)
+    frequency1 = AminoacidFrequency(filename1)
     if PreviousComprobations(filename2) == False:
         print(f"There was an error, stopping plot for {filename2}")
         return
-    appearance2, frequency2 = AminoacidFrequency(filename2)
+    frequency2 = AminoacidFrequency(filename2)
 
     frequency = np.absolute(frequency1-frequency2)
-    #Plot generation:
-    plt.figure(figsize=(16, 8))
-    x = range(CHAIN_LENGTH)
-    for i in range(AMINOACID_NUMBER):
-        plt.plot(x, frequency[:, i], 
-                    marker=".", ms = 4, color=colors[i],
-                    linestyle = "solid", alpha = 0.5,
-                    label = reverse_aminoacids.get(i))
-    
-    #Plot customization:
-    plt.title(title, fontsize=18, weight='bold')
-    plt.xlabel("Chain Position", fontsize = 12)
-    plt.ylabel("Aminoacid Frequency", fontsize = 12)
-    plt.xticks(range(0, CHAIN_LENGTH+1, 25))
-    #Legend:
-    plt.legend(
-        bbox_to_anchor=(1.02, 1),
-        loc='upper left',
-        fontsize=15,
-        ncol=1,
-        title="Aminoacids",
-        title_fontsize = 10
-        )
-    #Saving
-    plt.tight_layout()
-    plt.savefig(filename_output, dpi = 1200)
-    plt.close()
-    print(f"Image {filename_output} created")
 
-#Colormap importation - pay attention to the structure in "colormap.txt" when changing it; or rewrite this section entirely. PAY ATTENTION MARTA >:(
-colormap = np.loadtxt("colormap/colormap.txt")
+    GeneratePlot(title, filename_output, colormap, frequency, dpi)
+    GenerateMiniPlot(title, comparative_filename_output, colormap, frequency, dpi)
 
-GeneratePlot("seqs/testing_human.seqs", "Human Chains", "images/human.png", colormap)
-GeneratePlot("seqs/testing_mouse.seqs", "Mouse Chains", "images/mouse.png", colormap)
-GenerateComparativePlot("seqs/testing_human.seqs", "seqs/testing_mouse.seqs", "Relative Frequency", "images/relative.png", colormap)
+#Colormap selection
+colormap = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "rasmol")
+
+GenerateImage("seqs/learn_human.txt", "Human Chains", "images/learn_human.png", colormap, 480)
+GenerateImage("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse.png", colormap, 480)
+GenerateComparativeImage("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", 
+                         "images/learn_relative.png", "images/learn_mini.png", colormap, 1200)
+GenerateImage("seqs/test_human.txt", "Human Chains", "images/test_human.png", colormap, 480)
+GenerateImage("seqs/test_mouse.txt", "Mouse Chains", "images/test_mouse.png", colormap, 480)
+GenerateComparativeImage("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", 
+                         "images/test_relative.png", "images/test_mini.png", colormap, 1200)
 
 #   Next steps:
 #     LP - Low priority; MP - Medium Priority; HP - High Priority; UHP - Critical Priority
 #       [VISUAL - LP] Make it so the name of the aminoacid shows up in its correspondig point on the graph 
 #           if its frequency is higher than some value (e.g. 0.5)
-#       [DATA - MP] Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
+#       DISCARDED - [DATA - MP] Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
 #       [HP] Come up with more ways to compare the two plots.
 #       [TOYING AROUND - LP] Try poking around and tweaking the sequences so that there exists an offset between the data 
 #           (don't know what that'd be good for, but I'll just throw it in the list i guess)
