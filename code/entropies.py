@@ -3,3 +3,7 @@
 
 
 #Given an entropy array, do things with it (other functions):
+
+
+
+#Selector functions that, given a "word code", calculates a kind of entropy -- or f*** it, calculate every single one could be an option too.
