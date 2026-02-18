@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from constants import *
 import colormap as cm
 
-
 #Given a filename, load valid, comprobated .txt files containing seqs
 def LoadValid():
     valid = np.loadtxt("comprobations/comprobated.txt", dtype=str)
