@@ -1,18 +1,23 @@
 #Imports
 import numpy as np
-import matplotlib.pyplot as plt
 from constants import *
 
 
 #Functions that calculate entropies in different ways:
-#Given a frequency array, alpha value (the summation index for each S_i, in AA's it's 21), 
+#Given a frequency array (2D), alpha value (the summation index for each S_i, in AA's it's 21), 
 # return a numpy array with the entropies S_i
 def shannon_entropy (probabilities_matrix):
-    # S_i = - sum(p_i * log(p_i))
+    # S_i = - sum_\alpha (p_{i\alpha} * log(p_{i\alpha}))
     # probabilities is matrix where len(probabilities_matrix) = number of positions
     S_i = np.zeros(len(probabilities_matrix))
-    for i in range(len(probabilities_matrix)):
-        for prob in probabilities_matrix[i]:
+    for alpha in range(len(probabilities_matrix[0])):
+        S_i -= probabilities_matrix[:,alpha] * np.log(probabilities_matrix[:,alpha])
+    return(S_i)
+
+def shann_entropy_2 (probabilites_matrix):
+    S_i = np.zeros(len(probabilites_matrix))
+    for i in range(len(probabilites_matrix)):
+        for prob in probabilites_matrix[i]:
             if prob > 0:
                 S_i[i] = S_i[i] - (prob * np.log(prob))
     return S_i
