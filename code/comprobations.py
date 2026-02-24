@@ -1,5 +1,4 @@
 #File aimed to do the previous comprobations of a .txt file containings seqs
-import numpy as np
 from constants import *
 
 #Given a file, determine whether all its lines are the same length or not:

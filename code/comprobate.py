@@ -1,4 +1,3 @@
-import numpy as np
 import comprobations as comp
 from constants import *
 
