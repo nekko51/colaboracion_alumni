@@ -116,11 +116,11 @@ print(valid)
 GenerateImage("seqs/learn_human.txt", "Human Chains", "images/learn_human.png", colormap, 480, valid)
 GenerateImage("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse.png", colormap, 480, valid)
 GenerateComparativeImage("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", 
-                         "images/learn_relative.png", "images/learn_mini.png", colormap, 1200, valid)
+                         "images/learn_relative.png", "images/learn_z_mini.png", colormap, 1200, valid)
 GenerateImage("seqs/test_human.txt", "Human Chains", "images/test_human.png", colormap, 480, valid)
 GenerateImage("seqs/test_mouse.txt", "Mouse Chains", "images/test_mouse.png", colormap, 480, valid)
 GenerateComparativeImage("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", 
-                         "images/test_relative.png", "images/test_mini.png", colormap, 1200, valid)
+                         "images/test_relative.png", "images/test_z_mini.png", colormap, 1200, valid)
 print(f"\nDone.")
 
 #   Next steps:
