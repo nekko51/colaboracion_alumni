@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from constants import *
 import colormap as cm
+import aa_properties as aa_div
 
 #Given a filename, load valid, comprobated .txt files containing seqs
 def LoadValid():
@@ -21,7 +22,7 @@ def AminoacidFrequency(filename):
     appearance = np.zeros((CHAIN_LENGTH, AMINOACID_NUMBER), dtype = int)
     total_chains = 0
 
-    for line in f:          #Would prefer ranges (for i in range)
+    for line in f:
         line = line.strip()
         total_chains += 1
         pos = 0
@@ -34,7 +35,7 @@ def AminoacidFrequency(filename):
     return(frequency) #We could also return "appearance" if needed
 
 #Graph, given a frequency array, the frequencies with the specified filename output and dpi
-def GeneratePlot(title, filename_output, colormap, frequency, dpi):
+def GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi):
     #Plot generation:
     plt.figure(figsize=(16, 8))
     x = range(1, CHAIN_LENGTH+1)
@@ -57,6 +58,40 @@ def GeneratePlot(title, filename_output, colormap, frequency, dpi):
         fontsize=15,
         ncol=1,
         title="Aminoacids",
+        title_fontsize = 10
+        )
+    #Saving
+    plt.tight_layout()
+    plt.savefig(filename_output, dpi = dpi)
+    plt.close()
+    print(f"Image {filename_output} created")
+
+#Graph, given a BINARY frequency array, the frequencies with the specified filename output and dpi
+def GenerateBinaryPlot(title, filename_output, colormap, frequency, dpi, division):
+    division.lower()
+    #Plot generation:
+    plt.figure(figsize=(16, 8))
+    x = range(1, CHAIN_LENGTH+1)
+    for i in range(2):
+        plt.plot(x, frequency[:, i], 
+                    marker=".", ms = 4, color=colormap[i],
+                    linestyle = "solid", alpha = 0.5,
+                    label = division if i == 1 else "no" #this shit feels illegal
+                    )
+    
+    #Plot customization:
+    plt.title(title, fontsize=18, weight='bold')
+    plt.xlabel("Chain Position", fontsize = 12)
+    plt.ylabel("Frequency", fontsize = 12)
+    plt.ylim(-0.05, 1.05)
+    plt.xticks(range(1, CHAIN_LENGTH+1, 25))
+    #Legend:
+    plt.legend(
+        bbox_to_anchor=(1.02, 1),
+        loc='upper left',
+        fontsize=15,
+        ncol=1,
+        title="Conditions",
         title_fontsize = 10
         )
     #Saving
@@ -89,7 +124,7 @@ def GenerateImage(filename, title, filename_output, colormap, dpi, valid):
         print(f"{filename} was not found in the \"comprobated.txt\" directory, stopping plot generation...")
         return
     frequency = AminoacidFrequency(filename)
-    GeneratePlot(title, filename_output, colormap, frequency, dpi)
+    GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi)
 
 def GenerateComparativeImage(filename1, filename2, title, filename_output, comparative_filename_output, colormap, dpi, valid):
     if filename1 not in valid:
@@ -103,7 +138,7 @@ def GenerateComparativeImage(filename1, filename2, title, filename_output, compa
 
     frequency = np.absolute(frequency1-frequency2)
 
-    GeneratePlot(title, filename_output, colormap, frequency, dpi)
+    GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi)
     GenerateMiniPlot(title, comparative_filename_output, colormap, frequency, dpi)
 
 #Colormap selection
