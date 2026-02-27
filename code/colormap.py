@@ -4,6 +4,9 @@ import numpy as np
 def ColormapSelection(order, type):
     if type == "rasmol":
         return(ColormapRasmol(order))
+    elif type == "binary":
+        binary = ([1.0, 1.0, 1.0], [0, 0, 0])
+        return(np.array(binary))
     
     #If no type is specified, we'll assign it the (current) random one.
     else:

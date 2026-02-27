@@ -226,14 +226,14 @@ def GenerateFrequencyArray(old_frequency, division):
         division = "empty"
 
     if division == "charged":
-        new_frequency = np.zeros(CHAIN_LENGTH, 3)
+        new_frequency = np.zeros((CHAIN_LENGTH, 3))
     elif not division == "charged":
-        new_frequency = np.zeros(CHAIN_LENGTH, 2)
+        new_frequency = np.zeros((CHAIN_LENGTH, 2))
     
     for i in range(AMINOACID_NUMBER):
-        if division.get(reverse_aminoacids(i)) == 1:
+        if eval(division).get(reverse_aminoacids.get(i)) == 1:
             new_frequency[:,1] = old_frequency[:,i]
-        elif division.get(reverse_aminoacids(i)) == 0:
+        elif eval(division).get(reverse_aminoacids.get(i)) == 0:
             new_frequency[:,0] = old_frequency[:,i]
     
     return(new_frequency)

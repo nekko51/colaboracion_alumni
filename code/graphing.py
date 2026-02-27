@@ -76,7 +76,7 @@ def GenerateBinaryPlot(title, filename_output, colormap, frequency, dpi, divisio
         plt.plot(x, frequency[:, i], 
                     marker=".", ms = 4, color=colormap[i],
                     linestyle = "solid", alpha = 0.5,
-                    label = division if i == 1 else "no" #this shit feels illegal
+                    label = division if i == 1 else "not " + division #this shit feels illegal
                     )
     
     #Plot customization:
@@ -119,14 +119,18 @@ def GenerateMiniPlot(title, filename_output, colormap, frequency, dpi):
 
 #Main function; checks whether a filename contains chains of aminoacids (of the same length) without
 # any ambiguous aminoacids, and calls the graphing function.
-def GenerateImage(filename, title, filename_output, colormap, dpi, valid):
+def GenerateImage(filename, title, filename_output, colormap, dpi, valid, division):
     if filename not in valid:
         print(f"{filename} was not found in the \"comprobated.txt\" directory, stopping plot generation...")
         return
     frequency = AminoacidFrequency(filename)
-    GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi)
+    if division == "none":
+        GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi)
+    else:
+        new_frequency = aa_div.GenerateFrequencyArray(frequency, division)
+        GenerateBinaryPlot(title, filename_output, colormap, new_frequency, dpi, division)
 
-def GenerateComparativeImage(filename1, filename2, title, filename_output, comparative_filename_output, colormap, dpi, valid):
+def GenerateComparativeImage(filename1, filename2, title, filename_output, comparative_filename_output, colormap, dpi, valid, division):
     if filename1 not in valid:
         print(f"{filename1} was not found in the \"comprobated.txt\" directory, stopping plot generation...")
         return
@@ -138,33 +142,31 @@ def GenerateComparativeImage(filename1, filename2, title, filename_output, compa
 
     frequency = np.absolute(frequency1-frequency2)
 
-    GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi)
-    GenerateMiniPlot(title, comparative_filename_output, colormap, frequency, dpi)
+    if division == "none":
+        GenerateAminoacidsPlot(title, filename_output, colormap, frequency, dpi)
+        GenerateMiniPlot(title, comparative_filename_output, colormap, frequency, dpi)
+    else:
+        new_frequency = aa_div.GenerateFrequencyArray(frequency, division)
+        GenerateBinaryPlot(title, filename_output, colormap, new_frequency, dpi, division)
 
 #Colormap selection
-colormap = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "rasmol")
+colormap_rasmol = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "rasmol")
+colormap_binary = cm.ColormapSelection("-ACDEFGHIKLMNPQRSTVWY", "binary")
 
 #Load valid files
 valid = LoadValid()
-print(valid)
+# print(valid)
 
-GenerateImage("seqs/learn_human.txt", "Human Chains", "images/learn_human.png", colormap, 480, valid)
-GenerateImage("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse.png", colormap, 480, valid)
+# GenerateImage("seqs/learn_human.txt", "Human Chains", "images/learn_human.png", colormap_rasmol, 480, valid, "none")
+# GenerateImage("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse.png", colormap_rasmol, 480, valid, "none")
+# GenerateComparativeImage("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", 
+#                          "images/learn_relative.png", "images/learn_z_mini.png", colormap_rasmol, 1200, valid, "none")
+# GenerateImage("seqs/test_human.txt", "Human Chains", "images/test_human.png", colormap_rasmol, 480, valid, "none")
+# GenerateImage("seqs/test_mouse.txt", "Mouse Chains", "images/test_mouse.png", colormap_rasmol, 480, valid, "none")
+# GenerateComparativeImage("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", 
+#                          "images/test_relative.png", "images/test_z_mini.png", colormap_rasmol, 1200, valid, "none")
+GenerateImage("seqs/learn_mouse.txt", "Mouse Chains", "images/learn_mouse_binary_aromatic.png", colormap_binary, 480, valid, "aromatic")
+GenerateImage("seqs/learn_human.txt", "Human Chains", "images/learn_human_binary_aromatic.png", colormap_binary, 480, valid, "aromatic")
 GenerateComparativeImage("seqs/learn_human.txt", "seqs/learn_mouse.txt", "Relative Frequency", 
-                         "images/learn_relative.png", "images/learn_z_mini.png", colormap, 1200, valid)
-GenerateImage("seqs/test_human.txt", "Human Chains", "images/test_human.png", colormap, 480, valid)
-GenerateImage("seqs/test_mouse.txt", "Mouse Chains", "images/test_mouse.png", colormap, 480, valid)
-GenerateComparativeImage("seqs/test_human.txt", "seqs/test_mouse.txt", "Relative Frequency", 
-                         "images/test_relative.png", "images/test_z_mini.png", colormap, 1200, valid)
+                          "images/learn_relative_binary_aromatic.png", "this isn't useful if division isn't none", colormap_rasmol, 1200, valid, "aromatic")
 print(f"\nDone.")
-
-#   Next steps:
-#     LP - Low priority; MP - Medium Priority; HP - High Priority; UHP - Critical Priority
-#       [VISUAL - LP] Make it so the name of the aminoacid shows up in its correspondig point on the graph 
-#           if its frequency is higher than some value (e.g. 0.5)
-#       DISCARDED - [DATA - MP] Maybe make sub-plots (every 25-50 positions, make a new graph) to compare more easily
-#       [HP] Come up with more ways to compare the two plots.
-#       [TOYING AROUND - LP] Try poking around and tweaking the sequences so that there exists an offset between the data 
-#           (don't know what that'd be good for, but I'll just throw it in the list i guess)
-#       [MP] Maybe rethink the functions so that we can work with the "frequency" and "appearance" arrays
-#           (e.g. to generate various plots with different colormaps efficiently, without calculating them for every plot)
