@@ -11,4 +11,10 @@ Maybe, to compare, parallel to making the binary plot, it'd be nice to graph JUS
 - [TOYING AROUND - LP] Try poking around and tweaking the sequences so that there exists an offset between the data (don't know what that'd be good for, but I'll just throw it in the list i guess)
 
 - [MP] Maybe rethink the functions so that we can work with the "frequency" and "appearance" arrays (e.g. to generate various plots with different colormaps efficiently, without calculating them for every plot)
+
+
+
+
+# Ways to implement them:
+- Implement a generic filename_output directory and then append the images output names
            

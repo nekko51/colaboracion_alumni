@@ -1,6 +1,7 @@
 #Global variables and aminoacid dictionary
 CHAIN_LENGTH = 298
 AMINOACID_NUMBER = 21
+DIVISIONS = ["hydrophobic", "aromatic", "aliphatic", "polar", "small", "minuscule", "charged"]
 aminoacids = {
     "-": 0,
     "A": 1,

@@ -211,7 +211,6 @@ empty = {
     "Y": 0,
 }
 
-valid_divisions = ["hydrophobic", "aromatic", "aliphatic", "polar", "small", "minuscule", "charged", "empty"]
 
 # ==========
 # FUNCTIONS
@@ -221,7 +220,7 @@ valid_divisions = ["hydrophobic", "aromatic", "aliphatic", "polar", "small", "mi
 def GenerateFrequencyArray(old_frequency, division):
     division.lower()
     #Check if the specified division is valid
-    if division not in valid_divisions:
+    if division not in DIVISIONS: #in constants.py
         print(f"{division} not valid, assigning empty...")
         division = "empty"
 
