@@ -1,6 +1,6 @@
 #include "head.h"
 
-void med_var(double* data, int n, double* mean, double* variance) {
+void med_var(double* data, double* mean, double* variance, int n) {
     int i;
     double sum, res;
     *mean=0;
@@ -18,4 +18,12 @@ void med_var(double* data, int n, double* mean, double* variance) {
     }
 
     *variance = res/(n-1);
+}
+
+void minmax(double* data, double* max, double* min, int n) {
+    *max = *min = *data;
+    for(int i=0; i<n; i++) {
+        if(*max < *(data+i)) *max = *(data+i);
+        if(*min > *(data+i)) *min = *(data+i);
+    }
 }

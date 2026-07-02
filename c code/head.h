@@ -7,6 +7,11 @@
 #define fran 3
 
 /*Functions:*/
-double calculate_energy(const char* seq1, const char* seq2, int length);
 
-void metropolis_sweep(char* murine_seq, const char* human_ref, int n_steps, double beta, int n);
+//utils.c
+void med_var(double* data, double* mean, double* variance, int n);
+void minmax(double* data, double* max, double* min, int n);
+
+//metropolis.c
+double calculate_energy(const char* seq1, const char* seq2, int length);
+void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int n);
