@@ -51,3 +51,7 @@ void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int 
 //parsing.c
 Chain get_nex_chain(FILE *f);
 
+//chain-operations.c
+Chain file_megaAacids(char *filename, int n_lines);
+void entropy_vector(Chain mega_chain, double *output, char type, double order);
+

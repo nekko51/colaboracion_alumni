@@ -10,7 +10,7 @@ Aacid aacid_direct_sum(Aacid a, Aacid b) {
 }
 
 // scales frequencies of an aa
-Aacid aa_freq_scale(Aacid aa, double scalar) {
+Aacid aa_scale(Aacid aa, double scalar) {
     Aacid out;
     for (int i = 0; i < N_AACIDS; i++) {
         out.elmts[i] = aa.elmts[i] * scalar;
@@ -27,21 +27,25 @@ Chain chain_direct_sum(Chain a, Chain b) {
     return out;
 }
 
-Chain ch_freq_scale(Chain c, double scalar) {
+// scales frequencies of a chain
+Chain ch_scale(Chain c, double scalar) {
     Chain out;
     for (int i = 0; i < CHAINLEN; i++) {
-        out.aas[i] = aa_freq_scale(c.aas[i], scalar);
+        out.aas[i] = aa_scale(c.aas[i], scalar);
     }
     return out;
 }
 
 // returns the schrödinger chain of a file, needs file and number of lines
-Chain file_megaAacids(FILE *f, int n_lines) {
+Chain file_megaAacids(char *filename, int n_lines) {
+    FILE *f = fopen(filename, "r");
+    if (f == NULL) {printf("no se pudo abrir %s\n", filename);return;}
     Chain out = get_nex_chain(f);
     for (int i = 1; i < n_lines; i++) {
         out = chain_direct_sum(out, get_nex_chain(f));
     }
-    return ch_freq_scale(out, 1/(double)n_lines);
+    return ch_scale(out, 1/(double)n_lines);
+    fclose(f);
 }
 
 
