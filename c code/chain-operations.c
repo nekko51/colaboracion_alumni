@@ -44,12 +44,73 @@ Chain file_megaAacids(FILE *f, int n_lines) {
     return ch_freq_scale(out, 1/(double)n_lines);
 }
 
+
+/*entropies*/
+
 double aa_shannon_entropy(Aacid aa) {
+    double sum = 0;
     for (int i = 0; i < N_AACIDS; i++) {
-        
+        sum += -aa.elmts[i] * log(aa.elmts[i]);
+    }
+    return sum;
+}
+
+double aa_linear_entropy(Aacid aa) {
+    double sum = 0;
+    for (int i = 0; i < N_AACIDS; i++) {
+        sum += -aa.elmts[i] * (1 - aa.elmts[i]);
+    }
+    return sum;
+}
+
+double aa_renyi_entropy(Aacid aa, double q) {
+    double sum = 0;
+    for (int i = 0; i < N_AACIDS; i++) {
+        sum += pow(aa.elmts[i],q);
+    }
+    return log(sum)/(1-q);
+}
+
+double aa_tsallis_entropy(Aacid aa, double q) {
+    double sum = 0;
+    for (int i = 0; i < N_AACIDS; i++) {
+        sum += pow(aa.elmts[i],q);
+    }
+    return (1 - sum) / ( q - 1);
+}
+
+/* calcs entropy for each entry in a chain, output must be at least N_AACIDS long
+for argument ''type'':
+- 'l':    linear entropy
+- 'r':    Renyi entropy*
+- 't':    Tsallis entropy*
+- none of the above:  Shannon entropy (default)
+
+[*] order \in [0,1), only used for these [*], otherwise ignored
+*/
+void entropy_vector(Chain mega_chain, double *output, char type, double order) {
+    if (type == 'l') {
+        //linear
+        for (int i = 0; i < CHAINLEN; i++) {
+            output[i] = aa_linear_entropy(mega_chain.aas[i]);
+        }
+    } else if (type == 'r') {
+        //renyi
+        for (int i = 0; i < CHAINLEN; i++) {
+            output[i] = aa_renyi_entropy(mega_chain.aas[i], order);
+        }
+    } else if (type == 't') {
+        //tsallis
+        for (int i = 0; i < CHAINLEN; i++) {
+            output[i] = aa_tsallis_entropy(mega_chain.aas[i], order);
+        }
+    } else {
+        //shannon
+        for (int i = 0; i < CHAINLEN; i++) {
+            output[i] = aa_shannon_entropy(mega_chain.aas[i]);
+        }
     }
 }
 
-void shannon_entropy_vector(Chain mega_chain, double *output) {
 
-}
+
