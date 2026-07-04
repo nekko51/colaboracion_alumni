@@ -1,0 +1,9 @@
+hydrophobic ACFGHIKLMTVWY
+aromatic FHWY
+aliphatic ILV
+polar DEHKNQRSTWY
+small ACDGNPSTV
+minuscule AGS
+positively_charged HKR
+negatively_charged DE
+
