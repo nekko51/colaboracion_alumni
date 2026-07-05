@@ -6,6 +6,9 @@ Aacid aacid_direct_sum(Aacid a, Aacid b) {
     for (int i = 0; i < N_AACIDS; i++) {
         out.elmts[i] = a.elmts[i] + b.elmts[i];
     }
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        out.props[i] = a.props[i] + b.props[i];
+    }
     return out;
 }
 
@@ -14,6 +17,9 @@ Aacid aa_scale(Aacid aa, double scalar) {
     Aacid out;
     for (int i = 0; i < N_AACIDS; i++) {
         out.elmts[i] = aa.elmts[i] * scalar;
+    }
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        out.props[i] = aa.props[i] * scalar;
     }
     return out;
 }
@@ -39,10 +45,11 @@ Chain ch_scale(Chain c, double scalar) {
 // returns the schrödinger chain of a file, needs file and number of lines
 Chain file_megaAacids(char *filename, int n_lines) {
     FILE *f = fopen(filename, "r");
-    if (f == NULL) {printf("no se pudo abrir %s\n", filename);return;}
+    if (f == NULL) {printf("\nCould not open %s\n", filename);}
     Chain out = get_nex_chain(f);
     for (int i = 1; i < n_lines; i++) {
         out = chain_direct_sum(out, get_nex_chain(f));
+        if (i%100 == 0) printf("%d read lines\n", i);
     }
     fclose(f);
     return ch_scale(out, 1/(double)n_lines);
@@ -51,39 +58,51 @@ Chain file_megaAacids(char *filename, int n_lines) {
 
 /*entropies*/
 
-double aa_shannon_entropy(Aacid aa) {
-    double sum = 0;
+Vec2 aa_shannon_entropy(Aacid aa) {
+    double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sum += -aa.elmts[i] * log(aa.elmts[i]);
+        sume += -aa.elmts[i] * log(aa.elmts[i]);
     }
-    return sum;
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        sump += -aa.props[i] * log(aa.props[i]);
+    }
+    return (Vec2){ .x = sume, .y = sump };
 }
 
-double aa_linear_entropy(Aacid aa) {
-    double sum = 0;
+Vec2 aa_linear_entropy(Aacid aa) {
+    double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sum += -aa.elmts[i] * (1 - aa.elmts[i]);
+        sume += -aa.elmts[i] * (1 - aa.elmts[i]);
     }
-    return sum;
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        sump += -aa.props[i] * (1 - aa.props[i]);
+    }
+    return (Vec2){ .x = sume, .y = sump };
 }
 
-double aa_renyi_entropy(Aacid aa, double q) {
-    double sum = 0;
+Vec2 aa_renyi_entropy(Aacid aa, double q) {
+    double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sum += pow(aa.elmts[i],q);
+        sume += pow(aa.elmts[i],q);
     }
-    return log(sum)/(1-q);
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        sump += pow(aa.props[i],q);
+    }
+    return (Vec2){ .x = log(sume)/(1-q), .y = log(sump)/(1-q) };
 }
 
-double aa_tsallis_entropy(Aacid aa, double q) {
-    double sum = 0;
+Vec2 aa_tsallis_entropy(Aacid aa, double q) {
+    double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sum += pow(aa.elmts[i],q);
+        sume += pow(aa.elmts[i],q);
     }
-    return (1 - sum) / ( q - 1);
+    for (int i = 0; i < N_AACIDS; i++) {
+        sump += pow(aa.elmts[i],q);
+    }
+    return (Vec2){ .x = (1-sume)/(q-1), .y = (1-sump)/(q-1) };
 }
 
-/* calcs entropy for each entry in a chain, output must be at least N_AACIDS long
+/* calcs entropy for each entry in a chain, output must be at least CHAINLEN long
 for argument ''type'':
 - 'l':    linear entropy
 - 'r':    Renyi entropy*
@@ -91,8 +110,10 @@ for argument ''type'':
 - none of the above:  Shannon entropy (default)
 
 [*] order \in [0,1), only used for these [*], otherwise ignored
+
+output's elements are 2-vecs: (aa entropy, property entropy)
 */
-void entropy_vector(Chain mega_chain, double *output, char type, double order) {
+void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order) {
     if (type == 'l') {
         //linear
         for (int i = 0; i < CHAINLEN; i++) {
@@ -116,5 +137,88 @@ void entropy_vector(Chain mega_chain, double *output, char type, double order) {
     }
 }
 
+/*calcs all kinds of entropies for each entry in a chain,
+output must be at least CHAINLEN long
+order \in [0,1)
+*/
+void all_entropies(Chain mega_chain, Entropies *output, double order) {
+    double plogp, p1p, ppowq;
+    for (int aa = 0; aa < CHAINLEN; aa++) {
+        plogp = 0.; p1p = 0.; ppowq = 0.;
 
+        for (int i = 0; i < N_AACIDS; i++) {
+            plogp += -mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
+            p1p += -mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
+            ppowq += pow(mega_chain.aas[aa].elmts[i], order);
+        }
+        output[aa].saa = plogp; output[aa].laa = p1p; 
+        output[aa].raa = log(ppowq)/(1-order); output[aa].taa = (1-ppowq)/(1-order);
 
+        plogp = 0.; p1p = 0.; ppowq = 0.;
+        for (int i = 0; i < N_PROPERTIES; i++) {
+            plogp += -mega_chain.aas[aa].props[i] * log(mega_chain.aas[aa].props[i]);
+            p1p += -mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
+            ppowq += pow(mega_chain.aas[aa].props[i], order);
+        }
+        output[aa].spp = plogp; output[aa].lpp = p1p; 
+        output[aa].rpp = log(ppowq)/(1-order); output[aa].tpp = (1-ppowq)/(1-order);
+    }
+}
+
+void print_chain(Chain c) {
+    for (int i = 0; i < CHAINLEN; i++) {
+        printf("%d:\t", i+1);
+        for (int j = 0; j < N_AACIDS; j++) {
+            printf("%.4g\t", c.aas[i].elmts[j]);
+        }
+        printf("\t");
+        for(int j = 0; j < N_PROPERTIES; j++) {
+            printf("%.4g\t", c.aas[i].props[j]);
+        }
+        printf("\n");
+    }
+}
+
+void print_chain_to_file(Chain c, char* filename) {
+    FILE *f = get_file(filename, "w");
+
+    fprintf(f, "idx\t");
+    for (int i = 0; i < N_AACIDS; i++) {
+        fprintf(f, "%c\t", AMINOACIDS[i]);
+    }
+    fprintf(f, "HYDROPHOBIC\tAROMATIC\tALIPHATIC\tPOLAR\tSMALL\tMINUSCULE\tCHARGEDPLUS\tCHARGEDMINUS");
+    fprintf(f, "\n");
+    for (int i = 0; i < CHAINLEN; i++) {
+        fprintf(f, "%d\t", i+1);
+        for (int j = 0; j < N_AACIDS; j++) {
+            fprintf(f, "%lf\t", c.aas[i].elmts[j]);
+        }
+        for (int j = 0; j < N_PROPERTIES; j++) {
+            fprintf(f, "%lf\t", c.aas[i].props[j]);
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
+}
+
+void print_entropies(Entropies *S) {
+    for (int i = 0; i < CHAINLEN; i++) {
+        printf("%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+            i+1, S[i].saa, S[i].spp, S[i].laa, S[i].lpp, S[i].raa, S[i].rpp, S[i].taa, S[i].tpp
+        );
+    }
+}
+
+    // Shannon AA, linear AA, Renyi AA, Tsallis AA, 
+    // Shannon Props, linear Props, Renyi Props, Tsallis Props
+
+void print_entropies_to_file(Entropies *S, char* filename) {
+    FILE *f = get_file(filename, "w");
+    fprintf(f, "idx\tshannonAA\tshannonPROP\tlinearAA\tlinearPROP\trenyiAA\trenyiPROP\ttsallisAA\ttsallisPROP");
+    for (int i = 0; i < CHAINLEN; i++) {
+        fprintf(f, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+            i+1, S[i].saa, S[i].spp, S[i].laa, S[i].lpp, S[i].raa, S[i].rpp, S[i].taa, S[i].tpp
+        );
+    }
+    fclose(f);
+}

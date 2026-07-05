@@ -1,7 +1,6 @@
 #include "head.h"
 
-#define N_AMINOACIDS 21
-const char AMINOACIDS[N_AMINOACIDS] = "ACDEFGHIKLMNPQRSTVWY-";
+char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
 
 double hamming_distance(const char* seq1, const char* seq2, int n) {
     double dist = 0.0;

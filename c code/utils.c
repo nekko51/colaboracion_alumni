@@ -27,3 +27,9 @@ void minmax(double* data, double* max, double* min, int n) {
         if(*min > *(data+i)) *min = *(data+i);
     }
 }
+
+FILE *get_file(char* filename, char* mode) {
+    FILE* f = fopen(filename, mode);
+    if (f == NULL) printf("Could not open %s", filename);
+    return f;
+}
