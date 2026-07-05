@@ -73,10 +73,10 @@ Vec2 aa_shannon_entropy(Aacid aa) {
 Vec2 aa_linear_entropy(Aacid aa) {
     double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sume += -aa.elmts[i] * (1 - aa.elmts[i]);
+        sume += aa.elmts[i] * (1 - aa.elmts[i]);
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sump += -aa.props[i] * (1 - aa.props[i]);
+        sump += aa.props[i] * (1 - aa.props[i]);
     }
     return (Vec2){ .x = sume, .y = sump };
 }
@@ -150,7 +150,7 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         for (int i = 0; i < N_AACIDS; i++) {
             if (mega_chain.aas[aa].elmts[i] > EPSILON) {
                 plogp -= mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
-                p1p -= mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
+                p1p += mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
                 ppowq += pow(mega_chain.aas[aa].elmts[i], order);
             }
         }
@@ -161,7 +161,7 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         for (int i = 0; i < N_PROPERTIES; i++) {
             if (mega_chain.aas[aa].props[i] > EPSILON) {
                 plogp -= mega_chain.aas[aa].props[i] * log(mega_chain.aas[aa].props[i]);
-                p1p -= mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
+                p1p += mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
                 ppowq += pow(mega_chain.aas[aa].props[i], order);
             }
         }
