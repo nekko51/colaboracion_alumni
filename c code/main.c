@@ -12,17 +12,20 @@ test mouse:     1379
 #define TXT ".txt"
 
 #define FILE "learn_human"
-#define MEGAAA "_freqs"
+#define FRECS "_freqs"
+#define ENTROPIS "_entropies"
 #define N_LINES 1309
 
 int main() {
 
     Chain ch = file_megaAacids(SEQS FILE TXT , N_LINES);
 
-    print_chain_to_file(ch, RESULTS FILE MEGAAA TXT);
+    print_chain_to_file(ch, RESULTS FILE FRECS TXT);
     
     Entropies *entropy = malloc(CHAINLEN * sizeof(Entropies));
     all_entropies(ch, entropy, .5);
+
+    print_entropies_to_file(entropy, RESULTS FILE ENTROPIS TXT);
 
     return 0;
 }

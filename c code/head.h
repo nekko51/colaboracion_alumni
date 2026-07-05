@@ -84,3 +84,5 @@ void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order);
 void all_entropies(Chain mega_chain, Entropies *output, double order);
 void print_chain(Chain c);
 void print_chain_to_file(Chain c, char* filename);
+void print_entropies(Entropies *S);
+void print_entropies_to_file(Entropies *S, char* filename);

@@ -147,8 +147,8 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         plogp = 0.; p1p = 0.; ppowq = 0.;
 
         for (int i = 0; i < N_AACIDS; i++) {
-            plogp += -mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
-            p1p += -mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
+            plogp -= mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
+            p1p -= mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
             ppowq += pow(mega_chain.aas[aa].elmts[i], order);
         }
         output[aa].saa = plogp; output[aa].laa = p1p; 
@@ -169,11 +169,11 @@ void print_chain(Chain c) {
     for (int i = 0; i < CHAINLEN; i++) {
         printf("%d:\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {
-            printf("%.4g\t", c.aas[i].elmts[j]);
+            printf("%.6g\t", c.aas[i].elmts[j]);
         }
         printf("\t");
         for(int j = 0; j < N_PROPERTIES; j++) {
-            printf("%.4g\t", c.aas[i].props[j]);
+            printf("%.6g\t", c.aas[i].props[j]);
         }
         printf("\n");
     }
@@ -186,15 +186,14 @@ void print_chain_to_file(Chain c, char* filename) {
     for (int i = 0; i < N_AACIDS; i++) {
         fprintf(f, "%c\t", AMINOACIDS[i]);
     }
-    fprintf(f, "HYDROPHOBIC\tAROMATIC\tALIPHATIC\tPOLAR\tSMALL\tMINUSCULE\tCHARGEDPLUS\tCHARGEDMINUS");
-    fprintf(f, "\n");
+    fprintf(f, "HYDROPHOBIC\tAROMATIC\tALIPHATIC\tPOLAR\tSMALL\tMINUSCULE\tCHARGEDPLUS\tCHARGEDMINUS\n");
     for (int i = 0; i < CHAINLEN; i++) {
         fprintf(f, "%d\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {
-            fprintf(f, "%lf\t", c.aas[i].elmts[j]);
+            fprintf(f, "%.10lf\t", c.aas[i].elmts[j]);
         }
         for (int j = 0; j < N_PROPERTIES; j++) {
-            fprintf(f, "%lf\t", c.aas[i].props[j]);
+            fprintf(f, "%.10lf\t", c.aas[i].props[j]);
         }
         fprintf(f, "\n");
     }
@@ -214,7 +213,7 @@ void print_entropies(Entropies *S) {
 
 void print_entropies_to_file(Entropies *S, char* filename) {
     FILE *f = get_file(filename, "w");
-    fprintf(f, "idx\tshannonAA\tshannonPROP\tlinearAA\tlinearPROP\trenyiAA\trenyiPROP\ttsallisAA\ttsallisPROP");
+    fprintf(f, "idx\tshannonAA\tshannonPROP\tlinearAA\tlinearPROP\trenyiAA\trenyiPROP\ttsallisAA\ttsallisPROP\n");
     for (int i = 0; i < CHAINLEN; i++) {
         fprintf(f, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
             i+1, S[i].saa, S[i].spp, S[i].laa, S[i].lpp, S[i].raa, S[i].rpp, S[i].taa, S[i].tpp
