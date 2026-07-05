@@ -1,4 +1,5 @@
 #include "head.h"
+#define EPSILON 1e-6
 
 // sums frequencies of two aa
 Aacid aacid_direct_sum(Aacid a, Aacid b) {
@@ -147,18 +148,22 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         plogp = 0.; p1p = 0.; ppowq = 0.;
 
         for (int i = 0; i < N_AACIDS; i++) {
-            plogp -= mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
-            p1p -= mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
-            ppowq += pow(mega_chain.aas[aa].elmts[i], order);
+            if (mega_chain.aas[aa].elmts[i] > EPSILON) {
+                plogp -= mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
+                p1p -= mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
+                ppowq += pow(mega_chain.aas[aa].elmts[i], order);
+            }
         }
         output[aa].saa = plogp; output[aa].laa = p1p; 
         output[aa].raa = log(ppowq)/(1-order); output[aa].taa = (1-ppowq)/(1-order);
 
         plogp = 0.; p1p = 0.; ppowq = 0.;
         for (int i = 0; i < N_PROPERTIES; i++) {
-            plogp += -mega_chain.aas[aa].props[i] * log(mega_chain.aas[aa].props[i]);
-            p1p += -mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
-            ppowq += pow(mega_chain.aas[aa].props[i], order);
+            if (mega_chain.aas[aa].props[i] > EPSILON) {
+                plogp -= mega_chain.aas[aa].props[i] * log(mega_chain.aas[aa].props[i]);
+                p1p -= mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
+                ppowq += pow(mega_chain.aas[aa].props[i], order);
+            }
         }
         output[aa].spp = plogp; output[aa].lpp = p1p; 
         output[aa].rpp = log(ppowq)/(1-order); output[aa].tpp = (1-ppowq)/(1-order);
