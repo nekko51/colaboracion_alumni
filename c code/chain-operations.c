@@ -44,8 +44,8 @@ Chain file_megaAacids(char *filename, int n_lines) {
     for (int i = 1; i < n_lines; i++) {
         out = chain_direct_sum(out, get_nex_chain(f));
     }
-    return ch_scale(out, 1/(double)n_lines);
     fclose(f);
+    return ch_scale(out, 1/(double)n_lines);
 }
 
 
