@@ -1,5 +1,5 @@
 #include "head.h"
-#define EPSILON 1e-6
+#define EPSILON 1e-10
 
 // sums frequencies of two aa
 Aacid aacid_direct_sum(Aacid a, Aacid b) {
@@ -14,15 +14,38 @@ Aacid aacid_direct_sum(Aacid a, Aacid b) {
 }
 
 // scales frequencies of an aa
-Aacid aa_scale(Aacid aa, double scalar) {
+Aacid aa_scale_only_aacids(Aacid aa, double scalar) {
     Aacid out;
     for (int i = 0; i < N_AACIDS; i++) {
         out.elmts[i] = aa.elmts[i] * scalar;
     }
+    return out;
+}
+
+Aacid aa_scale_only_props(Aacid aa, double scalar) {
+    Aacid out;
     for (int i = 0; i < N_PROPERTIES; i++) {
         out.props[i] = aa.props[i] * scalar;
     }
     return out;
+}
+
+Aacid aa_normalize_props(Aacid aa) {
+    double sum = 0.;
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        sum += aa.props[i];
+    }
+    if (sum > EPSILON)  return aa_scale_only_props(aa, 1/sum);
+    else                return aa_scale_only_props(aa, 0.);
+}
+
+Aacid aa_normalize_aacids(Aacid aa) {
+    double sum = 0.;
+    for (int i = 0; i < N_AACIDS; i++) {
+        sum += aa.elmts[i];
+    }
+    if (sum > EPSILON)  return aa_scale_only_aacids(aa, 1/sum);
+    else                return aa_scale_only_aacids(aa, 0.);
 }
 
 // sums frequencies of two chains
@@ -35,10 +58,11 @@ Chain chain_direct_sum(Chain a, Chain b) {
 }
 
 // scales frequencies of a chain
-Chain ch_scale(Chain c, double scalar) {
+Chain ch_normalize(Chain c) {
     Chain out;
     for (int i = 0; i < CHAINLEN; i++) {
-        out.aas[i] = aa_scale(c.aas[i], scalar);
+        out.aas[i] = aa_normalize_aacids(c.aas[i]);
+        out.aas[i] = aa_normalize_props(c.aas[i]);
     }
     return out;
 }
@@ -53,7 +77,7 @@ Chain file_megaAacids(char *filename, int n_lines) {
         if (i%100 == 0) printf("%d read lines\n", i);
     }
     fclose(f);
-    return ch_scale(out, 1/(double)n_lines);
+    return ch_normalize(out);
 }
 
 
@@ -148,25 +172,25 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         plogp = 0.; p1p = 0.; ppowq = 0.;
 
         for (int i = 0; i < N_AACIDS; i++) {
-            if (mega_chain.aas[aa].elmts[i] > EPSILON) {
+            if (mega_chain.aas[aa].elmts[i] >= EPSILON) {
                 plogp -= mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
                 p1p += mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
                 ppowq += pow(mega_chain.aas[aa].elmts[i], order);
             }
         }
         output[aa].saa = plogp; output[aa].laa = p1p; 
-        output[aa].raa = log(ppowq)/(1-order); output[aa].taa = (1-ppowq)/(1-order);
+        output[aa].taa = (ppowq-1)/(1-order); output[aa].raa = log(ppowq)/(1-order);
 
         plogp = 0.; p1p = 0.; ppowq = 0.;
         for (int i = 0; i < N_PROPERTIES; i++) {
-            if (mega_chain.aas[aa].props[i] > EPSILON) {
+            if (mega_chain.aas[aa].props[i] >= EPSILON) {
                 plogp -= mega_chain.aas[aa].props[i] * log(mega_chain.aas[aa].props[i]);
                 p1p += mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
                 ppowq += pow(mega_chain.aas[aa].props[i], order);
             }
         }
         output[aa].spp = plogp; output[aa].lpp = p1p; 
-        output[aa].rpp = log(ppowq)/(1-order); output[aa].tpp = (1-ppowq)/(1-order);
+        output[aa].rpp = log(ppowq)/(1-order); output[aa].tpp = (ppowq-1)/(1-order);
     }
 }
 
@@ -191,7 +215,7 @@ void print_chain_to_file(Chain c, char* filename) {
     for (int i = 0; i < N_AACIDS; i++) {
         fprintf(f, "%c\t", AMINOACIDS[i]);
     }
-    fprintf(f, "HYDROPHOBIC\tAROMATIC\tALIPHATIC\tPOLAR\tSMALL\tMINUSCULE\tCHARGEDPLUS\tCHARGEDMINUS\n");
+    fprintf(f, "-(PROP)\tHYDROPHOBIC\tAROMATIC\tALIPHATIC\tPOLAR\tSMALL\tMINUSCULE\tCHARGEDPLUS\tCHARGEDMINUS\n");
     for (int i = 0; i < CHAINLEN; i++) {
         fprintf(f, "%d\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {

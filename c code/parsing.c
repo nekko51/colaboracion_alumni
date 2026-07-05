@@ -1,6 +1,6 @@
 #include "head.h"
 
-char *PROPERTIES[N_PROPERTIES] = {HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};
+char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};
 
 // scans next line in file f and outputs via out
 void read_next_line(FILE *f, char* out) {

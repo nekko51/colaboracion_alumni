@@ -7,7 +7,7 @@
 #define fran 3
 
 #define N_AACIDS 21
-#define N_PROPERTIES 8
+#define N_PROPERTIES 9
 #define CHAINLEN 298
 
 /*  lines in each seq file:
