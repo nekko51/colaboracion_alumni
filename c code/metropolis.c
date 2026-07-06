@@ -20,7 +20,7 @@ double humanness_energy_log(const Chain* human_ref_seq, const char* seq, int n) 
             energy += ZERO_FREQ_PENALTY;
             continue;
         }
-        double p = human_ref_seq->aas[i].elmts[idx];
+        double p = human_ref_seq->aas[i].elements[idx];
         if(p > EPSILON) energy -= log(p);
         else energy += ZERO_FREQ_PENALTY;
     }

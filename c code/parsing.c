@@ -29,7 +29,7 @@ char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
 // };
 
 //initializes the PROPS_AA matrix
-void initialize_props_matrix() {
+void initialize_properties_matrix() {
     //malloc
     PROPS_AA = malloc(N_AACIDS * sizeof(int*));
     if(PROPS_AA == NULL) {
@@ -46,7 +46,7 @@ void initialize_props_matrix() {
     }
 }
 
-void free_props_matrix() {
+void free_properties_matrix() {
     for(int i=0; i<N_AACIDS; i++) {
         free(PROPS_AA[i]);
     }
@@ -80,7 +80,7 @@ int char_in_string(char X, char* str) {
 void properties_of_Aacid(int idx, Aacid *aaX) {
     // aaX->props = PROPS_AA[idx]; (shallow copy)
     for(int i=0; i<N_PROPERTIES; i++) {
-        aaX->props[i] = PROPS_AA[idx][i];
+        aaX->properties[i] = PROPS_AA[idx][i];
     }
 }
 
@@ -90,8 +90,8 @@ void properties_of_Aacid(int idx, Aacid *aaX) {
 Aacid char_to_Aacid(char X) {
     Aacid aaX; int idx = char_to_int(X);
     for (int i = 0; i < N_AACIDS; i++) {
-        aaX.elmts[i] = 0.;
-        if (i == idx) aaX.elmts[i] = 1.;
+        aaX.elements[i] = 0.;
+        if (i == idx) aaX.elements[i] = 1.;
     }
     properties_of_Aacid(idx, &aaX);
 

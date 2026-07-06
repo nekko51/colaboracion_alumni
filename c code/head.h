@@ -64,8 +64,8 @@ extern char *PROPERTIES[N_PROPERTIES];
 // CHARGEDPLUS
 // CHARGEDMINUS
 typedef struct {
-    double elmts[N_AACIDS];
-    double props[N_PROPERTIES];
+    double elements[N_AACIDS];
+    double properties[N_PROPERTIES];
 } Aacid;
 
 typedef struct {
@@ -100,13 +100,13 @@ void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int 
 int char_to_int(char X);
 Chain get_next_chain(FILE *f);
 void read_file(char* filename, int n_lines, Chain *output);
-void initialize_props_matrix();
-void free_props_matrix();
+void initialize_properties_matrix();
+void free_properties_matrix();
 
 //chain-operations.c
 Aacid aacid_direct_sum(Aacid a, Aacid b);
 Aacid aa_scale_only_aacids(Aacid aa, double scalar);
-Aacid aa_scale_only_props(Aacid aa, double scalar);
+Aacid aa_scale_only_properties(Aacid aa, double scalar);
 Chain chain_direct_sum(Chain a, Chain b);
 Chain ch_normalize(Chain c);
 Chain file_megaAacids(char *filename, int n_lines);

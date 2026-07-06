@@ -4,10 +4,10 @@
 Aacid aacid_direct_sum(Aacid a, Aacid b) {
     Aacid out;
     for (int i = 0; i < N_AACIDS; i++) {
-        out.elmts[i] = a.elmts[i] + b.elmts[i];
+        out.elements[i] = a.elements[i] + b.elements[i];
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        out.props[i] = a.props[i] + b.props[i];
+        out.properties[i] = a.properties[i] + b.properties[i];
     }
     return out;
 }
@@ -16,32 +16,32 @@ Aacid aacid_direct_sum(Aacid a, Aacid b) {
 Aacid aa_scale_only_aacids(Aacid aa, double scalar) {
     Aacid out;
     for (int i = 0; i < N_AACIDS; i++) {
-        out.elmts[i] = aa.elmts[i] * scalar;
+        out.elements[i] = aa.elements[i] * scalar;
     }
     return out;
 }
 
-Aacid aa_scale_only_props(Aacid aa, double scalar) {
+Aacid aa_scale_only_properties(Aacid aa, double scalar) {
     Aacid out;
     for (int i = 0; i < N_PROPERTIES; i++) {
-        out.props[i] = aa.props[i] * scalar;
+        out.properties[i] = aa.properties[i] * scalar;
     }
     return out;
 }
 
-Aacid aa_normalize_props(Aacid aa) {
+Aacid aa_normalize_properties(Aacid aa) {
     double sum = 0.;
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sum += aa.props[i];
+        sum += aa.properties[i];
     }
-    if (sum > EPSILON)  return aa_scale_only_props(aa, 1/sum);
-    else                return aa_scale_only_props(aa, 0.);
+    if (sum > EPSILON)  return aa_scale_only_properties(aa, 1/sum);
+    else                return aa_scale_only_properties(aa, 0.);
 }
 
 Aacid aa_normalize_aacids(Aacid aa) {
     double sum = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sum += aa.elmts[i];
+        sum += aa.elements[i];
     }
     if (sum > EPSILON)  return aa_scale_only_aacids(aa, 1/sum);
     else                return aa_scale_only_aacids(aa, 0.);
@@ -61,7 +61,7 @@ Chain ch_normalize(Chain c) {
     Chain out;
     for (int i = 0; i < CHAINLEN; i++) {
         out.aas[i] = aa_normalize_aacids(c.aas[i]);
-        out.aas[i] = aa_normalize_props(c.aas[i]);
+        out.aas[i] = aa_normalize_properties(c.aas[i]);
     }
     return out;
 }
@@ -85,10 +85,10 @@ Chain file_megaAacids(char *filename, int n_lines) {
 Vec2 aa_shannon_entropy(Aacid aa) {
     double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sume += -aa.elmts[i] * log(aa.elmts[i]);
+        sume += -aa.elements[i] * log(aa.elements[i]);
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sump += -aa.props[i] * log(aa.props[i]);
+        sump += -aa.properties[i] * log(aa.properties[i]);
     }
     return (Vec2){ .x = sume, .y = sump };
 }
@@ -96,10 +96,10 @@ Vec2 aa_shannon_entropy(Aacid aa) {
 Vec2 aa_linear_entropy(Aacid aa) {
     double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sume += aa.elmts[i] * (1 - aa.elmts[i]);
+        sume += aa.elements[i] * (1 - aa.elements[i]);
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sump += aa.props[i] * (1 - aa.props[i]);
+        sump += aa.properties[i] * (1 - aa.properties[i]);
     }
     return (Vec2){ .x = sume, .y = sump };
 }
@@ -107,10 +107,10 @@ Vec2 aa_linear_entropy(Aacid aa) {
 Vec2 aa_renyi_entropy(Aacid aa, double q) {
     double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sume += pow(aa.elmts[i],q);
+        sume += pow(aa.elements[i],q);
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sump += pow(aa.props[i],q);
+        sump += pow(aa.properties[i],q);
     }
     return (Vec2){ .x = log(sume)/(1-q), .y = log(sump)/(1-q) };
 }
@@ -118,10 +118,10 @@ Vec2 aa_renyi_entropy(Aacid aa, double q) {
 Vec2 aa_tsallis_entropy(Aacid aa, double q) {
     double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sume += pow(aa.elmts[i],q);
+        sume += pow(aa.elements[i],q);
     }
     for (int i = 0; i < N_AACIDS; i++) {
-        sump += pow(aa.elmts[i],q);
+        sump += pow(aa.elements[i],q);
     }
     return (Vec2){ .x = (1-sume)/(q-1), .y = (1-sump)/(q-1) };
 }
@@ -171,10 +171,10 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         plogp = 0.; p1p = 0.; ppowq = 0.;
 
         for (int i = 0; i < N_AACIDS; i++) {
-            if (mega_chain.aas[aa].elmts[i] >= EPSILON) {
-                plogp -= mega_chain.aas[aa].elmts[i] * log(mega_chain.aas[aa].elmts[i]);
-                p1p += mega_chain.aas[aa].elmts[i] * (1 - mega_chain.aas[aa].elmts[i]);
-                ppowq += pow(mega_chain.aas[aa].elmts[i], order);
+            if (mega_chain.aas[aa].elements[i] >= EPSILON) {
+                plogp -= mega_chain.aas[aa].elements[i] * log(mega_chain.aas[aa].elements[i]);
+                p1p += mega_chain.aas[aa].elements[i] * (1 - mega_chain.aas[aa].elements[i]);
+                ppowq += pow(mega_chain.aas[aa].elements[i], order);
             }
         }
         output[aa].saa = plogp; output[aa].laa = p1p; 
@@ -182,10 +182,10 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
 
         plogp = 0.; p1p = 0.; ppowq = 0.;
         for (int i = 0; i < N_PROPERTIES; i++) {
-            if (mega_chain.aas[aa].props[i] >= EPSILON) {
-                plogp -= mega_chain.aas[aa].props[i] * log(mega_chain.aas[aa].props[i]);
-                p1p += mega_chain.aas[aa].props[i] * (1 - mega_chain.aas[aa].props[i]);
-                ppowq += pow(mega_chain.aas[aa].props[i], order);
+            if (mega_chain.aas[aa].properties[i] >= EPSILON) {
+                plogp -= mega_chain.aas[aa].properties[i] * log(mega_chain.aas[aa].properties[i]);
+                p1p += mega_chain.aas[aa].properties[i] * (1 - mega_chain.aas[aa].properties[i]);
+                ppowq += pow(mega_chain.aas[aa].properties[i], order);
             }
         }
         output[aa].spp = plogp; output[aa].lpp = p1p; 
@@ -197,11 +197,11 @@ void print_chain(Chain c) {
     for (int i = 0; i < CHAINLEN; i++) {
         printf("%d:\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {
-            printf("%.6g\t", c.aas[i].elmts[j]);
+            printf("%.6g\t", c.aas[i].elements[j]);
         }
         printf("\t");
         for(int j = 0; j < N_PROPERTIES; j++) {
-            printf("%.6g\t", c.aas[i].props[j]);
+            printf("%.6g\t", c.aas[i].properties[j]);
         }
         printf("\n");
     }
@@ -218,10 +218,10 @@ void print_chain_to_file(Chain c, char* filename) {
     for (int i = 0; i < CHAINLEN; i++) {
         fprintf(f, "%d\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {
-            fprintf(f, "%.10lf\t", c.aas[i].elmts[j]);
+            fprintf(f, "%.10lf\t", c.aas[i].elements[j]);
         }
         for (int j = 0; j < N_PROPERTIES; j++) {
-            fprintf(f, "%.10lf\t", c.aas[i].props[j]);
+            fprintf(f, "%.10lf\t", c.aas[i].properties[j]);
         }
         fprintf(f, "\n");
     }
