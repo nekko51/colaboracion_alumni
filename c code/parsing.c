@@ -1,8 +1,32 @@
 #include "head.h"
 
-char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};
+char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};//Note that this "-" is necessary, or else entropies would return -infty
 char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
 
+const int PROPS_AA[N_AACIDS][N_PROPERTIES] = {
+    {1, 0, 0, 0, 0, 0, 0, 0, 0},//DASH
+    {0, 1, 0, 0, 0, 1, 1, 0, 0},//A
+    {0, 1, 0, 0, 0, 1, 0, 0, 0},//C
+    {0, 0, 0, 0, 1, 1, 0, 0, 1},//D
+    {0, 0, 0, 0, 1, 0, 0, 0, 1},//E
+    {0, 1, 1, 0, 0, 0, 0, 0, 0},//F
+    {0, 1, 0, 0, 0, 1, 1, 0, 0},//G
+    {0, 1, 1, 0, 1, 0, 0, 1, 0},//H
+    {0, 1, 0, 1, 0, 0, 0, 0, 0},//I
+    {0, 1, 0, 0, 1, 0, 0, 1, 0},//K
+    {0, 1, 0, 1, 0, 0, 0, 0, 0},//L
+    {0, 1, 0, 0, 0, 0, 0, 0, 0},//M
+    {0, 0, 0, 0, 1, 1, 0, 0, 0},//N
+    {0, 0, 0, 0, 0, 1, 0, 0, 0},//P
+    {0, 0, 0, 0, 1, 0, 0, 0, 0},//Q
+    {0, 0, 0, 0, 1, 0, 0, 1, 0},//R
+    {0, 0, 0, 0, 1, 1, 1, 0, 0},//S
+    {0, 1, 0, 0, 1, 1, 0, 0, 0},//T
+    {0, 1, 0, 1, 0, 1, 0, 0, 0},//V
+    {0, 1, 1, 0, 1, 0, 0, 0, 0},//W
+    {0, 1, 1, 0, 1, 0, 0, 0, 0},//Y
+    {0, 0, 0, 0, 0, 0, 0, 0, 0},//UNKNOWN
+};
 
 // scans next line in file f and outputs via out
 void read_next_line(FILE *f, char* out) {
@@ -27,7 +51,15 @@ int char_in_string(char X, char* str) {
     return 0;
 }
 
-// gets a char and outputs the corresponding vector aa
+//sets the list of properties of an AA, GIVEN ITS INDEX
+void properties_of_Aacid(int idx, Aacid *aaX) {
+    // aaX->props = PROPS_AA[idx]; (shallow copy)
+    for(int i=0; i<N_PROPERTIES; i++) {
+        aaX->props[i] = PROPS_AA[idx][i];
+    }
+}
+
+//gets a char and outputs the corresponding vector aa
 //completely deterministic (only outs 1. or 0.)
 //also adds the binary flags for aa properties
 Aacid char_to_Aacid(char X) {
@@ -36,11 +68,7 @@ Aacid char_to_Aacid(char X) {
         aaX.elmts[i] = 0.;
         if (i == idx) aaX.elmts[i] = 1.;
     }
-
-    for (int i = 0; i < N_PROPERTIES; i++) {
-        if (char_in_string(X, PROPERTIES[i]) == 1)  aaX.props[i] = 1.;
-        else                                        aaX.props[i] = 0.;
-    }
+    properties_of_Aacid(idx, &aaX);
 
     return aaX;
 }

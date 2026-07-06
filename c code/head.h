@@ -19,6 +19,9 @@ test mouse:     1379
 
 #define AACIDS "-ACDEFGHIKLMNPQRSTVWY"
 
+//Order of properties:
+//{"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};
+//Note that this "-" is necessary, or else entropies would return -infty
 #define HYDROPHOBIC "ACFGHIKLMTVWY"
 #define AROMATIC "FHWY"
 #define ALIPHATIC "ILV"
