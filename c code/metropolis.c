@@ -63,44 +63,36 @@ double property_distance_energy(const Chain* human_ref_seq, const char* seq, int
     return(t_energy);
 }
 
-double calculate_energy(const char* seq1, const char* seq2, int n) {
-    return(hamming_distance(seq1, seq2, n));
-}
+/**
+* Next steps:
+* Adding more energies
+* Adding multiple betas (infty for CDR's)
+* Maybe think of a way to ponder property_distance AND log prob?
+**/
 
-/************* 
- * Next steps:
- * Adding more entropies
- * Adding multiple betas (infty for CDR's)
- * Maybe think of a way to ponder property_distance AND log prob?
+/**
+ * @brief Performs one Metropolis sweep over the sequence, attempting to mutate each position
  * 
- * 
- * 
- * 
- * 
- * 
- *************/
-
-/*We're probably interested in making selective sweeps, not sweeps of the whole sequence, but this'll do for now*/
-/*Do we want a sweep of the whole sequence, or random position sweeps?*/
-void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int n) {
+ * @param murine_seq the murine sequence to be humanized
+ * @param human_freqs the schrödinger human chain
+ * @param beta 1/Temperature
+ * @param n seq length
+ * @param w_log weight for the log humanness energy
+ * @param w_prop weight for the property distance energy
+ */
+void metropolis_sweep(char* murine_seq, const Chain* human_freqs, double beta, int n, double w_log, double w_prop) {
     for(int i=0; i<n; i++) {
-        double old_energy = calculate_energy(murine_seq, human_ref, n);
+        //A. Store the old State (the current amino acid at this position)
 
-        /*We propose a tentative change:*/
-        char old_aa = murine_seq[i];
-        char new_aa;
-        do {
-            int idx = 1*fran*1;
-            new_aa = AMINOACIDS[idx]; //Lógicamente idx ha de ser un entero; depende de qué rand usemos (parisi-rapuano, etc, habrá q cambiarlo)
-        } while(new_aa == old_aa);
+        //B. Propose a new State (a random, different amino acid)
 
-        /*Metropolis acceptance*/
-        double new_energy = calculate_energy(murine_seq, human_ref, n);//As with Ising, this could be way more efficient since there's a finite number of delta_e's
-        double delta_e = new_energy - old_energy;
-        if (delta_e < 0 || fran < exp(-beta*delta_e)) {
-            murine_seq[i] = new_aa;
-            old_energy = new_energy;
-        }
+        //C. Calculate delta_e for the Log Humanness Energy
+
+        //D. Calculate delta_e for the Property Distance Energy
+
+        //E. Combine and Weigh the Deltas to get the total_delta_e
+
+        //F. The Metropolis Test: accept or reject the change, reverting back to original values if rejected
+
     }
-
 }
