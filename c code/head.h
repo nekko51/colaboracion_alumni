@@ -59,10 +59,15 @@ typedef struct {
 } Vec2;
 
 typedef struct {
-    double saa, laa, raa, taa, spp, lpp, rpp, tpp;
+    double saa, laa, raa, taa;
+    double spp, lpp, rpp, tpp;
     // Shannon AA, linear AA, Renyi AA, Tsallis AA, 
     // Shannon Props, linear Props, Renyi Props, Tsallis Props
 } Entropies;
+
+typedef struct {
+    double elmts[CHAINLEN];
+} CorrVec; 
 
 /*Functions:*/
 
@@ -76,9 +81,15 @@ double calculate_energy(const char* seq1, const char* seq2, int length);
 void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int n);
 
 //parsing.c
-Chain get_nex_chain(FILE *f);
+Chain get_next_chain(FILE *f);
+void read_file(char* filename, int n_lines, Chain *output);
 
 //chain-operations.c
+Aacid aacid_direct_sum(Aacid a, Aacid b);
+Aacid aa_scale_only_aacids(Aacid aa, double scalar);
+Aacid aa_scale_only_props(Aacid aa, double scalar);
+Chain chain_direct_sum(Chain a, Chain b);
+Chain ch_normalize(Chain c);
 Chain file_megaAacids(char *filename, int n_lines);
 void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order);
 void all_entropies(Chain mega_chain, Entropies *output, double order);
@@ -86,3 +97,5 @@ void print_chain(Chain c);
 void print_chain_to_file(Chain c, char* filename);
 void print_entropies(Entropies *S);
 void print_entropies_to_file(Entropies *S, char* filename);
+
+//correlations.c

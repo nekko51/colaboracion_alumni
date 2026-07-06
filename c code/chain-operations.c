@@ -71,9 +71,9 @@ Chain ch_normalize(Chain c) {
 Chain file_megaAacids(char *filename, int n_lines) {
     FILE *f = fopen(filename, "r");
     if (f == NULL) {printf("\nCould not open %s\n", filename);}
-    Chain out = get_nex_chain(f);
+    Chain out = get_next_chain(f);
     for (int i = 1; i < n_lines; i++) {
-        out = chain_direct_sum(out, get_nex_chain(f));
+        out = chain_direct_sum(out, get_next_chain(f));
         if (i%100 == 0) printf("%d read lines\n", i);
     }
     fclose(f);

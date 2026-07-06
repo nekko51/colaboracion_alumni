@@ -44,7 +44,7 @@ Aacid char_to_Aacid(char X) {
 }
 
 // reads next line and outputs it in chain formatting
-Chain get_nex_chain(FILE *f) {
+Chain get_next_chain(FILE *f) {
     char line[298]; read_next_line(f, line);
     Chain out;
     for (int i = 0; i < CHAINLEN; i++) {
@@ -53,6 +53,13 @@ Chain get_nex_chain(FILE *f) {
     return out;
 }
 
+// gives list of chains in a file, output must be at least n_lines long
+void read_file(char* filename, int n_lines, Chain *output) {
+    FILE *f = get_file(filename, "r");
+    for (int i = 0; i < n_lines; i++) {
+        output[i] = get_next_chain(f);
+    }
+}
 
 
 

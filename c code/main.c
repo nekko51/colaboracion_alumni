@@ -11,10 +11,10 @@ test mouse:     1379
 #define RESULTS "results/"
 #define TXT ".txt"
 
-#define FILE "learn_human"
+#define FILE "learn_mouse"
 #define FRECS "_freqs"
 #define ENTROPIS "_entropies"
-#define N_LINES 1309
+#define N_LINES 373
 
 int main() {
 
