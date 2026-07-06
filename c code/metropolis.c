@@ -11,20 +11,56 @@ double hamming_distance(const char* seq1, const char* seq2, int n) {
 }
 
 //Calculates the humanness of a sequence based on the schrödinger human AA chain (lower => more human)
-double humanness_energy_log(const Chain* human_ref_seq, const char* seq, int n) {
+double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n) {
     double energy = 0.0;
     for(int i=0; i<n; i++) {
         int idx = char_to_int(seq[i]);
         if(idx == -1) {
             fprintf(stderr, "Error: invalid character, %c, at position %d in sequence; penalizing as if it were 0.\n", seq[i], i);
-            energy += ZERO_FREQ_PENALTY;
+            energy += ZERO_FREQ_PENALTY_LOG;
             continue;
         }
         double p = human_ref_seq->aas[i].elements[idx];
         if(p > EPSILON) energy -= log(p);
-        else energy += ZERO_FREQ_PENALTY;
+        else energy += ZERO_FREQ_PENALTY_LOG;
     }
-    return energy;
+    return(energy);
+}
+
+double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n) {
+    double energy = 0.0;
+    for(int i=0; i<n; i++) {
+        int idx = char_to_int(seq[i]);
+        if(idx == -1) {
+            fprintf(stderr, "Error: invalid character, %c, at position %d in sequence; penalizing as if it were 0.\n", seq[i], i);
+            energy += ZERO_FREQ_PENALTY_LINEAR;
+            continue;
+        }
+        double p = human_ref_seq->aas[i].elements[idx];
+        energy -= p;
+    }
+    return(energy);
+}
+
+double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n) {
+    double t_energy = 0.0;
+    for(int i=0; i<n; i++) {
+        int idx = char_to_int(seq[i]);
+        if(idx == -1) {
+            fprintf(stderr, "Error: invalid character, %c, at position %d in sequence; penalizing as if it were 0.\n", seq[i], i);
+            t_energy += ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE;
+            continue;
+        }
+
+        int* properties = PROPS_AA[idx];
+        double sq_euclid_distance = 0.0;
+        for(int j=0; j<N_PROPERTIES; j++) {
+            double diff = (double)properties[j] - human_ref_seq->aas[i].properties[j];
+            sq_euclid_distance += diff*diff;
+        }
+        t_energy += sq_euclid_distance;
+    }
+    return(t_energy);
 }
 
 double calculate_energy(const char* seq1, const char* seq2, int n) {
@@ -35,14 +71,14 @@ double calculate_energy(const char* seq1, const char* seq2, int n) {
  * Next steps:
  * Adding more entropies
  * Adding multiple betas (infty for CDR's)
+ * Maybe think of a way to ponder property_distance AND log prob?
  * 
  * 
  * 
  * 
  * 
  * 
- * 
- ************* /
+ *************/
 
 /*We're probably interested in making selective sweeps, not sweeps of the whole sequence, but this'll do for now*/
 /*Do we want a sweep of the whole sequence, or random position sweeps?*/

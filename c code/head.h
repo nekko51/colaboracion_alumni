@@ -28,7 +28,10 @@ extern void ini_ran(int SEMILLA);
 #define N_PROPERTIES 9
 #define CHAINLEN 298
 #define EPSILON 1e-10 //Avoid division by 0
-#define ZERO_FREQ_PENALTY 100000 //Energy to sum for a zero-frequency AA
+/*Energy penalizations*/
+#define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
+#define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
+#define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
 extern int** PROPS_AA;
 
 
