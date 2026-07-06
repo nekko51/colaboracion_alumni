@@ -3,31 +3,6 @@
 char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};//Note that this "-" is necessary, or else entropies would return -infty
 char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
 
-// const int PROPS_AA[N_AACIDS][N_PROPERTIES] = {
-//     {1, 0, 0, 0, 0, 0, 0, 0, 0},//DASH
-//     {0, 1, 0, 0, 0, 1, 1, 0, 0},//A
-//     {0, 1, 0, 0, 0, 1, 0, 0, 0},//C
-//     {0, 0, 0, 0, 1, 1, 0, 0, 1},//D
-//     {0, 0, 0, 0, 1, 0, 0, 0, 1},//E
-//     {0, 1, 1, 0, 0, 0, 0, 0, 0},//F
-//     {0, 1, 0, 0, 0, 1, 1, 0, 0},//G
-//     {0, 1, 1, 0, 1, 0, 0, 1, 0},//H
-//     {0, 1, 0, 1, 0, 0, 0, 0, 0},//I
-//     {0, 1, 0, 0, 1, 0, 0, 1, 0},//K
-//     {0, 1, 0, 1, 0, 0, 0, 0, 0},//L
-//     {0, 1, 0, 0, 0, 0, 0, 0, 0},//M
-//     {0, 0, 0, 0, 1, 1, 0, 0, 0},//N
-//     {0, 0, 0, 0, 0, 1, 0, 0, 0},//P
-//     {0, 0, 0, 0, 1, 0, 0, 0, 0},//Q
-//     {0, 0, 0, 0, 1, 0, 0, 1, 0},//R
-//     {0, 0, 0, 0, 1, 1, 1, 0, 0},//S
-//     {0, 1, 0, 0, 1, 1, 0, 0, 0},//T
-//     {0, 1, 0, 1, 0, 1, 0, 0, 0},//V
-//     {0, 1, 1, 0, 1, 0, 0, 0, 0},//W
-//     {0, 1, 1, 0, 1, 0, 0, 0, 0},//Y
-//     {0, 0, 0, 0, 0, 0, 0, 0, 0},//UNKNOWN
-// };
-
 //initializes the PROPS_AA matrix
 void initialize_properties_matrix() {
     //malloc
