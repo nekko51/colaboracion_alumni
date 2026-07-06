@@ -35,11 +35,20 @@ void read_next_line(FILE *f, char* out) {
 
 // gets a char and outputs the index of that aa
 int char_to_int(char X) {
-    char *aa = AACIDS;
+    char *aa = AMINOACIDS;
     for (int i = 0; i < N_AACIDS; i++) {
         if (X == aa[i]) return i;
     }
     return -1;
+}
+
+// gets an index and outputs the char of that aa
+char int_to_char(int X) {
+    if (X < 0 || X >= N_AACIDS) {
+        fprintf(stderr, "Error: Index %d out of bounds in int_to_char; reutning '?' character\n", X);
+        return('?');
+    }
+    return(AMINOACIDS[X]);
 }
 
 int char_in_string(char X, char* str) {

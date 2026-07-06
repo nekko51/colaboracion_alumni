@@ -38,8 +38,6 @@ extern int** PROPS_AA;
 
 /*Aminoacid and properties definition*/
 //Order of properties: "-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS -- note that the "-" is necessary, or else entropies would return -infty
-#define AACIDS "-ACDEFGHIKLMNPQRSTVWY"
-
 #define HYDROPHOBIC "ACFGHIKLMTVWY"
 #define AROMATIC "FHWY"
 #define ALIPHATIC "ILV"
@@ -103,6 +101,7 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
 
 //parsing.c
 int char_to_int(char X);
+char int_to_char(int X);
 Chain get_next_chain(FILE *f);
 void read_file(char* filename, int n_lines, Chain *output);
 void initialize_properties_matrix();
