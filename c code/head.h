@@ -96,8 +96,10 @@ void minmax(double* data, double* max, double* min, int n);
 FILE *get_file(char* filename, char* mode);
 
 //metropolis.c
-double calculate_energy(const char* seq1, const char* seq2, int length);
-void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int n);
+double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
+double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
+double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
+void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, int n, double w_log, double w_prop);
 
 //parsing.c
 int char_to_int(char X);
