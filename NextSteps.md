@@ -17,4 +17,11 @@ Maybe, to compare, parallel to making the binary plot, it'd be nice to graph JUS
 
 # Ways to implement them:
 - Implement a generic filename_output directory and then append the images output names
+
+
+
+
+# Next steps for C code:
+
+- Add parallel threading
            
