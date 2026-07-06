@@ -3,13 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-
-#define fran 3
-
-#define N_AACIDS 21
-#define N_PROPERTIES 9
-#define CHAINLEN 298
-
 /*  lines in each seq file:
 learn human:    1309
 learn mouse:    373
@@ -17,11 +10,32 @@ test human:     1388
 test mouse:     1379
 */
 
+//**********PARISI RAPUANO*************
+#define NormRANu (2.3283063671E-10F)
+
+extern unsigned int irr[256];
+extern unsigned int ir1;
+extern unsigned char ind_ran,ig1,ig2,ig3;
+
+extern float Random(void);
+extern void ini_ran(int SEMILLA);
+//************************************
+
+
+
+/*Global variables*/
+#define N_AACIDS 21
+#define N_PROPERTIES 9
+#define CHAINLEN 298
+#define EPSILON 1e-10
+extern int** PROPS_AA;
+
+
+
+/*Aminoacid and properties definition*/
+//Order of properties: "-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS -- note that the "-" is necessary, or else entropies would return -infty
 #define AACIDS "-ACDEFGHIKLMNPQRSTVWY"
 
-//Order of properties:
-//{"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};
-//Note that this "-" is necessary, or else entropies would return -infty
 #define HYDROPHOBIC "ACFGHIKLMTVWY"
 #define AROMATIC "FHWY"
 #define ALIPHATIC "ILV"
@@ -30,8 +44,6 @@ test mouse:     1379
 #define MINUSCULE "AGS"
 #define CHARGEDPLUS "HKR"
 #define CHARGEDMINUS "DE"
-
-extern int** PROPS_AA; //FREE IT!!!!!!!!!
 
 extern char AMINOACIDS[N_AACIDS + 1];
 extern char *PROPERTIES[N_PROPERTIES];
@@ -69,6 +81,8 @@ typedef struct {
     // Shannon AA, linear AA, Renyi AA, Tsallis AA, 
     // Shannon Props, linear Props, Renyi Props, Tsallis Props
 } Entropies;
+
+
 
 /*Functions:*/
 
