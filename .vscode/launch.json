@@ -12,6 +12,18 @@
             "environment": [],
             "console": "integratedTerminal",
             "preLaunchTask": "Build Simulation (DEBUG)"
+        },
+        {
+            "name": "Run Antibody Simulation FAST (Windows)",
+            "type": "cppvsdbg", 
+            "request": "launch",
+            "program": "${workspaceFolder}/antibody_sim_fast.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build Simulation (FAST)"
         }
     ]
 }
