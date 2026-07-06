@@ -32,15 +32,25 @@ char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
 void initialize_props_matrix() {
     //malloc
     PROPS_AA = malloc(N_AACIDS * sizeof(int*));
+    if(PROPS_AA == NULL) {
+        printf("Fatal error, ran out of memory when creating PROPS_AA matrix");
+        return;
+    }
+    
     for(int i=0; i<N_AACIDS; i++) {
         PROPS_AA[i] = malloc(N_PROPERTIES * sizeof(int));
-    }
-    //1 & 0 filling
-    for(int i=0; i<N_AACIDS; i++) {
+        //1 & 0 filling
         for(int j=0; j<N_PROPERTIES; j++) {
             PROPS_AA[i][j] = char_in_string(AMINOACIDS[i], PROPERTIES[j]);
         }
     }
+}
+
+void free_props_matrix() {
+    for(int i=0; i<N_AACIDS; i++) {
+        free(PROPS_AA[i]);
+    }
+    free(PROPS_AA);
 }
 
 // scans next line in file f and outputs via out

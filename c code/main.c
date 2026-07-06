@@ -18,6 +18,9 @@ test mouse:     1379
 
 int main() {
 
+    /*Initializations*/
+    initialize_props_matrix();
+
     Chain ch = file_megaAacids(SEQS FILE TXT , N_LINES);
 
     print_chain_to_file(ch, RESULTS FILE FRECS TXT);
@@ -27,5 +30,7 @@ int main() {
 
     print_entropies_to_file(entropy, RESULTS FILE ENTROPIS TXT);
 
+    /*Free memory*/
+    free_props_matrix();
     return 0;
 }

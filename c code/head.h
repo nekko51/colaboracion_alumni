@@ -85,6 +85,8 @@ void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int 
 int char_to_int(char X);
 Chain get_next_chain(FILE *f);
 void read_file(char* filename, int n_lines, Chain *output);
+void initialize_props_matrix();
+void free_props_matrix();
 
 //chain-operations.c
 Aacid aacid_direct_sum(Aacid a, Aacid b);
