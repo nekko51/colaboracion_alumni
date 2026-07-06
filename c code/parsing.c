@@ -1,6 +1,8 @@
 #include "head.h"
 
 char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};
+char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
+
 
 // scans next line in file f and outputs via out
 void read_next_line(FILE *f, char* out) {

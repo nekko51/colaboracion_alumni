@@ -65,10 +65,6 @@ typedef struct {
     // Shannon Props, linear Props, Renyi Props, Tsallis Props
 } Entropies;
 
-typedef struct {
-    double elmts[CHAINLEN];
-} CorrVec; 
-
 /*Functions:*/
 
 //utils.c
@@ -81,6 +77,7 @@ double calculate_energy(const char* seq1, const char* seq2, int length);
 void metropolis_sweep(char* murine_seq, const char* human_ref, double beta, int n);
 
 //parsing.c
+int char_to_int(char X);
 Chain get_next_chain(FILE *f);
 void read_file(char* filename, int n_lines, Chain *output);
 
