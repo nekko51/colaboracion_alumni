@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build Simulation (DEBUG)",
+            "command": "gcc",
+            "args": [
+                "-Wall",
+                "-g",
+                "${workspaceFolder}/*.c",
+                "-lm",
+                "-o",
+                "${workspaceFolder}/antibody_sim_debug.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compiles all .c files with debugging enabled."
+        },
+        {
+            "type": "shell",
+            "label": "Build Simulation (FAST)",
+            "command": "gcc",
+            "args": [
+                "-Wall",
+                "-O3",
+                "${workspaceFolder}/*.c",
+                "-lm",
+                "-o",
+                "${workspaceFolder}/antibody_sim_fast.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Compiles all .c files with maximum optimization (-O3) for long runs (this turns it all into machine code that's useless to us if it crashes)."
+        }
+    ]
+}

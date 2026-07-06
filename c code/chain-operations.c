@@ -1,6 +1,6 @@
 #include "head.h"
 
-#ifndef EPSILOn 
+#ifndef EPSILON 
 #define EPSILON 1e-10
 #endif
 
