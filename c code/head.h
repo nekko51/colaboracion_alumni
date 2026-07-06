@@ -31,6 +31,8 @@ test mouse:     1379
 #define CHARGEDPLUS "HKR"
 #define CHARGEDMINUS "DE"
 
+extern int** PROPS_AA; //FREE IT!!!!!!!!!
+
 extern char AMINOACIDS[N_AACIDS + 1];
 extern char *PROPERTIES[N_PROPERTIES];
 
