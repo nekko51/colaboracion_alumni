@@ -7,4 +7,4 @@ Important things to take into account:
 - When using AAcid indexes & properties, MAKE SURE you are using the correct order (maybe we should consider streamlining the idx finding and properties handling when building new functions that need these informations)
 
 137 days without branches
-166 without incident (merge conflicts)
+# 166 without incident (merge conflicts)
