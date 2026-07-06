@@ -27,7 +27,8 @@ extern void ini_ran(int SEMILLA);
 #define N_AACIDS 21
 #define N_PROPERTIES 9
 #define CHAINLEN 298
-#define EPSILON 1e-10
+#define EPSILON 1e-10 //Avoid division by 0
+#define ZERO_FREQ_PENALTY 100000 //Energy to sum for a zero-frequency AA
 extern int** PROPS_AA;
 
 

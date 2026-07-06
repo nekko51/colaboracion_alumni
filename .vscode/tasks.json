@@ -8,7 +8,7 @@
             "args": [
                 "-Wall",
                 "-g",
-                "${workspaceFolder}/*.c",
+                "${workspaceFolder}/c code/*.c",
                 "-lm",
                 "-o",
                 "${workspaceFolder}/antibody_sim_debug.exe"
@@ -28,7 +28,7 @@
                 "${workspaceFolder}/*.c",
                 "-lm",
                 "-o",
-                "${workspaceFolder}/antibody_sim_fast.exe"
+                "${workspaceFolder}/c code/antibody_sim_fast.exe"
             ],
             "options": { "cwd": "${workspaceFolder}" },
             "problemMatcher": ["$gcc"],
@@ -42,10 +42,10 @@
             "args": [
                 "-Wall",
                 "-g",
-                "${workspaceFolder}/*.c",
+                "${workspaceFolder}/c code/*.c",
                 "-lm",
                 "-o",
-                "${workspaceFolder}/antibody_sim_debug"
+                "${workspaceFolder}/c code/antibody_sim_debug"
             ],
             "options": { "cwd": "${workspaceFolder}" },
             "problemMatcher": ["$gcc"],
@@ -59,10 +59,10 @@
             "args": [
                 "-Wall",
                 "-O3",
-                "${workspaceFolder}/*.c",
+                "${workspaceFolder}/c code/*.c",
                 "-lm",
                 "-o",
-                "${workspaceFolder}/antibody_sim_fast"
+                "${workspaceFolder}/c code/antibody_sim_fast"
             ],
             "options": { "cwd": "${workspaceFolder}" },
             "problemMatcher": ["$gcc"],
