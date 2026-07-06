@@ -1,9 +1,5 @@
 #include "head.h"
 
-#ifndef EPSILON 
-#define EPSILON 1e-10
-#endif
-
 // sums frequencies of two aa
 Aacid aacid_direct_sum(Aacid a, Aacid b) {
     Aacid out;
