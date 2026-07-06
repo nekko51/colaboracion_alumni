@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Antibody Simulation (Windows)",
+            "name": "Debug Simulation (Windows)",
             "type": "cppvsdbg", 
             "request": "launch",
             "program": "${workspaceFolder}/antibody_sim_debug.exe",
@@ -11,10 +11,10 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "Build Simulation (DEBUG)"
+            "preLaunchTask": "Build DEBUG (Windows)"
         },
         {
-            "name": "Run Antibody Simulation FAST (Windows)",
+            "name": "Run FAST (Windows)",
             "type": "cppvsdbg", 
             "request": "launch",
             "program": "${workspaceFolder}/antibody_sim_fast.exe",
@@ -23,7 +23,33 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "Build Simulation (FAST)"
+            "preLaunchTask": "Build FAST (Windows)"
+        },
+        {
+            "name": "Debug Simulation (Linux)",
+            "type": "cppdbg", 
+            "request": "launch",
+            "program": "${workspaceFolder}/antibody_sim_debug",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "Build DEBUG (Linux)"
+        },
+        {
+            "name": "Run FAST (Linux)",
+            "type": "cppdbg", 
+            "request": "launch",
+            "program": "${workspaceFolder}/antibody_sim_fast",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "Build FAST (Linux)"
         }
     ]
 }

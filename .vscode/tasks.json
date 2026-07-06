@@ -3,7 +3,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Build Simulation (DEBUG)",
+            "label": "Build DEBUG (Windows)",
             "command": "gcc",
             "args": [
                 "-Wall",
@@ -13,19 +13,14 @@
                 "-o",
                 "${workspaceFolder}/antibody_sim_debug.exe"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
+            "options": { "cwd": "${workspaceFolder}" },
             "problemMatcher": ["$gcc"],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": "Compiles all .c files with debugging enabled."
+            "group": "build",
+            "detail": "Windows: Compiles .c files with debug symbols."
         },
         {
             "type": "shell",
-            "label": "Build Simulation (FAST)",
+            "label": "Build FAST (Windows)",
             "command": "gcc",
             "args": [
                 "-Wall",
@@ -35,12 +30,44 @@
                 "-o",
                 "${workspaceFolder}/antibody_sim_fast.exe"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
+            "options": { "cwd": "${workspaceFolder}" },
             "problemMatcher": ["$gcc"],
             "group": "build",
-            "detail": "Compiles all .c files with maximum optimization (-O3) for long runs (this turns it all into machine code that's useless to us if it crashes)."
+            "detail": "Windows: Compiles .c files with maximum speed optimization."
+        },
+        {
+            "type": "shell",
+            "label": "Build DEBUG (Linux)",
+            "command": "gcc",
+            "args": [
+                "-Wall",
+                "-g",
+                "${workspaceFolder}/*.c",
+                "-lm",
+                "-o",
+                "${workspaceFolder}/antibody_sim_debug"
+            ],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Linux: Compiles .c files with debug symbols."
+        },
+        {
+            "type": "shell",
+            "label": "Build FAST (Linux)",
+            "command": "gcc",
+            "args": [
+                "-Wall",
+                "-O3",
+                "${workspaceFolder}/*.c",
+                "-lm",
+                "-o",
+                "${workspaceFolder}/antibody_sim_fast"
+            ],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Linux: Compiles .c files with maximum speed optimization."
         }
     ]
 }
