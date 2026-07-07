@@ -11,7 +11,8 @@ double scalar_product(double *a, double *b, int dims) {
 // takes many chains of 1's and 0's (not frequencies), a position and an aa to check the conditioned frequencies given that aa in that position
 // the aminoacid to check for conditioning must be entered as the index in the AMINOACIDS list
 Chain correlation_for_position_and_aacid(Chain* chains, int n_chains, int position_index, int aa_index) {
-    Chain out = chains[0];
+    Chain out;
+    memset(&out, 0, sizeof(Chain));
     for (int ch_idx = 1; ch_idx < n_chains; ch_idx++) {
         if (chains[ch_idx].aas[position_index].elements[aa_index] >= 1.-EPSILON) {
             out = chain_direct_sum(out, chains[ch_idx]);
@@ -24,7 +25,8 @@ Chain correlation_for_position_and_aacid(Chain* chains, int n_chains, int positi
 // takes many chains of 1's and 0's (not frequencies), a position and a property to check the conditioned frequencies given that property in that position
 // the property to check for conditioning must be entered as the index in the PROPERTIES list
 Chain correlation_for_position_and_prop(Chain* chains, int n_chains, int position_index, int prop_index) {
-    Chain out = chains[0];
+    Chain out;
+    memset(&out, 0, sizeof(Chain));
     for (int ch_idx = 1; ch_idx < n_chains; ch_idx++) {
         if (chains[ch_idx].aas[position_index].properties[prop_index] >= 1.-EPSILON) {
             out = chain_direct_sum(out, chains[ch_idx]);

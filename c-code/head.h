@@ -122,3 +122,7 @@ void print_entropies(Entropies *S);
 void print_entropies_to_file(Entropies *S, char* filename);
 
 //correlations.c
+double scalar_product(double *a, double *b, int dims);
+Chain correlation_for_position_and_aacid(Chain* chains, int n_chains, int position_index, int aa_index);
+Chain correlation_for_position_and_prop(Chain* chains, int n_chains, int position_index, int prop_index);
+void first_order_correlations(Chain* input_chains, int n_chains, Chain out_aacid[][N_AACIDS], Chain out_prop[][N_PROPERTIES]);
