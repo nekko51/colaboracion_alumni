@@ -105,6 +105,11 @@ typedef struct {
     // Shannon Props, linear Props, Renyi Props, Tsallis Props
 } Entropies;
 
+typedef struct {
+    double log_humanness;
+    double property_distance;
+} Energy;
+
 
 
 /*Functions:*/

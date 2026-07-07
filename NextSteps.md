@@ -24,4 +24,6 @@ Maybe, to compare, parallel to making the binary plot, it'd be nice to graph JUS
 # Next steps for C code:
 
 - Add parallel threading
+- The code can be optimized HEAVILY (in principle) if instead of returning a Chain, etc. in structs we pass a pointer and fill it out with our functions; when passing Chains/big structs to functions (bigger than 8 bytes, which is what a pointer occupies in memory), we can also just pass them by reference to improve execution speed (remember we can also make const pointers).
+Furthermore, we should delve in the differences between heap and stack memory (this last one seems to be pretty limited, and we might run out of it in execution) (https://www.reddit.com/r/cs2a/comments/1egymrr/stack_vs_heap_memory/)
            
