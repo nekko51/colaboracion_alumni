@@ -1,5 +1,10 @@
 #include "head.h"
 
+/************************
+* 
+* Energies
+*
+************************/
 double hamming_distance(const char* seq1, const char* seq2, int n) {
     double dist = 0.0;
     for(int i=0; i<n; i++) {
@@ -59,6 +64,28 @@ double property_distance_energy(const Chain* human_ref_seq, const char* seq, int
         t_energy += sq_euclid_distance;
     }
     return(t_energy);
+}
+
+//UNFINISHED (WIP)!
+//n = 0 for chain of zeroes, n = 1 for schrödinger mouse chain, any other n will result in error, -1.0 chain
+Chain generate_murine_seed(seed n) {
+    Chain out;
+    switch(n) {
+        case zeroes:
+            memset(&out, 0, sizeof(Chain));
+            break;
+        case megachain:
+            out = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
+            break;
+        case error:
+        default:
+            for(int i=0; i<CHAINLEN; i++) {
+                for(int j=0; j<N_AACIDS; j++) out.aas[i].elements[j] = -1.;
+                for(int j=0; j<N_PROPERTIES; j++) out.aas[i].properties[j] = -1.;
+            }
+            break;
+    }
+    return(out);
 }
 
 /**

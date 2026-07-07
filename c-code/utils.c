@@ -28,6 +28,16 @@ void minmax(double* data, double* max, double* min, int n) {
     }
 }
 
+//returns 1 (true) if the chain is invalid, 0 (false) if it is valid
+int negative_chain(const Chain ch) {
+    if(ch.aas->elements[0] < -0.5) {
+        fprintf(stderr, "Error: Chain returned negative values (%lf); stopping execution...\n", ch.aas->elements[0]);
+        return 1;
+    }
+    else return 0;
+}
+
+
 FILE *get_file(char* filename, char* mode) {
     FILE* f = fopen(filename, mode);
     if (f == NULL) fprintf(stderr, "Error: Could not open %s\n", filename);

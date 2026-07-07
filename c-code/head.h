@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <stdbool.h>
 /*  lines in each seq file:
 learn human:    1309
 learn mouse:    373
@@ -35,7 +36,17 @@ extern void ini_ran(int SEMILLA);
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
 extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 
+/*Files*/
+#define SEQS "seqs/"
+#define RESULTS "results/"
+#define TXT ".txt"
 
+#define FILE_L_MOUSE "learn_mouse"
+#define L_MOUSE_N_LINES 373
+#define FILE_L_HUMAN "learn_human"
+#define L_HUMAN_N_LINES 1309
+#define FRECS "_freqs"
+#define ENTROPIS "_entropies"
 
 /*Aminoacid and properties definition*/
 //Order of properties: "-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS -- note that the "-" is necessary, or else entropies would return -infty
@@ -51,7 +62,12 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 extern char AMINOACIDS[N_AACIDS + 1];
 extern char *PROPERTIES[N_PROPERTIES];
 
-
+/*Enums:*/
+typedef enum{
+    error = -1,
+    zeroes = 0,
+    megachain = 1,
+} seed;
 
 /*Structs:*/
 
@@ -92,12 +108,14 @@ typedef struct {
 //utils.c
 void med_var(double* data, double* mean, double* variance, int n);
 void minmax(double* data, double* max, double* min, int n);
+int negative_chain(const Chain ch);
 FILE *get_file(char* filename, char* mode);
 
 //metropolis.c
 double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
+Chain generate_murine_seed(seed n);
 void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, int n, double w_log, double w_prop);
 
 //parsing.c

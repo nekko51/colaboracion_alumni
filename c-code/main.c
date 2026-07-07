@@ -7,14 +7,29 @@ test human:     1388
 test mouse:     1379
 */
 
-#define SEQS "seqs/"
-#define RESULTS "results/"
-#define TXT ".txt"
+/** 
+ * @brief file definitions in head.h
+ * 
+ * @param SEQS "seqs/"
+ * @param RESULTS "results/"
+ * @param TXT
+ * @param FILE_L_MOUSE "learn_mouse"
+ * @param L_MOUSE_N_LINES 373
+ * @param FILE_L_HUMAN "learn_human"
+ * @param L_HUMAN_N_LINES 1309
+ * @param FRECS "_freqs"
+ * @param ENTROPIS "_entropies"
+ *
+*/
 
-#define FILE "learn_mouse"
-#define FRECS "_freqs"
-#define ENTROPIS "_entropies"
-#define N_LINES 373
+//returns 1 if there's an error, 0 if everything went smoothly
+int run_metropolis() {
+    Chain human_ref_seq = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
+    if(negative_chain(human_ref_seq) == 1) return(1);
+
+    Chain murine_seed = generate_murine_seed(megachain);
+    if(negative_chain(murine_seed) == 1) return(1);
+}
 
 int main() {
 
@@ -22,18 +37,15 @@ int main() {
     initialize_properties_matrix();
 
     /*Code preparation*/
-    Chain ch = file_megaAacids(SEQS FILE TXT , N_LINES);
-    if(ch.aas->elements[0] < -0.5) {
-        fprintf(stderr, "Error: Chain returned negative values (%lf); stopping execution...\n", ch.aas->elements[0]);
-        return 1;
-    }
+    Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
+    if(negative_chain(ch) == 1) return 1;
 
-    print_chain_to_file(ch, RESULTS FILE FRECS TXT);
+    print_chain_to_file(ch, RESULTS FILE_L_MOUSE FRECS TXT);
     
     Entropies *entropy = malloc(CHAINLEN * sizeof(Entropies));
     all_entropies(ch, entropy, .5);
 
-    print_entropies_to_file(entropy, RESULTS FILE ENTROPIS TXT);
+    print_entropies_to_file(entropy, RESULTS FILE_L_MOUSE ENTROPIS TXT);
 
     /*Free memory*/
     
