@@ -13,7 +13,7 @@ test mouse:     1379
 
 #define FILE "learn_mouse"
 #define FRECS "_freqs"
-#define ENTROPIS "_entropies"
+#define ENTROPIS "_entropiess"
 #define N_LINES 373
 
 int main() {
