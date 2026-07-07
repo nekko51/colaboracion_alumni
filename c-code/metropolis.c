@@ -85,9 +85,9 @@ void cleanup_metropolis(double* acceptance, Energy* energy_history, char** murin
     }
 }
 
-void print_metropolis_data_to_file(char** seq_history, Chain* reference, Energy* energy_history, 
-    double* betas, int n_betas, double* acceptance, int n_steps,
-    double w_log, double w_prop, char* filename) {
+void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
+    const double* betas, int n_betas, const double* acceptance, int n_steps,
+    double w_log, double w_prop, const char* filename) {
     //WIP
 }
 
@@ -160,7 +160,7 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
 }
 
 //returns 1 if there's an error, 0 if everything went smoothly -- char murine_seq[CHAINLEN+1];
-int run_metropolis(char* murine_seq, int n_steps, double* betas, int n_betas) {
+int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, double* betas, int n_betas, char* filename) {
     //initial definitions & initializations
     double beta;
     double *acceptance = NULL;
@@ -174,33 +174,96 @@ int run_metropolis(char* murine_seq, int n_steps, double* betas, int n_betas) {
 
     murine_history = malloc( (n_betas+1)*sizeof(char*) );
     if(murine_history == NULL) {fprintf(stderr, "Error: couldn't allocate memory for murine_history *array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
+    for(int i=0; i<n_betas+1; i++) murine_history[i] = NULL;
     for(int i=0; i<n_betas+1; i++) {
         murine_history[i] = malloc( (CHAINLEN+1)*sizeof(char) );
         if(murine_history[i] == NULL) {fprintf(stderr, "Error: couldn't allocate memory for murine_history array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
     }
 
-    Chain human_ref_seq = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
-    if(negative_chain(human_ref_seq) == 1) return(1);
+    if(negative_chain(human_ref_seq) == 1) {fprintf(stderr, "Error: human_ref_Seq is invalid; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
 
     //initial seed data
     strcpy(murine_history[0], murine_seq);
-    energy_history[0] = energy_calculation(&human_ref_seq, murine_history[0], CHAINLEN);
+    energy_history[0] = energy_calculation(human_ref_seq, murine_history[0], CHAINLEN);
 
     //monte carlo sims
     for(int i=0; i<n_betas; i++) {
         beta = betas[i];
         for(int j=0; j<n_steps; j++) {
-            metropolis_sweep(murine_seq, &human_ref_seq, beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP);
+            metropolis_sweep(murine_seq, human_ref_seq, beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP);
         }
         strcpy(murine_history[i+1], murine_seq);
-        energy_history[i+1] = energy_calculation(&human_ref_seq, murine_history[i+1], CHAINLEN);
+        energy_history[i+1] = energy_calculation(human_ref_seq, murine_history[i+1], CHAINLEN);
     }
 
     for(int i=0; i<n_betas; i++) {
-        print_metropolis_data_to_file(murine_history, &human_ref_seq, energy_history, betas, n_betas, acceptance, n_steps, 
-            WEIGHT_LOG, WEIGHT_PROP, "metropolis_sim_TIME!!!!!!.putthetimeinbeforethetxtplz");
+        print_metropolis_data_to_file(murine_history, human_ref_seq, energy_history, betas, n_betas, acceptance, n_steps, 
+            WEIGHT_LOG, WEIGHT_PROP, filename);
     }
 
     cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);
     return 0;
+}
+
+//runs metropolis using every single sequence in a given filename as seed n_metropolis times for each seed
+void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, int n_metropolis) {
+    /*open file and count number of lines*/
+    FILE *f = fopen(filename, "r");
+    if(f == NULL) {fprintf(stderr, "Error: couldn't open seed file &s; returning...\n", filename); return;}
+    int n_lines = 0;
+    char temp[CHAINLEN+1];
+    while(1) {
+        read_next_line(f, temp);
+        if(temp[0] == '\0') break;
+        n_lines++;
+    }
+    fclose(f);
+
+    /*allocate necessary memory*/
+    Chain human_ref_seq = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
+    char** murine_seeds = malloc(n_lines*sizeof(char*));
+    if (murine_seeds == NULL) {fprintf(stderr, "Error: failed to allocate memory for *seed; returning...\n"); return;}
+    for(int i=0; i<n_lines; i++) murine_seeds[i] = NULL;
+    for (int i=0; i<n_lines; i++) {
+        murine_seeds[i] = malloc(CHAINLEN + 1);
+        if (murine_seeds[i] == NULL) {
+            fprintf(stderr, "Error: failed to allocate memory for seed %d; returning...\n", i);
+            for (int j=0; j<i; j++) {
+                free(murine_seeds[j]);
+            }
+            free(murine_seeds);
+            return;
+        }
+    }
+
+    /*read all seeds in file*/
+    FILE *f = fopen(filename, "r");
+    if(f == NULL) {fprintf(stderr, "Error: couldn't open seed file %s; returning...\n", filename); return;}
+    for(int i=0; i<n_lines; i++) {
+        read_next_line(f, murine_seeds[i]);
+    }
+    
+    /*properly run metropolis */
+    char current_seed[CHAINLEN+1];
+    for(int i=0; i<n_lines; i++) {
+        printf("Running metropolis %d time(s) for seed %d/%d...\n", n_metropolis, i+1, n_lines);
+        //folder creation for sequence i
+        for(int j=0; j<n_metropolis; j++) {
+            strcpy(current_seed, murine_seeds[i]);
+            //filename creation for run j of sequence i in folder of sequence i
+            char file[] = "WIP.tengosueño";
+            run_metropolis(current_seed, &human_ref_seq, n_steps, betas, n_betas, file);
+        }
+    }
+
+    /*
+    hey, we're just two stray lines of completely functional code
+    definitely code, see? we're started by a * so we're a pointer!
+    */
+
+    /*free memory*/
+    for(int i=0; i<n_lines; i++) {
+        free(murine_seeds[i]);
+    }
+    free(murine_seeds);
 }

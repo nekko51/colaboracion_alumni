@@ -113,7 +113,7 @@ typedef struct {
 //utils.c
 void med_var(double* data, double* mean, double* variance, int n);
 void minmax(double* data, double* max, double* min, int n);
-int negative_chain(const Chain ch);
+int negative_chain(const Chain* ch);
 FILE *get_file(char* filename, char* mode);
 
 //metropolis.c
@@ -121,8 +121,11 @@ double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
 Energy energy_calculation(const Chain* ref, const char* seq, int n);
+void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
+    const double* betas, int n_betas, const double* acceptance, int n_steps,
+    double w_log, double w_prop, const char* filename);
 void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, double* acceptance, int n, double w_log, double w_prop);
-int run_metropolis(char* murine_seq, int n_steps, double* betas, int n_betas);
+int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, double* betas, int n_betas, char* filename);
 
 //parsing.c
 int char_to_int(char X);
@@ -130,6 +133,7 @@ char int_to_char(int X);
 Chain get_next_chain(FILE *f);
 void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int starting_idx);
 void initialize_properties_matrix();
+void read_next_line(FILE *f, char* out);
 
 //chain-operations.c
 Aacid aacid_direct_sum(Aacid a, Aacid b);

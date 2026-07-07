@@ -29,7 +29,7 @@ int main() {
 
     /*Code preparation*/
     Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
-    if(negative_chain(ch) == 1) return 1;
+    if(negative_chain(&ch) == 1) return 1;
 
     print_chain_to_file(ch, RESULTS FILE_L_MOUSE FRECS TXT);
     
