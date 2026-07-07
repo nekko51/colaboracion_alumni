@@ -3,6 +3,15 @@
 char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};//Note that this "-" is necessary, or else entropies would return -infty
 char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
 
+int char_in_string(char X, char* str) {
+    int i = 0;
+    while (str[i] != '\0') {
+        if (str[i] == X) return 1; 
+        i++;
+    }
+    return 0;
+}
+
 //initializes the PROPS_AA matrix
 void initialize_properties_matrix() {
     //malloc
@@ -49,15 +58,6 @@ char int_to_char(int X) {
         return('?');
     }
     return(AMINOACIDS[X]);
-}
-
-int char_in_string(char X, char* str) {
-    int i = 0;
-    while (str[i] != '\0') {
-        if (str[i] == X) return 1; 
-        i++;
-    }
-    return 0;
 }
 
 //sets the list of properties of an AA, GIVEN ITS INDEX
