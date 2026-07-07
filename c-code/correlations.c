@@ -17,7 +17,7 @@ Chain correlation_for_position_and_aacid(Chain* chains, int n_chains, int positi
         if (chains[ch_idx].aas[position_index].elements[aa_index] >= 1.-EPSILON) {
             out = chain_direct_sum(out, chains[ch_idx]);
         }
-        if (ch_idx%100 == 0) printf("%d read chains\n", ch_idx);
+        if (ch_idx%100 == 0) fprintf(stderr, "%d read chains\n", ch_idx);
     }
     return ch_normalize(out);
 }
@@ -31,7 +31,7 @@ Chain correlation_for_position_and_prop(Chain* chains, int n_chains, int positio
         if (chains[ch_idx].aas[position_index].properties[prop_index] >= 1.-EPSILON) {
             out = chain_direct_sum(out, chains[ch_idx]);
         }
-        if (ch_idx%100 == 0) printf("%d read chains\n", ch_idx);
+        if (ch_idx%100 == 0) fprintf(stderr, "%d read chains\n", ch_idx);
     }
     return ch_normalize(out);
 }

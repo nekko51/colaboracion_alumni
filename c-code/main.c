@@ -18,9 +18,10 @@ test mouse:     1379
 
 int main() {
 
-    /*Initializations*/
+    /*Variable Initializations*/
     initialize_properties_matrix();
 
+    /*Code preparation*/
     Chain ch = file_megaAacids(SEQS FILE TXT , N_LINES);
 
     print_chain_to_file(ch, RESULTS FILE FRECS TXT);

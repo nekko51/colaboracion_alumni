@@ -69,7 +69,9 @@ Chain ch_normalize(Chain c) {
 // returns the schrödinger chain of a file, needs file and number of lines
 Chain file_megaAacids(char *filename, int n_lines) {
     FILE *f = fopen(filename, "r");
-    if (f == NULL) {printf("\nCould not open %s\n", filename);}
+    if (f == NULL) {
+        fprintf(stderr, "Could not open %s\n", filename);
+    }
     Chain out = get_next_chain(f);
     for (int i = 1; i < n_lines; i++) {
         out = chain_direct_sum(out, get_next_chain(f));

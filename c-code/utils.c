@@ -30,6 +30,6 @@ void minmax(double* data, double* max, double* min, int n) {
 
 FILE *get_file(char* filename, char* mode) {
     FILE* f = fopen(filename, mode);
-    if (f == NULL) printf("Could not open %s", filename);
+    if (f == NULL) fprintf(stderr, "Error: Could not open %s\n", filename);
     return f;
 }
