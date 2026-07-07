@@ -56,6 +56,14 @@ Chain chain_direct_sum(Chain a, Chain b) {
     return out;
 }
 
+//deep copies chain a data to chain b
+void chain_deep_copy(const Chain a, Chain* b) {
+    for(int i=0; i<CHAINLEN; i++) {
+        for(int j=0; j<N_AACIDS; j++) b->aas[i].elements[j] = a.aas[i].elements[j];
+        for(int j=0; j<N_PROPERTIES; j++) b->aas[i].properties[j] = a.aas[i].properties[j];
+    }
+}
+
 // scales frequencies of a chain
 Chain ch_normalize(Chain c) {
     Chain out;

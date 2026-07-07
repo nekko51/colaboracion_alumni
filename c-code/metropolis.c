@@ -102,7 +102,7 @@ Chain generate_murine_seed(seed n) {
  * Adding more energies/changing weight system
  * Adding multiple betas (infty for CDR's)
  */
-void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, int n, double w_log, double w_prop) {
+void metropolis_sweep(char* murine_seq, const Chain human_ref_seq, double beta, int n, double w_log, double w_prop) {
     for(int i=0; i<n; i++) {
         //A. Store the old State (the current amino acid at this position)
         char old_AA = murine_seq[i];
@@ -120,12 +120,12 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
         char new_AA = AMINOACIDS[new_AA_idx];
 
         //C. Calculate delta_e for the Log Humanness Energy
-        double old_p = human_ref_seq->aas[i].elements[old_AA_idx];
+        double old_p = human_ref_seq.aas[i].elements[old_AA_idx];
         double old_log_contrib;
         if(old_p > EPSILON) old_log_contrib = -log(old_p);
         else old_log_contrib = ZERO_FREQ_PENALTY_LOG;
 
-        double new_p = human_ref_seq->aas[i].elements[new_AA_idx];
+        double new_p = human_ref_seq.aas[i].elements[new_AA_idx];
         double new_log_contrib;
         if(new_p > EPSILON) new_log_contrib = -log(new_p);
         else new_log_contrib = ZERO_FREQ_PENALTY_LOG;
@@ -135,8 +135,8 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
         //D. Calculate delta_e for the Property Distance Energy
         double old_prop_dist = 0.0, new_prop_dist = 0.0;
         for(int j=0; j<N_PROPERTIES; j++) {
-            double old_diff = (double)PROPS_AA[old_AA_idx][j] - human_ref_seq->aas[i].properties[j];
-            double new_diff = (double)PROPS_AA[new_AA_idx][j] - human_ref_seq->aas[i].properties[j];
+            double old_diff = (double)PROPS_AA[old_AA_idx][j] - human_ref_seq.aas[i].properties[j];
+            double new_diff = (double)PROPS_AA[new_AA_idx][j] - human_ref_seq.aas[i].properties[j];
             old_prop_dist += old_diff*old_diff;
             new_prop_dist += new_diff*new_diff;
         }
@@ -149,4 +149,29 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
         //F. The Metropolis Test: accept or reject the change, reverting back to original values if rejected
         if (total_delta_e < 0.0 || Random() < exp(-beta*total_delta_e)) murine_seq[i] = new_AA;
     }
+}
+
+//returns 1 if there's an error, 0 if everything went smoothly
+int run_metropolis(int n_steps, double* betas, int n_betas) {
+    //initial definitions
+    Chain human_ref_seq = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
+    if(negative_chain(human_ref_seq) == 1) return(1);
+    Chain murine_seed = generate_murine_seed(megachain);
+    if(negative_chain(murine_seed) == 1) return(1);
+
+    double beta;
+    Chain* murine_history;
+    murine_history = calloc(n_betas+1, sizeof(Chain));
+    if(murine_history == NULL) {fprintf(stderr, "Error: couldn't alocate memory for murine_history array; returning 1 in metropolis..."); return(1);}
+    chain_deep_copy(murine_seed, &murine_history[0]);
+
+    //monte carlo sims
+    for(int i=0; i<n_betas; i++) {
+        beta = betas[i];
+        for(int j=0; j<n_steps; j++) {
+            metropolis_sweep(&murine_seed, human_ref_seq, beta, CHAINLEN, WEIGHT_LOG, WEIGHT_PROP);
+        }
+        chain_deep_copy(murine_seed, &murine_history[i+1]);
+    }
+    return 0;
 }

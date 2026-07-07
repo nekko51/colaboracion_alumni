@@ -30,11 +30,15 @@ extern void ini_ran(int SEMILLA);
 #define CHAINLEN 298
 #define EPSILON 1e-10 //Avoid division by 0
 #define MAX_STR_LEN 600
-/*Energy penalizations*/
+/*Energy penalizations & weights*/
+extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
-extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
+
+//must sum to 1
+#define WEIGHT_LOG 0.5 
+#define WEIGHT_PROP 0.5
 
 /*Files*/
 #define SEQS "seqs/"
@@ -130,6 +134,7 @@ Aacid aacid_direct_sum(Aacid a, Aacid b);
 Aacid aa_scale_only_aacids(Aacid aa, double scalar);
 Aacid aa_scale_only_properties(Aacid aa, double scalar);
 Chain chain_direct_sum(Chain a, Chain b);
+void chain_deep_copy(const Chain a, Chain* b);
 Chain ch_normalize(Chain c);
 Chain file_megaAacids(char *filename, int n_lines);
 void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order);

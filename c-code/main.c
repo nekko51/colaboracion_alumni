@@ -22,15 +22,6 @@ test mouse:     1379
  *
 */
 
-//returns 1 if there's an error, 0 if everything went smoothly
-int run_metropolis() {
-    Chain human_ref_seq = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
-    if(negative_chain(human_ref_seq) == 1) return(1);
-
-    Chain murine_seed = generate_murine_seed(megachain);
-    if(negative_chain(murine_seed) == 1) return(1);
-}
-
 int main() {
 
     /*Variable Initializations*/
