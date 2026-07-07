@@ -70,7 +70,13 @@ Chain ch_normalize(Chain c) {
 Chain file_megaAacids(char *filename, int n_lines) {
     FILE *f = fopen(filename, "r");
     if (f == NULL) {
-        fprintf(stderr, "Could not open %s\n", filename);
+        fprintf(stderr, "Error: Could not open %s; returning -1.0 chain...\n", filename);
+        Chain out;
+        for(int i=0; i<CHAINLEN; i++) {
+            for(int j=0; j<N_AACIDS; j++) out.aas[i].elements[j] = -1.;
+            for(int j=0; j<N_PROPERTIES; j++) out.aas[i].properties[j] = -1.;
+        }
+        return(out);
     }
     Chain out = get_next_chain(f);
     for (int i = 1; i < n_lines; i++) {

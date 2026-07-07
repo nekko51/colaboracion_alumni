@@ -23,6 +23,10 @@ int main() {
 
     /*Code preparation*/
     Chain ch = file_megaAacids(SEQS FILE TXT , N_LINES);
+    if(ch.aas->elements[0] < -0.5) {
+        fprintf(stderr, "Error: Chain returned negative values (%lf); stopping execution...\n", ch.aas->elements[0]);
+        return 1;
+    }
 
     print_chain_to_file(ch, RESULTS FILE FRECS TXT);
     

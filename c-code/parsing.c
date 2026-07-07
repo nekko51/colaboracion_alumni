@@ -72,7 +72,7 @@ Aacid char_to_Aacid(char X) {
 
 // reads next line and outputs it in chain formatting
 Chain get_next_chain(FILE *f) {
-    char line[298]; read_next_line(f, line);
+    char line[CHAINLEN + 1]; read_next_line(f, line);
     Chain out;
     for (int i = 0; i < CHAINLEN; i++) {
         out.aas[i] = char_to_Aacid(line[i]);
