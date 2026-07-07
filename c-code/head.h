@@ -67,11 +67,7 @@ extern char AMINOACIDS[N_AACIDS + 1];
 extern char *PROPERTIES[N_PROPERTIES];
 
 /*Enums:*/
-typedef enum{
-    error = -1,
-    zeroes = 0,
-    megachain = 1,
-} seed;
+
 
 /*Structs:*/
 
@@ -124,8 +120,9 @@ FILE *get_file(char* filename, char* mode);
 double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
-Chain generate_murine_seed(seed n);
-void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, int n, double w_log, double w_prop);
+Energy energy_calculation(const Chain* ref, const char* seq, int n);
+void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, double* acceptance, int n, double w_log, double w_prop);
+int run_metropolis(char* murine_seq, int n_steps, double* betas, int n_betas);
 
 //parsing.c
 int char_to_int(char X);

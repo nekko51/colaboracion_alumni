@@ -28,7 +28,7 @@ void minmax(double* data, double* max, double* min, int n) {
     }
 }
 
-//returns 1 (true) if the chain is invalid, 0 (false) if it is valid
+//returns 1 (true) if the chain is invalid, 0 (false) if it is invalid
 int negative_chain(const Chain ch) {
     if(ch.aas->elements[0] < -0.5) {
         fprintf(stderr, "Error: Chain returned negative values (%lf); stopping execution...\n", ch.aas->elements[0]);

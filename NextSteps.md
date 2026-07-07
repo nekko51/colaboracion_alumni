@@ -26,4 +26,5 @@ Maybe, to compare, parallel to making the binary plot, it'd be nice to graph JUS
 - Add parallel threading
 - The code can be optimized HEAVILY (in principle) if instead of returning a Chain, etc. in structs we pass a pointer and fill it out with our functions; when passing Chains/big structs to functions (bigger than 8 bytes, which is what a pointer occupies in memory), we can also just pass them by reference to improve execution speed (remember we can also make const pointers).
 Furthermore, we should delve in the differences between heap and stack memory (this last one seems to be pretty limited, and we might run out of it in execution) (https://www.reddit.com/r/cs2a/comments/1egymrr/stack_vs_heap_memory/)
+- Existential doubt: do we want a metropolis that changes AA's in a sequence, or changing the values of the probabilities of properties/AA's in a Chain struct format? I'm thinking we want the first one, since... well, we'd just end up with the human one if we made it non-deterministic, plus we can't have 67% C, 21%A, 3%-, etc
            
