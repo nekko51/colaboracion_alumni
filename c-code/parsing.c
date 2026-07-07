@@ -2,7 +2,7 @@
 
 char *PROPERTIES[N_PROPERTIES] = {"-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS};//Note that this "-" is necessary, or else entropies would return -infty
 char AMINOACIDS[N_AACIDS + 1] = "-ACDEFGHIKLMNPQRSTVWY";
-int** PROPS_AA = NULL;
+int PROPS_AA[N_AACIDS][N_PROPERTIES];
 
 int char_in_string(char X, char* str) {
     int i = 0;
@@ -15,15 +15,7 @@ int char_in_string(char X, char* str) {
 
 //initializes the PROPS_AA matrix
 void initialize_properties_matrix() {
-    //malloc
-    PROPS_AA = malloc(N_AACIDS * sizeof(int*));
-    if(PROPS_AA == NULL) {
-        printf("Fatal error, ran out of memory when creating PROPS_AA matrix");
-        return;
-    }
-    
     for(int i=0; i<N_AACIDS; i++) {
-        PROPS_AA[i] = malloc(N_PROPERTIES * sizeof(int));
         //1 & 0 filling
         for(int j=0; j<N_PROPERTIES; j++) {
             PROPS_AA[i][j] = char_in_string(AMINOACIDS[i], PROPERTIES[j]);
@@ -31,16 +23,11 @@ void initialize_properties_matrix() {
     }
 }
 
-void free_properties_matrix() {
-    for(int i=0; i<N_AACIDS; i++) {
-        free(PROPS_AA[i]);
-    }
-    free(PROPS_AA);
-}
-
 // scans next line in file f and outputs via out
 void read_next_line(FILE *f, char* out) {
-    fscanf(f,"%298s", out);
+    if (fscanf(f, "%298s", out) != 1) {
+        out[0] = '\0'; 
+    }
 }
 
 // gets a char and outputs the index of that aa

@@ -32,7 +32,7 @@ extern void ini_ran(int SEMILLA);
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
-extern int** PROPS_AA;
+extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 
 
 
@@ -103,9 +103,8 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
 int char_to_int(char X);
 char int_to_char(int X);
 Chain get_next_chain(FILE *f);
-void read_file(char* filename, int n_lines, Chain *output);
+void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int starting_idx);
 void initialize_properties_matrix();
-void free_properties_matrix();
 
 //chain-operations.c
 Aacid aacid_direct_sum(Aacid a, Aacid b);

@@ -13,7 +13,7 @@ test mouse:     1379
 
 #define FILE "learn_mouse"
 #define FRECS "_freqs"
-#define ENTROPIS "_entropiess"
+#define ENTROPIS "_entropies"
 #define N_LINES 373
 
 int main() {
@@ -31,6 +31,6 @@ int main() {
     print_entropies_to_file(entropy, RESULTS FILE ENTROPIS TXT);
 
     /*Free memory*/
-    free_properties_matrix();
+    
     return 0;
 }
