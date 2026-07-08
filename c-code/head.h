@@ -47,8 +47,9 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
 
 //must sum to 1
-#define WEIGHT_LOG 0.5 
-#define WEIGHT_PROP 0.5
+#define WEIGHT_LOG 0.4
+#define WEIGHT_PROP 0.4
+#define WEIGHT_PENALTY 0.2
 
 /*Files*/
 #define SEQS "seqs/"
@@ -120,6 +121,7 @@ typedef struct {
 typedef struct {
     double log_humanness;
     double property_distance;
+    double wanderer_penalty;
 } Energy;
 
 
@@ -136,12 +138,13 @@ FILE *get_file(char* filename, char* mode);
 double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
-Energy energy_calculation(const Chain* ref, const char* seq, int n);
-double calculate_total_energy(const Energy* energies, double w_log, double w_prop);
+Energy energy_calculation(const Chain* ref, const char* seq, const char* original_seq, int n);
+double calculate_total_energy(const Energy* energies, double w_log, double w_prop, double w_penalty);
 void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
     const double* betas, int n_betas, const double* acceptance, int n_steps,
-    double w_log, double w_prop, const char* filename);
-void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta, double* acceptance, int n, double w_log, double w_prop);
+    double w_log, double w_prop, double w_penalty, const char* filename);
+void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const Chain* human_ref_seq, double beta, 
+    double* acceptance, int n, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, double* betas, int n_betas, char* filename);
 
 //parsing.c
