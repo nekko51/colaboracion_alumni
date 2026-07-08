@@ -4,6 +4,16 @@
 #include <math.h>
 #include <time.h>
 #include <stdbool.h>
+
+#ifdef _WIN32
+    #include <direct.h>
+    #define MKDIR(path) _mkdir(path)
+#else
+    #include <sys/stat.h>
+    #include <sys/types.h>
+    #define MKDIR(path) mkdir(path, 0755)
+#endif
+
 /*  lines in each seq file:
 learn human:    1309
 learn mouse:    373
@@ -29,7 +39,7 @@ extern void ini_ran(int SEMILLA);
 #define N_PROPERTIES 9
 #define CHAINLEN 298
 #define EPSILON 1e-10 //Avoid division by 0
-#define MAX_STR_LEN 600
+#define MAX_STR_LEN 256
 /*Energy penalizations & weights*/
 extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
@@ -43,6 +53,7 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 /*Files*/
 #define SEQS "seqs/"
 #define RESULTS "results/"
+#define METROPOLIS "metropolis/"
 #define TXT ".txt"
 
 #define FILE_L_MOUSE "learn_mouse"
