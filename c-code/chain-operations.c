@@ -265,3 +265,35 @@ void print_entropies_to_file(Entropies *S, char* filename) {
     }
     fclose(f);
 }
+
+/*
+@brief outputs the list of positions that are non-CDRs
+@param S the list of entropies for the chain
+@param threshold limit to which CDRs are discriminated
+@param entropy_type chosen entropy to use for the discrimination
+    - 'l':    linear entropy
+    - 'r':    Renyi entropy
+    - 't':    Tsallis entropy
+    - none of the above:  Shannon entropy (default)
+@return out_indexes positions of the non-CDRs (inputted array must be at least CHAINLEN long)
+@return n_indexes number of positions outputted
+*/
+void noncdr_candidates(Entropies *S, double threshold, char entropy_type, int *out_indexes, int *n_indexes) {
+    double entropy; *n_indexes = 0;
+    for (int pos = 0; pos < CHAINLEN; pos++) {
+        if (entropy_type == 'l') {
+            entropy = S[pos].laa;
+        } else if (entropy_type == 'r') {
+            entropy = S[pos].raa;
+        } else if (entropy_type == 't') {
+            entropy = S[pos].taa;
+        } else {
+            entropy  = S[pos].saa;
+        }
+
+        if (entropy < threshold) {
+            out_indexes[*n_indexes] = pos;
+            *n_indexes++;
+        }
+    }
+}
