@@ -63,6 +63,11 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 #define FRECS "_freqs"
 #define ENTROPIS "_entropies"
 
+#define DECIMAL_PRECISION 5
+#define BETA_PRECISION 10
+#define ACCEPTANCE_PRECISION 3
+#define ENERGY_PRECISION 8
+
 /*Aminoacid and properties definition*/
 //Order of properties: "-", HYDROPHOBIC, AROMATIC, ALIPHATIC, POLAR, SMALL, MINUSCULE, CHARGEDPLUS, CHARGEDMINUS -- note that the "-" is necessary, or else entropies would return -infty
 #define HYDROPHOBIC "ACFGHIKLMTVWY"
@@ -132,6 +137,7 @@ double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
 double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
 Energy energy_calculation(const Chain* ref, const char* seq, int n);
+double calculate_total_energy(const Energy* energies, double w_log, double w_prop);
 void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
     const double* betas, int n_betas, const double* acceptance, int n_steps,
     double w_log, double w_prop, const char* filename);

@@ -74,8 +74,14 @@ Energy energy_calculation(const Chain* ref, const char* seq, int n) {
     return(out);
 }
 
-void cleanup_metropolis(double* acceptance, Energy* energy_history, char** murine_history, int n_betas) {
+//calculates total energy given an energy and corresponding weights
+double calculate_total_energy(const Energy* energies, double w_log, double w_prop) {
+    return(w_log*energies->log_humanness + w_prop*energies->property_distance);
+}
+
+void cleanup_metropolis(double* acceptance, Energy* energy_history, char** murine_history, int n_betas, double* per_beta_acceptance) {
     free(acceptance);
+    free(per_beta_acceptance);
     free(energy_history);
     if (murine_history != NULL) {
         for (int i=0; i<n_betas+1; i++) {
@@ -100,7 +106,39 @@ void cleanup_mega_metropolis(FILE* f, char** murine_seeds, int n_lines) {
 void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
     const double* betas, int n_betas, const double* acceptance, int n_steps,
     double w_log, double w_prop, const char* filename) {
-    //WIP
+    FILE *f = fopen(filename, "w");
+    if(f == NULL) {fprintf(stderr, "Error: couldn't open file %s; returning...\n", filename); return;}
+    
+    fprintf(f, "***************Metropolis data report version 1.0***************\n");
+
+    fprintf(f, "\n\n");
+    fprintf(f, "weight_log = %.*lf, \tweight_properties = %.*lf\nn_betas = %d, \tn_steps = %d\n", DECIMAL_PRECISION, w_log, 
+        DECIMAL_PRECISION, w_prop, n_betas, n_steps);
+    double mean, var;
+    double med_acceptance[n_betas];
+    for(int i=0; i<n_betas; i++) {
+        med_acceptance[i] = acceptance[2*i];
+    }
+    med_var(med_acceptance, &mean, &var, n_betas);
+    fprintf(f, "overall acceptance med: %.*lf, \toverall acceptance var: %.*lf\n", DECIMAL_PRECISION, mean, DECIMAL_PRECISION, var);//this is probably useless
+    fprintf(f, "log humanness: %*.*lf, \tprop humanness: %*.*lf, \ttotal energy: %*.*lf\n", 
+        ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].log_humanness, ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].property_distance, 
+        ENERGY_PRECISION, DECIMAL_PRECISION, energy_total(&energy_history[0], w_log, w_prop));
+    fprintf(f, "seed: %s", seq_history[0]);
+    fprintf(f, "\n\n");
+    // fprtinf(f, "Schrödinger reference chain: ")
+    for(int i=0; i<n_betas; i++) {
+        fprintf(f, "***** beta = %*.*lf (%d/%d) \t-\t acceptance med: %.*lf%%, \tacceptance var: %.*lf*****\n", BETA_PRECISION, DECIMAL_PRECISION, betas[i], 
+            i+1, n_betas, ACCEPTANCE_PRECISION, 100.0*acceptance[2*i], ACCEPTANCE_PRECISION, acceptance[2*i+1]);
+        fprintf(f, "delta_e: %*.*lf, \tlog humanness: %*.*lf, \tprop humanness: %*.*lf, \ttotal energy: %*.*lf\n", 
+            ENERGY_PRECISION, DECIMAL_PRECISION, energy_total(&energy_history[i+1], w_log, w_prop)-energy_total(&energy_history[i], w_log, w_prop), 
+            ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[i+1].log_humanness, ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[i+1].property_distance,
+            ENERGY_PRECISION, DECIMAL_PRECISION, energy_total(&energy_history[i+1], w_log, w_prop));
+        fprintf(f, "resulting chain: %s\n", seq_history[i+1]);
+    }
+
+    fprintf(f, "***************Metropolis data report end***************");
+    fclose(f);
 }
 
 /**
@@ -136,6 +174,7 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
         char new_AA = AMINOACIDS[new_AA_idx];
 
         //C. Calculate delta_e for the Log Humanness Energy
+        Energy delta_e;
         double old_p = human_ref_seq->aas[i].elements[old_AA_idx];
         double old_log_contrib;
         if(old_p > EPSILON) old_log_contrib = -log(old_p);
@@ -146,7 +185,7 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
         if(new_p > EPSILON) new_log_contrib = -log(new_p);
         else new_log_contrib = ZERO_FREQ_PENALTY_LOG;
 
-        double delta_log = new_log_contrib - old_log_contrib;
+        delta_e.log_humanness = new_log_contrib - old_log_contrib;
 
         //D. Calculate delta_e for the Property Distance Energy
         double old_prop_dist = 0.0, new_prop_dist = 0.0;
@@ -157,10 +196,10 @@ void metropolis_sweep(char* murine_seq, const Chain* human_ref_seq, double beta,
             new_prop_dist += new_diff*new_diff;
         }
 
-        double delta_prop = new_prop_dist - old_prop_dist;
+        delta_e.property_distance = new_prop_dist - old_prop_dist;
 
         //E. Combine and Weigh the Deltas to get the total_delta_e
-        double total_delta_e = w_log*delta_log + w_prop*delta_prop;
+        double total_delta_e = calculate_total_energy(&delta_e, w_log, w_prop);
 
         //F. The Metropolis Test: accept or reject the change, reverting back to original values if rejected
         if (total_delta_e < 0.0 || Random() < exp(-beta*total_delta_e)) {
@@ -176,23 +215,26 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, do
     //initial definitions & initializations
     double beta;
     double *acceptance = NULL;
+    double *per_beta_acceptance = NULL;
     Energy* energy_history = NULL;
     char** murine_history = NULL;
     acceptance = malloc(n_steps*sizeof(double));
-    if(acceptance == NULL) {fprintf(stderr, "Error: couldn't allocate memory for acceptance array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas); return(1);}
+    if(acceptance == NULL) {fprintf(stderr, "Error: couldn't allocate memory for per-sweep acceptance array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance); return(1);}
+    per_beta_acceptance = malloc(2*n_betas*sizeof(double));
+    if(per_beta_acceptance == NULL) {fprintf(stderr, "Error: couldn't allocate memory for per-beta acceptance array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance); return(1);}
 
     energy_history = malloc( (n_betas+1)*sizeof(Energy) );
-    if(energy_history == NULL) {fprintf(stderr, "Error: couldn't allocate memory for energy_history array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
+    if(energy_history == NULL) {fprintf(stderr, "Error: couldn't allocate memory for energy_history array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance);return(1);}
 
     murine_history = malloc( (n_betas+1)*sizeof(char*) );
-    if(murine_history == NULL) {fprintf(stderr, "Error: couldn't allocate memory for murine_history *array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
+    if(murine_history == NULL) {fprintf(stderr, "Error: couldn't allocate memory for murine_history *array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance);return(1);}
     for(int i=0; i<n_betas+1; i++) murine_history[i] = NULL;
     for(int i=0; i<n_betas+1; i++) {
         murine_history[i] = malloc( (CHAINLEN+1)*sizeof(char) );
-        if(murine_history[i] == NULL) {fprintf(stderr, "Error: couldn't allocate memory for murine_history array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
+        if(murine_history[i] == NULL) {fprintf(stderr, "Error: couldn't allocate memory for murine_history array; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance);return(1);}
     }
 
-    if(negative_chain(human_ref_seq) == 1) {fprintf(stderr, "Error: human_ref_Seq is invalid; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);return(1);}
+    if(negative_chain(human_ref_seq) == 1) {fprintf(stderr, "Error: human_ref_Seq is invalid; returning 1 in metropolis..."); cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance);return(1);}
 
     //initial seed data
     strcpy(murine_history[0], murine_seq);
@@ -206,14 +248,12 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, do
         }
         strcpy(murine_history[i+1], murine_seq);
         energy_history[i+1] = energy_calculation(human_ref_seq, murine_history[i+1], CHAINLEN);
+        med_var(acceptance, &per_beta_acceptance[2*i], &per_beta_acceptance[2*i+1], n_steps);
     }
 
-    for(int i=0; i<n_betas; i++) {
-        print_metropolis_data_to_file(murine_history, human_ref_seq, energy_history, betas, n_betas, acceptance, n_steps, 
-            WEIGHT_LOG, WEIGHT_PROP, filename);
-    }
-
-    cleanup_metropolis(acceptance, energy_history, murine_history, n_betas);
+    print_metropolis_data_to_file(murine_history, human_ref_seq, energy_history, betas, n_betas, per_beta_acceptance, n_steps, WEIGHT_LOG, WEIGHT_PROP, filename);
+    
+    cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance);
     return 0;
 }
 
@@ -275,12 +315,16 @@ void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, in
         snprintf(seq_dir, sizeof(seq_dir), "%s/seq_%d", batch_dir, i+1);
         MKDIR(seq_dir);
 
-        for(int j=0; j<n_metropolis; j++) {
+        int okay = 0;
+        int j;
+        for(j=0; j<n_metropolis && okay == 0; j++) {
             strcpy(current_seed, murine_seeds[i]);
             char filepath[MAX_STR_LEN];
             snprintf(filepath, sizeof(filepath), "%s/run_%d%s", seq_dir, j+1, TXT);
-            run_metropolis(current_seed, &human_ref_seq, n_steps, betas, n_betas, filepath);
+
+            okay = run_metropolis(current_seed, &human_ref_seq, n_steps, betas, n_betas, filepath);
         }
+        if(okay != 0) {fprintf(stderr, "Error: run_metropolis failed in interation %d; returning...\n", j); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
     }
 
     /*
