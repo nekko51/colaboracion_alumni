@@ -7,6 +7,7 @@ Important things to take into account:
 - When using AAcid indexes & properties, MAKE SURE you are using the correct order (maybe we should consider streamlining the idx finding and properties handling when building new functions that need these informations)
 - generate_murine_seed is not finished (maybe we could take the schrödinger mouse chain to begin with? yeah that seems like a good idea)
 - When using Random, ini_ran should be called first
+- Compiler will warn of truncation in string format since it doesn't know string length at compile time in batch_dir, seq_dir, filepath
 
 ## Found errors
 -
