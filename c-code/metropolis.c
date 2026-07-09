@@ -132,7 +132,7 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
     FILE *f = fopen(filename, "w");
     if(f == NULL) {fprintf(stderr, "Error: couldn't open file %s; returning...\n", filename); return;}
     
-    fprintf(f, "***************Metropolis data report version 1.0.1***************\n");
+    fprintf(f, "***************Metropolis data report version 1.0.2***************\n");
 
     fprintf(f, "\n\n");
     fprintf(f, "weight_log = %.*lf, \tweight_properties = %.*lf, \tweight_penalty = %.*lf\nn_betas = %d, \tn_steps = %d\n", 
@@ -144,8 +144,9 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
     }
     med_var(med_acceptance, &mean, &var, n_betas);
     fprintf(f, "overall acceptance med: %.*lf, \toverall acceptance var: %.*lf\n", DECIMAL_PRECISION, mean, DECIMAL_PRECISION, var);//this is probably useless
-    fprintf(f, "log humanness: %*.*lf, \tprop humanness: %*.*lf, \ttotal energy: %*.*lf\n", 
-        ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].log_humanness, ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].property_distance, 
+    fprintf(f, "log humanness: %*.*lf, \tprop humanness: %*.*lf, \twanderer penalty: %*.*lf, \ttotal energy: %*.*lf\n", 
+        ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].log_humanness, ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].property_distance,
+        ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[0].wanderer_penalty,
         ENERGY_PRECISION, DECIMAL_PRECISION, calculate_total_energy(&energy_history[0], w_log, w_prop, w_penalty));
     fprintf(f, "seed: %s", seq_history[0]);
     fprintf(f, "\n\n");
@@ -153,9 +154,10 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
     for(int i=0; i<n_betas; i++) {
         fprintf(f, "***** beta = %*.*lf (%d/%d) \t-\t acceptance med: %.*lf%%, \tacceptance var: %.*lf*****\n", BETA_PRECISION, DECIMAL_PRECISION, betas[i], 
             i+1, n_betas, ACCEPTANCE_PRECISION, 100.0*acceptance[2*i], ACCEPTANCE_PRECISION, acceptance[2*i+1]);
-        fprintf(f, "delta_e: %*.*lf, \tlog humanness: %*.*lf, \tprop humanness: %*.*lf, \ttotal energy: %*.*lf\n", 
+        fprintf(f, "delta_e: %*.*lf, \tlog humanness: %*.*lf, \tprop humanness: %*.*lf, \twanderer penalty: %*.*lf, \ttotal energy: %*.*lf\n", 
             ENERGY_PRECISION, DECIMAL_PRECISION, calculate_total_energy(&energy_history[i+1], w_log, w_prop, w_penalty) - calculate_total_energy(&energy_history[i], w_log, w_prop, w_penalty), 
             ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[i+1].log_humanness, ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[i+1].property_distance,
+            ENERGY_PRECISION, DECIMAL_PRECISION, energy_history[i+1].wanderer_penalty,
             ENERGY_PRECISION, DECIMAL_PRECISION, calculate_total_energy(&energy_history[i+1], w_log, w_prop, w_penalty));
         fprintf(f, "resulting chain: %s\n", seq_history[i+1]);
     }

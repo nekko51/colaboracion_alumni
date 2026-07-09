@@ -135,14 +135,6 @@ int negative_chain(const Chain* ch);
 FILE *get_file(char* filename, char* mode);
 
 //metropolis.c
-double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
-double linear_humanness_energy(const Chain* human_ref_seq, const char* seq, int n);
-double property_distance_energy(const Chain* human_ref_seq, const char* seq, int n);
-Energy energy_calculation(const Chain* ref, const char* seq, const char* original_seq, int n);
-double calculate_total_energy(const Energy* energies, double w_log, double w_prop, double w_penalty);
-void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
-    const double* betas, int n_betas, const double* acceptance, int n_steps,
-    double w_log, double w_prop, double w_penalty, const char* filename);
 void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const Chain* human_ref_seq, double beta, 
     double* acceptance, int n, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, double* betas, int n_betas, char* filename);
