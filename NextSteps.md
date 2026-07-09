@@ -11,9 +11,11 @@
 ### mega_metropolis;
 - The start could be optimized with realloc (instead of opening file twice)
 - Prevent gap changing??
+- Add info.txt that states initial betas -- to be able to compare the dynamic beta change
 
 ### giga_metropolis conceptualization;
 - Variable betas for each position implementation (betas would now be a matrix of dimensions `n_betas*CHAINLEN`) where $\beta^i_j = k_i \cdot \frac{c}{S_j+\varepsilon}$, where $S_j$ is entropy for each chain position (ranging from `0` to `CHAINLEN-1`) and $k_i$ is a monotonous sequence (sucesión monótona, no sé cómo lo dicen los ingleses) which is function of (¿?), that dictates how `betas[i][]` should change as thermalization is reached for `betas[i-1][]`
+- Dynamic beta change; I propose a sigmoid-exp function
 - Prevent gap changing??
 
 

@@ -18,35 +18,43 @@ The aim of this GitHub is to delve deeper into biophysics, using simulated annea
 - **Entropies**: each row is a position in the chain with every entropy (for aminoacids and for properties)
 
 - **Metropolis**:
-Organised in batch folders named by date and time, for every seed a folder is generated, inside of which a .txt is generated for each metropolis run, which contains a report summarizing the simulation results, consisting of:
-    1.  **Header** - s line indicating the report version.
+Organised in batch folders named by date and time. For every seed, a folder is generated containing the results for each metropolis run. Each run produces two files:
+    1. **Main Report (`run_N.txt`)**: A summary of the simulation results.
+    2. **Beta Matrix File (`run_N_betas.txt`)**: A detailed dump of the position-specific beta values used in the simulation.
+
+    **Main Report File Formatting:**
+    The main report file consists of:
+    1.  **Header**: A line indicating the report version.
         ```
         ***************Metropolis data report version X.Y.Z***************
         ```
 
-    2.  **Global Parameters**: Parameters of the entire simulation run.
-        *   ``weight_log``, ``weight_properties`` - weights used for energy calculation.
-        *   ``n_betas``- total number of beta values simulated.
-        *   ``n_sweeps``- number of Metropolis sweeps performed for each beta.
+    2.  **Global Parameters**: Parameters for the entire simulation run.
+        *   ``weight_log``, ``weight_properties``, ``weight_penalty`` - weights used for energy calculation.
+        *   ``n_betas``- total number of beta steps simulated.
+        *   ``n_sweeps``- number of Metropolis sweeps performed for each beta step.
 
     3.  **Overall Statistics**:
-        *   ``overall acceptance med`` - mean of the mean acceptance rates from each beta simulation.
-        *   ``overall acceptance var`` - variance of the mean acceptance rates.
+        *   ``overall acceptance med`` - mean of the median acceptance rates from each beta step.
+        *   ``overall acceptance var`` - variance of the median acceptance rates.
 
     4.  **Initial State**: Information about the starting sequence before any simulation steps.
         *   ``log humanness``, ``prop humanness``, ``wanderer penalty``, ``total energy`` - energy components of the initial sequence.
-        *   ``seed`` - initial murine sequence seed.
+        *   ``seed`` - initial murine seed.
 
-    5.  **Per-Beta Results**: This section is repeated for each beta value.
-        *   A header line showing the current ``beta`` value, its index, the mean acceptance rate for that beta (``acceptance med``), and the variance of the acceptance rate (``acceptance var``).
-        *   ``delta_e``-  change in total energy between the result of the previous beta and the current one.
-        *   ``log humanness``, ``prop humanness``, ``wanderer penalty``, ``total energy``- energy components of the final sequence for this beta.
+    5.  **Per-Beta Results**: This section is repeated for each beta step.
+        *   A header line showing a summary of the beta values for the current step (``beta (min/avg/max)``), its index, the median acceptance rate for that beta (``acceptance med``), and the variance of the acceptance rate (``acceptance var``).
+        *   ``delta_e`` -  change in total energy between the result of the previous beta step and the current one.
+        *   ``log humanness``, ``prop humanness``, ``wanderer penalty``, ``total energy``- energy components of the final sequence for this beta step.
         *   ``resulting chain`` - the final, (hopefully) more humane sequence after all sweeps at this beta are complete.
 
-    6.  **Footer** - a line marking the end of the report.
+    6.  **Footer**: A line marking the end of the report.
         ```
         ***************Metropolis data report end***************
         ```
+    
+    **Beta Matrix File Formatting:**
+    This file (`run_N_betas.txt`) contains the raw `n_betas` x `CHAINLEN` matrix of beta values used, allowing for detailed analysis and debugging.
 
 ## Formulas
 ### Entropies:
