@@ -283,11 +283,12 @@ void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const C
             old_penalty_dist += AA_MUTATION_PENALTY;
         }
         double new_penalty_dist = property_distance_between_aas(new_AA_idx, original_AA_idx);
-        delta_e.wanderer_penalty = new_penalty_dist - old_penalty_dist;
         if(new_AA_idx != original_AA_idx) {
             new_penalty_dist += AA_MUTATION_PENALTY;
         }
 
+        delta_e.wanderer_penalty = new_penalty_dist - old_penalty_dist;
+        
         //F. Combine and Weigh the Deltas to get the total_delta_e
         double total_delta_e = calculate_total_energy(&delta_e, w_log, w_prop, w_penalty);
 
@@ -400,11 +401,19 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     MKDIR(batch_dir);
 
     Chain human_ref_seq = file_megaAacids(human_filename, n_human_lines);
-    char current_seed[CHAINLEN+1];
+
+    int workers = (int) ((MAX_WORKER_PERCENTAGE/100.0) * omp_get_num_procs());
+    if(workers < 1) workers = 1;
+    int global_error = 0;
+    #pragma omp parallel for num_threads(workers) schedule(dynamic)
     for(int i=0; i<n_lines; i++) {
+        //openmp doesn't allow breaks, and the whole for has to be ran; if there's an error, threads just skip everything and end ASAP
+        if(global_error) continue;
+
         printf("Running metropolis %d time(s) for seed %d/%d...\n", n_metropolis, i+1, n_lines);
-        
+        char current_seed[CHAINLEN+1];
         char seq_dir[MAX_STR_LEN];
+        char filepath[MAX_STR_LEN];
         snprintf(seq_dir, sizeof(seq_dir), "%s/seq_%d", batch_dir, i+1);
         MKDIR(seq_dir);
 
@@ -412,12 +421,20 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
         int j;
         for(j=0; j<n_metropolis && okay == 0; j++) {
             strcpy(current_seed, murine_seeds[i]);
-            char filepath[MAX_STR_LEN];
             snprintf(filepath, sizeof(filepath), "%s/run_%d%s", seq_dir, j+1, TXT);
 
             okay = run_metropolis(current_seed, &human_ref_seq, n_sweeps, betas, n_betas, filepath);
         }
-        if(okay != 0) {fprintf(stderr, "Error: run_metropolis failed in interation %d; returning...\n", j); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
+        if(okay != 0) {
+            fprintf(stderr, "Error: run_metropolis failed in interation %d; returning...\n", j);
+            global_error = 1;
+        }
+    }
+
+    //safe error handling, oustide parallel for loop
+    if(global_error) {
+        cleanup_mega_metropolis(f, murine_seeds, n_lines); 
+        return;
     }
 
     /*

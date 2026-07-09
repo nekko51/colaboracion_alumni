@@ -8,6 +8,7 @@
             "args": [
                 "-Wall",
                 "-g",
+                "-fopenmp",
                 "${workspaceFolder}/c-code/*.c",
                 "-lm",
                 "-o",
@@ -29,6 +30,7 @@
             "args": [
                 "-Wall",
                 "-O3",
+                "-fopenmp",
                 "${workspaceFolder}/c-code/*.c",
                 "-lm",
                 "-o",
@@ -50,6 +52,7 @@
             "args": [
                 "-Wall",
                 "-g",
+                "-fopenmp",
                 "${workspaceFolder}/c-code/*.c",
                 "-lm",
                 "-o",
@@ -71,6 +74,7 @@
             "args": [
                 "-Wall",
                 "-O3",
+                "-fopenmp",
                 "${workspaceFolder}/c-code/*.c",
                 "-lm",
                 "-o",

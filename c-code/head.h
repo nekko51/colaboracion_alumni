@@ -4,6 +4,7 @@
 #include <math.h>
 #include <time.h>
 #include <stdbool.h>
+#include <omp.h>
 
 #ifdef _WIN32
     #include <direct.h>
@@ -20,6 +21,10 @@ learn mouse:    373
 test human:     1388
 test mouse:     1379
 */
+
+//**********PARALLEL THREADS**********
+#define MAX_WORKER_PERCENTAGE 75.0
+//************************************
 
 //**********PARISI RAPUANO*************
 #define NormRANu (2.3283063671E-10F)

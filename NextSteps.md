@@ -5,7 +5,6 @@
 - In principle, the code could be **heavily** optimized if instead of returning Chain, Energy as outputs of functions (or anything bigger than 8 bytes, which is what a pointer occupies in memory), we pass them a pointer and make them fill in relevant data (basically turning all functions into void or int)
 - For functions that take a const datatype as an input, we can just pass them by reference (remember pointers can also be made of const type) to prevent memory duplicates
 - Furthermore, we should delve in the differences between heap and stack memory (this last one seems to be pretty limited, and we might run out of it in execution) (https://www.reddit.com/r/cs2a/comments/1egymrr/stack_vs_heap_memory/)
-- Implement parallel threading
 - Turn char_to_int function into a lookup table for metropolis (it's called chainlen* n_sweeps* n_betas* n_metropolis* n_lines); 1.119.000 times with these toy numbers (we can expect up to 747.500.000.000 function calls with some serious numbers)
 
 ## Functions:
@@ -16,7 +15,7 @@
 
 ### giga_metropolis conceptualization;
 - Variable betas for each position implementation (betas would now be a matrix of dimensions `n_betas*CHAINLEN`) where $\beta^i_j = k_i \cdot \frac{c}{S_j+\varepsilon}$, where $S_j$ is entropy for each chain position (ranging from `0` to `CHAINLEN-1`) and $k_i$ is a monotonous sequence (sucesión monótona, no sé cómo lo dicen los ingleses) which is function of (¿?), that dictates how `betas[i][]` should change as thermalization is reached for `betas[i-1][]`
-- Dynamic beta change; I propose a sigmoid-exp function
+- Dynamic beta change in runtime
 - Prevent gap changing??
 
 
@@ -24,6 +23,7 @@
 ## Completed next steps:
 - Add energy penalization for each AA change, that way we make the global minimum different for each murine seed (heavily penalizing complete AA changes and marginally penalizing AA change that's close in the properties sample space) -- PROBLEM: given this approach, energy will be heavily linked to n_steps -- is that a problem though?
 - Finish work on mega_metropolis
+- Implement parallel threading
 
 
 
