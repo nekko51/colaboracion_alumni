@@ -101,10 +101,6 @@ double calculate_total_energy(const Energy* energies, double w_log, double w_pro
     return(w_log*energies->log_humanness + w_prop*energies->property_distance + w_penalty*energies->wanderer_penalty);
 }
 
-double calculate_beta_change_factor(int i) {
-    return(1);
-}
-
 //generate betas matrix -- n_entropies should be CHAINLEN; cooling_rate should be > 1
 void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate) {
     double k_i = 1.0;
@@ -114,6 +110,10 @@ void generate_betas(double** betas, int n_betas, double* entropies, int n_entrop
         }
         k_i *= cooling_rate;
     }
+}
+
+double sigmoid(double x, double lambda) {
+    return ( 2.0 / (1.0+exp(-lambda * x)) );
 }
 
 /************************
@@ -273,9 +273,20 @@ void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const C
 
         //E. Calculate delta_e for penalty term
         int original_AA_idx = char_to_int(original_murine_seq[i]);
+        /*3 possible cases:
+        * if both are different from original, penalties cancel each other
+        * if new isn't original and old one is, a penalty is added
+        * if old isn't original and new one is, penalty is reverted
+        */
         double old_penalty_dist = property_distance_between_aas(old_AA_idx, original_AA_idx);
+        if(old_AA_idx != original_AA_idx) {
+            old_penalty_dist += AA_MUTATION_PENALTY;
+        }
         double new_penalty_dist = property_distance_between_aas(new_AA_idx, original_AA_idx);
         delta_e.wanderer_penalty = new_penalty_dist - old_penalty_dist;
+        if(new_AA_idx != original_AA_idx) {
+            new_penalty_dist += AA_MUTATION_PENALTY;
+        }
 
         //F. Combine and Weigh the Deltas to get the total_delta_e
         double total_delta_e = calculate_total_energy(&delta_e, w_log, w_prop, w_penalty);

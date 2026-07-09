@@ -46,7 +46,9 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
 
-//must sum to 1
+//Metropolis:
+#define AA_MUTATION_PENALTY 1.5//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
+//must sum to 1:
 #define WEIGHT_LOG 0.4
 #define WEIGHT_PROP 0.4
 #define WEIGHT_PENALTY 0.2

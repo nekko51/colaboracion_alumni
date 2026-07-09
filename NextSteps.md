@@ -6,6 +6,7 @@
 - For functions that take a const datatype as an input, we can just pass them by reference (remember pointers can also be made of const type) to prevent memory duplicates
 - Furthermore, we should delve in the differences between heap and stack memory (this last one seems to be pretty limited, and we might run out of it in execution) (https://www.reddit.com/r/cs2a/comments/1egymrr/stack_vs_heap_memory/)
 - Implement parallel threading
+- Turn char_to_int function into a lookup table for metropolis (it's called chainlen* n_sweeps* n_betas* n_metropolis* n_lines); 1.119.000 times with these toy numbers (we can expect up to 747.500.000.000 function calls with some serious numbers)
 
 ## Functions:
 ### mega_metropolis;
