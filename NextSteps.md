@@ -2,7 +2,7 @@
 
 ## General:
 ### Optimization;
-- In principle, the code could be **heavily** optimized if instead of returning Chain, Energy as outputs of functions (or anything bigger than 8 bytes, which is what a pointer occupies in memory), we pass them a pointer and make them fill in relevant data
+- In principle, the code could be **heavily** optimized if instead of returning Chain, Energy as outputs of functions (or anything bigger than 8 bytes, which is what a pointer occupies in memory), we pass them a pointer and make them fill in relevant data (basically turning all functions into void or int)
 - For functions that take a const datatype as an input, we can just pass them by reference (remember pointers can also be made of const type) to prevent memory duplicates
 - Furthermore, we should delve in the differences between heap and stack memory (this last one seems to be pretty limited, and we might run out of it in execution) (https://www.reddit.com/r/cs2a/comments/1egymrr/stack_vs_heap_memory/)
 - Implement parallel threading

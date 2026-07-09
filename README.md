@@ -27,7 +27,7 @@ Organised in batch folders named by date and time, for every seed a folder is ge
     2.  **Global Parameters**: Parameters of the entire simulation run.
         *   ``weight_log``, ``weight_properties`` - weights used for energy calculation.
         *   ``n_betas``- total number of beta values simulated.
-        *   ``n_steps``- number of Metropolis sweeps performed for each beta.
+        *   ``n_sweeps``- number of Metropolis sweeps performed for each beta.
 
     3.  **Overall Statistics**:
         *   ``overall acceptance med`` - mean of the mean acceptance rates from each beta simulation.
