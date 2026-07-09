@@ -43,3 +43,20 @@ FILE *get_file(char* filename, char* mode) {
     if (f == NULL) fprintf(stderr, "Error: Could not open %s\n", filename);
     return f;
 }
+
+int isSorted(double* array, int n) {
+    for(int i=0; i<n; i++) {
+        if(array[i]>array[i+1]) {
+            return(0);
+        }
+    }
+    return(1);
+}
+
+double* cosmicraysort(double* array, int n) {
+    while(1) {//wait for cosmic rays to flip bits and sort our array
+        if(isSorted(array, n)) {
+            return(array);
+        }
+    }
+}

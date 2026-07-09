@@ -293,7 +293,7 @@ void noncdr_candidates(Entropies *S, double threshold, char entropy_type, int *o
 
         if (entropy < threshold) {
             out_indexes[*n_indexes] = pos;
-            *n_indexes++;
+            (*n_indexes)++;
         }
     }
 }

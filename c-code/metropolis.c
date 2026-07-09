@@ -160,7 +160,7 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
         fprintf(f, "resulting chain: %s\n", seq_history[i+1]);
     }
 
-    fprintf(f, "***************Metropolis data report end***************");
+    fprintf(f, "\n\n***************Metropolis data report end***************");
     fclose(f);
 }
 
@@ -277,7 +277,7 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, do
         med_var(acceptance, &per_beta_acceptance[2*i], &per_beta_acceptance[2*i+1], n_steps);
     }
 
-    print_metropolis_data_to_file(murine_history, human_ref_seq, energy_history, betas, n_betas, 
+    print_metropolis_data_to_file((const char**)murine_history, human_ref_seq, energy_history, betas, n_betas, 
         per_beta_acceptance, n_steps, WEIGHT_LOG, WEIGHT_PROP, WEIGHT_PENALTY, filename);
     
     cleanup_metropolis(acceptance, energy_history, murine_history, n_betas, per_beta_acceptance);
@@ -329,7 +329,7 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     
     snprintf(metropolis_dir, sizeof(metropolis_dir), "%s%s", RESULTS, METROPOLIS);
 
-    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", localtime(&now));
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H_%M_%S", localtime(&now));
     snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d", metropolis_dir, time_str, n_lines, n_metropolis, n_betas);
     MKDIR(batch_dir);
 
