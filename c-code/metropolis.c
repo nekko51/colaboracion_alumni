@@ -285,7 +285,7 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, do
 }
 
 //runs metropolis using every single sequence in a given filename as seed n_metropolis times for each seed
-void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, int n_metropolis) {
+void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_steps, double* betas, int n_betas, int n_metropolis) {
     /*initial declarations for cleanup*/
     FILE *f = NULL;
     char** murine_seeds = NULL;
@@ -294,8 +294,8 @@ void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, in
     time_t now = time(NULL);
 
     /*open file and count number of lines*/
-    f = fopen(filename, "r");
-    if(f == NULL) {fprintf(stderr, "Error: couldn't open seed file %s; returning...\n", filename); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
+    f = fopen(murine_seeds_filename, "r");
+    if(f == NULL) {fprintf(stderr, "Error: couldn't open seed file %s; returning...\n", murine_seeds_filename); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
     char temp[CHAINLEN+1];
     while(1) {
         read_next_line(f, temp);
@@ -306,7 +306,6 @@ void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, in
     f = NULL;
 
     /*allocate necessary memory*/
-    Chain human_ref_seq = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
     murine_seeds = malloc(n_lines*sizeof(char*));
     if (murine_seeds == NULL) {fprintf(stderr, "Error: failed to allocate memory for *seed; returning...\n"); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
     for(int i=0; i<n_lines; i++) murine_seeds[i] = NULL;
@@ -316,8 +315,8 @@ void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, in
     }
 
     /*read all seeds in file*/
-    f = fopen(filename, "r");
-    if(f == NULL) {fprintf(stderr, "Error: couldn't open seed file %s; returning...\n", filename); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
+    f = fopen(murine_seeds_filename, "r");
+    if(f == NULL) {fprintf(stderr, "Error: couldn't open seed file %s; returning...\n", murine_seeds_filename); cleanup_mega_metropolis(f, murine_seeds, n_lines); return;}
     for(int i=0; i<n_lines; i++) {
         read_next_line(f, murine_seeds[i]);
     }
@@ -334,6 +333,7 @@ void mega_metropolis(char* filename, int n_steps, double* betas, int n_betas, in
     snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d", metropolis_dir, time_str, n_lines, n_metropolis, n_betas);
     MKDIR(batch_dir);
 
+    Chain human_ref_seq = file_megaAacids(human_filename, n_human_lines);
     char current_seed[CHAINLEN+1];
     for(int i=0; i<n_lines; i++) {
         printf("Running metropolis %d time(s) for seed %d/%d...\n", n_metropolis, i+1, n_lines);

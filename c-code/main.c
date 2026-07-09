@@ -22,6 +22,8 @@ test mouse:     1379
  *
 */
 
+//when calling mega_metropolis, for human ref use (SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES)
+
 int main() {
 
     /*Variable Initializations*/
