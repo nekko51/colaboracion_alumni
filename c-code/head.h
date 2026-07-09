@@ -146,6 +146,7 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
 void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const Chain* human_ref_seq, double beta, 
     double* acceptance, int n, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_steps, double* betas, int n_betas, char* filename);
+void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_steps, double* betas, int n_betas, int n_metropolis);
 
 //parsing.c
 int char_to_int(char X);

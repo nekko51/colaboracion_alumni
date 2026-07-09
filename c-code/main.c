@@ -28,17 +28,23 @@ int main() {
 
     /*Variable Initializations*/
     initialize_properties_matrix();
+    ini_ran(time(NULL));
 
     /*Code preparation*/
-    Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
-    if(negative_chain(&ch) == 1) return 1;
+    // Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
+    // if(negative_chain(&ch) == 1) return 1;
 
-    print_chain_to_file(ch, RESULTS FILE_L_MOUSE FRECS TXT);
+    // print_chain_to_file(ch, RESULTS FILE_L_MOUSE FRECS TXT);
     
-    Entropies *entropy = malloc(CHAINLEN * sizeof(Entropies));
-    all_entropies(ch, entropy, .5);
+    // Entropies *entropy = malloc(CHAINLEN * sizeof(Entropies));
+    // all_entropies(ch, entropy, .5);
 
-    print_entropies_to_file(entropy, RESULTS FILE_L_MOUSE ENTROPIS TXT);
+    // print_entropies_to_file(entropy, RESULTS FILE_L_MOUSE ENTROPIS TXT);
+    double betas[3];
+    betas[0] = 100;
+    betas[1] = 50;
+    betas[2] = 1;
+    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, 100, betas, 3, 10);
 
     /*Free memory*/
     

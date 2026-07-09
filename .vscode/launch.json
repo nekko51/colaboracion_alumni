@@ -3,26 +3,28 @@
     "configurations": [
         {
             "name": "Debug Simulation (Windows)",
-            "type": "cppvsdbg", 
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/c-code/antibody_sim_debug.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "console": "integratedTerminal",
+            "externalConsole": false,
+            "MIMode": "gdb",
             "preLaunchTask": "Build DEBUG (Windows)"
         },
         {
             "name": "Run FAST (Windows)",
-            "type": "cppvsdbg", 
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/c-code/antibody_sim_fast.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "console": "integratedTerminal",
+            "externalConsole": false,
+            "MIMode": "gdb",
             "preLaunchTask": "Build FAST (Windows)"
         },
         {

@@ -25,6 +25,7 @@ Maybe, to compare, parallel to making the binary plot, it'd be nice to graph JUS
 
 - (done) ~~Add energy penalization for each AA change, that way we make the global minimum different for each murine seed (heavily penalizing complete AA changes and marginally penalizing AA change that's close in the properties sample space) -- PROBLEM: given this approach, energy will be heavily linked to n_steps -- is that a problem though?~~
 - (done?) ~~Finish work on mega_metropolis~~
+- Prevent dash changing??
 - Start work on giga_metropolis
 - Add parallel threading
 - The code can be optimized HEAVILY (in principle) if instead of returning a Chain, etc. in structs we pass a pointer and fill it out with our functions; when passing Chains/big structs to functions (bigger than 8 bytes, which is what a pointer occupies in memory), we can also just pass them by reference to improve execution speed (remember we can also make const pointers).

@@ -11,10 +11,14 @@
                 "${workspaceFolder}/c-code/*.c",
                 "-lm",
                 "-o",
-                "${workspaceFolder}/antibody_sim_debug.exe"
+                "${workspaceFolder}/c-code/antibody_sim_debug.exe"
             ],
-            "options": { "cwd": "${workspaceFolder}" },
-            "problemMatcher": ["$gcc"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": "build",
             "detail": "Windows: Compiles .c files with debug symbols."
         },
@@ -25,13 +29,17 @@
             "args": [
                 "-Wall",
                 "-O3",
-                "${workspaceFolder}/*.c",
+                "${workspaceFolder}/c-code/*.c",
                 "-lm",
                 "-o",
                 "${workspaceFolder}/c-code/antibody_sim_fast.exe"
             ],
-            "options": { "cwd": "${workspaceFolder}" },
-            "problemMatcher": ["$gcc"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": "build",
             "detail": "Windows: Compiles .c files with maximum speed optimization."
         },
@@ -47,8 +55,12 @@
                 "-o",
                 "${workspaceFolder}/c-code/antibody_sim_debug"
             ],
-            "options": { "cwd": "${workspaceFolder}" },
-            "problemMatcher": ["$gcc"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": "build",
             "detail": "Linux: Compiles .c files with debug symbols."
         },
@@ -64,8 +76,12 @@
                 "-o",
                 "${workspaceFolder}/c-code/antibody_sim_fast"
             ],
-            "options": { "cwd": "${workspaceFolder}" },
-            "problemMatcher": ["$gcc"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": "build",
             "detail": "Linux: Compiles .c files with maximum speed optimization."
         }
