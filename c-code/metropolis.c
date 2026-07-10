@@ -113,7 +113,7 @@ void generate_betas(double** betas, int n_betas, double* entropies, int n_entrop
 }
 
 double sigmoid(double x, double lambda) {
-    return ( 2.0 / (1.0+exp(-lambda * x)) );
+    return ( MAX_AMORTIG / (1.0+(MAX_AMORTIG - 1.0)*exp(-lambda * x)) );
 }
 
 /************************
@@ -336,8 +336,20 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
     //monte carlo sims
     for(int i=0; i<n_betas; i++) {
         for(int j=0; j<CHAINLEN; j++) local_beta[j] = betas[i][j];
+
+        double progress = (double)(i+1) / (double)n_betas;
+        double current_target = STARTING_TARGET_ACCEPTANCE*(1.0-progress);
+        double last_acceptance = current_target;//we begin by assuming we're in our target acceptance
+
         for(int j=0; j<n_sweeps; j++) {
-            metropolis_sweep(murine_seq, original_murine_seq, human_ref_seq, local_beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP, WEIGHT_PENALTY);
+            double deviation = last_acceptance - current_target;
+            double factor = sigmoid(deviation, LAMBDA);
+
+            double amortig_beta[CHAINLEN];
+            for(int k=0; k<CHAINLEN; k++) amortig_beta[k]=factor*local_beta[k];
+
+            metropolis_sweep(murine_seq, original_murine_seq, human_ref_seq, amortig_beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP, WEIGHT_PENALTY);
+            last_acceptance = acceptance[j];
         }
         strcpy(murine_history[i+1], murine_seq);
         energy_history[i+1] = energy_calculation(human_ref_seq, murine_history[i+1], original_murine_seq, CHAINLEN);

@@ -63,8 +63,12 @@ Organised in batch folders named by date and time. For every seed, a folder is g
 - $q$-order Renyi entropy, $q\in[0,1)$: $$S=\frac{1}{1-q}\log\sum_ip_i^q$$
 - $q$-order Tsallis entropy, $q\in[0,1)$: $$\frac{1}{q-1}\left(1-\sum_ip_i^q\right)$$
 
-### $\beta$-values:
-- $\displaystyle\beta_i^j = k_i \cdot \frac{\alpha}{S_j + \varepsilon}, \quad k_i = \left(c_r\right)^i\ \forall i \in [1,N_\beta], j \in [1, L_\text{chain}]$ where $c_r$ is the cooling rate, $\varepsilon$ avoid division by 0, $\alpha$ is a scale factor, and $S_j$ is entropy for position $j$ in Schrödinger chain.
+### Metropolis:
+$\beta$-values are defined to be variable, through two different mechanisms (what I call the engine and the damper)
+- **Engine**: $$\displaystyle\beta_i^j = k_i \cdot \frac{\alpha}{S_j + \varepsilon}, \quad k_i = \left(c_r\right)^i\ \forall i \in [1,N_\beta], j \in [1, L_\text{chain}]$$ where $c_r$ is the cooling rate, $\varepsilon$ avoids division by 0, $\alpha$ is a scale factor, and $S_j$ is entropy for position $j$ in Schrödinger chain.
+- **Damper**: $$\varphi(\sigma, \lambda) = \frac{L}{\displaystyle 1+(1-L)e^{-\lambda \sigma}}$$ where $\lambda$ is a global variable (the dampening coefficient), $L$ is a global variable too (it's the maximum value our $\beta$ will be multiplied by), and $\sigma$ is the deviation of the last sweep acceptance from the target acceptance. Since we want acceptance to decay as our system explores the energy landscape, we begin with a ``STARTING_TARGET_ACCEPTANCE`` value, $\alpha_0$, (defined in head.h), and slowly decrease it using the following equation: $$\alpha_i = \alpha_0 \left(1-\frac{i}{N_\beta}\right)$$ where $N_\beta$ is the number of betas we have, and $i$ is the current iteration with our pre-defined $\beta$ given by the "engine"
+$\newline$ Lastly, $\sigma = \alpha_{ij}-\alpha_i$, where $\alpha_{ij}$ is acceptance from last sweep iteration $(j\in[1,\text{n\_sweeps}])$
+
 
 ## Found errors
 -
