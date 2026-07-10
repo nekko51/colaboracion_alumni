@@ -101,10 +101,10 @@ Chain file_megaAacids(char *filename, int n_lines) {
 Vec2 aa_shannon_entropy(Aacid aa) {
     double sume = 0., sump = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sume += -aa.elements[i] * log(aa.elements[i]);
+        sume += -aa.elements[i] * log2(aa.elements[i]);
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sump += -aa.properties[i] * log(aa.properties[i]);
+        sump += -aa.properties[i] * log2(aa.properties[i]);
     }
     return (Vec2){ .x = sume, .y = sump };
 }
@@ -188,7 +188,7 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
 
         for (int i = 0; i < N_AACIDS; i++) {
             if (mega_chain.aas[aa].elements[i] >= EPSILON) {
-                plogp -= mega_chain.aas[aa].elements[i] * log(mega_chain.aas[aa].elements[i]);
+                plogp -= mega_chain.aas[aa].elements[i] * log2(mega_chain.aas[aa].elements[i]);
                 p1p += mega_chain.aas[aa].elements[i] * (1 - mega_chain.aas[aa].elements[i]);
                 ppowq += pow(mega_chain.aas[aa].elements[i], order);
             }
@@ -199,7 +199,7 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
         plogp = 0.; p1p = 0.; ppowq = 0.;
         for (int i = 0; i < N_PROPERTIES; i++) {
             if (mega_chain.aas[aa].properties[i] >= EPSILON) {
-                plogp -= mega_chain.aas[aa].properties[i] * log(mega_chain.aas[aa].properties[i]);
+                plogp -= mega_chain.aas[aa].properties[i] * log2(mega_chain.aas[aa].properties[i]);
                 p1p += mega_chain.aas[aa].properties[i] * (1 - mega_chain.aas[aa].properties[i]);
                 ppowq += pow(mega_chain.aas[aa].properties[i], order);
             }
