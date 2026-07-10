@@ -10,8 +10,7 @@
 ## Functions:
 ### mega_metropolis;
 - The start could be optimized with realloc (instead of opening file twice)
-- Prevent gap changing??
-- Add info.txt that states initial betas -- to be able to compare the dynamic beta change
+- Make the sigmoid act upon each individual chain position; if we have too many gaps for example, acceptance will be low
 
 ### giga_metropolis conceptualization;
 - Variable betas for each position implementation (betas would now be a matrix of dimensions `n_betas*CHAINLEN`) where $\beta^i_j = k_i \cdot \frac{c}{S_j+\varepsilon}$, where $S_j$ is entropy for each chain position (ranging from `0` to `CHAINLEN-1`) and $k_i$ is a monotonous sequence (sucesión monótona, no sé cómo lo dicen los ingleses) which is function of (¿?), that dictates how `betas[i][]` should change as thermalization is reached for `betas[i-1][]`
@@ -24,6 +23,8 @@
 - Add energy penalization for each AA change, that way we make the global minimum different for each murine seed (heavily penalizing complete AA changes and marginally penalizing AA change that's close in the properties sample space) -- PROBLEM: given this approach, energy will be heavily linked to n_steps -- is that a problem though?
 - Finish work on mega_metropolis
 - Implement parallel threading
+- Add info.txt that states initial betas -- to be able to compare the dynamic beta change
+- Prevent gap changing?? (should be implemented with $\beta \propto S_j$)
 
 
 
