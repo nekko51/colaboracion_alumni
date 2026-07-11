@@ -79,10 +79,26 @@ where $H(X)$ and $H(Y)$ are the Shannon entropies of the variables $X$ and $Y$.
 When $\min\{H(X), H(Y)\} = 0$, the position is fully conserved and $I(X;Y)=0$ as well. In this case, the code outputs $i(X;Y) \equiv 0$, by convention.
 
 ### Metropolis:
-$\beta$-values are defined to be variable, through two different mechanisms (what I call the engine and the damper)
-- **Engine**: $$\displaystyle\beta_i^j = k_i \cdot \frac{\alpha}{S_j + \varepsilon}, \quad k_i = \left(c_r\right)^i\ \forall i \in [1,N_\beta], j \in [1, L_\text{chain}]$$ where $c_r$ is the cooling rate, $\varepsilon$ avoids division by 0, $\alpha$ is a scale factor, and $S_j$ is entropy for position $j$ in Schrödinger chain.
-- **Damper**: $$\varphi(\sigma, \lambda) = \frac{L}{\displaystyle 1+(1-L)e^{-\lambda \sigma}}$$ where $\lambda$ is a global variable (the dampening coefficient), $L$ is a global variable too (it's the maximum value our $\beta$ will be multiplied by), and $\sigma$ is the deviation of the last sweep acceptance from the target acceptance. Since we want acceptance to decay as our system explores the energy landscape, we begin with a ``STARTING_TARGET_ACCEPTANCE`` value, $\alpha_0$, (defined in head.h), and slowly decrease it using the following equation: $$\alpha_i = \alpha_0 \left(1-\frac{i}{N_\beta}\right)$$ where $N_\beta$ is the number of betas we have, and $i$ is the current iteration with our pre-defined $\beta$ given by the "engine"
-$\newline$ Lastly, $\sigma = \alpha_{ij}-\alpha_i$, where $\alpha_{ij}$ is acceptance from last sweep iteration $(j\in[1,\text{n\_sweeps}])$
+- $\beta$-values are defined to be variable, through two different mechanisms (what I call the engine and the damper)
+    - **Engine**: $$\displaystyle\beta_i^j = k_i \cdot \frac{\alpha}{S_j + \varepsilon}, \quad k_i = \left(c_r\right)^i\ \forall i \in [1,N_\beta], j \in [1, L_\text{chain}]$$ where $c_r$ is the cooling rate, $\varepsilon$ avoids division by 0, $\alpha$ is a scale factor, and $S_j$ is entropy for position $j$ in Schrödinger chain.
+    - **Damper**: $$\varphi(\sigma, \lambda) = \frac{L}{\displaystyle 1+(1-L)e^{-\lambda \sigma}}$$ where $\lambda$ is a global variable (the dampening coefficient), $L$ is a global variable too (it's the maximum value our $\beta$ will be multiplied by), and $\sigma$ is the deviation of the last sweep acceptance from the target acceptance. Since we want acceptance to decay as our system explores the energy landscape, we begin with a ``STARTING_TARGET_ACCEPTANCE`` value, $\alpha_0$, (defined in head.h), and slowly decrease it using the following equation: $$\alpha_i = \alpha_0 \left(1-\frac{i}{N_\beta}\right)$$ where $N_\beta$ is the number of betas we have, and $i$ is the current iteration with our pre-defined $\beta$ given by the "engine"
+    $\newline$ Lastly, $\sigma = \alpha_{ij}-\alpha_i$, where $\alpha_{ij}$ is acceptance from last sweep iteration $(j\in[1,\text{n\_sweeps}])$
+
+- The total energy, $E_\text{total}$, is a weighted sum of three components, which we aim to minimize:
+    $$E_\text{total} = w_\text{log} E_\text{log} + w_\text{prop} E_\text{prop} + w_\text{penalty} E_\text{penalty}$$
+    The weights for each component (`WEIGHT_LOG`, `WEIGHT_PROP`, `WEIGHT_PENALTY`) are defined in `head.h`.
+
+    1.  **Log Humanness Energy ($E_\text{log}$)**: This term quantifies how "human-like" a sequence is based on AA frequencies from a reference set of human sequences (the Schrödinger chain):
+        $$E_\text{log} = -\sum_{i=1}^{L_\text{chain}} \log(p_i(a_i))$$
+        where $p_i(a_i)$ is the frequency of the amino acid $a_i$ at position $i$ in the human reference. A large penalty (`ZERO_FREQ_PENALTY_LOG`) is added for amino acids with a frequency below a small threshold (`EPSILON`).
+
+    2.  **Property Distance Energy ($E_\text{prop}$)**: This term measures the similarity between the properties of the sequence and the human reference; it's calculated as the squared Euclidean distance in the property space for each position:
+        $$E_\text{prop} = \sum_{i=1}^{L_\text{chain}} \sum_{j=1}^{N_\text{props}} \left( \text{prop}_j(a_i) - \overline{\text{prop}_j(i)} \right)^2$$
+        where $\text{prop}_j(a_i)$ is the value of property $j$ for amino acid $a_i$, and $\overline{\text{prop}_j(i)}$ is the average value of property $j$ at position $i$ in the Schrödinger chain.
+
+    3.  **Wander(er/ing) Penalty Energy ($E_\text{penalty}$)**: This term discourages the sequence from deviating too far from the original murine sequence; we thus only incentivize mutation if there's a relatively big gain in humanness. It consists of a penalty based on property distance and a (for now) constant penalty for any mutation:
+        $$E_\text{penalty} = \sum_{i=1}^{L_\text{chain}} \left[ \left( \sum_{j=1}^{N_\text{props}} (\text{prop}_j(a_i) - \text{prop}_j(a_i^\text{original}))^2 \right) + P \cdot \delta_{\displaystyle  a_i}^{\displaystyle a_i^{\text{original}}}\right]$$
+        where $a_i^\text{original}$ is the amino acid at position $i$ in the original murine sequence, $P$ is the `AA_MUTATION_PENALTY`, and $\delta$ is the "generalized Kronecker delta" (logical if gate). This approach ensures each mutation has a minimum energy cost, while heavily penalizing big property changes.
 
 
 ## Found errors

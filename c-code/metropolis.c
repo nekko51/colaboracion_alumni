@@ -339,6 +339,9 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
 
         double progress = (double)(i+1) / (double)n_betas;
         double current_target = STARTING_TARGET_ACCEPTANCE*(1.0-progress);
+
+        int local_success[CHAINLEN];
+
         double last_acceptance = current_target;//we begin by assuming we're in our target acceptance
 
         for(int j=0; j<n_sweeps; j++) {
