@@ -1,5 +1,49 @@
 #include "head.h"
 
+
+// @brief calculates correlation between two positions of la chain in a list of chains using the mutual information formula
+// @param input_chains array of chains used as input
+// @param n_chains number of chains in inputted array
+// @param idx_a one of the indices in the chain
+// @param idx_b the other index for correlation
+// @returns statistical correlation between those two positions 
+double aa_correlation(Chain *input_chains, int n_chains, int idx_a, int idx_b) {
+    double correlation = 0.;
+    for (int a = 0; a < N_AACIDS; a++) {
+        for (int b = 0; b < N_AACIDS; b++) {
+            int count_a = 0, count_b = 0, count_ab = 0;
+            for (int chain = 0; chain < n_chains; chain++) {
+                if (input_chains[chain].aas[idx_a].elements[a] >= 1.-EPSILON)   count_a++;
+                if (input_chains[chain].aas[idx_b].elements[b] >= 1.-EPSILON)   count_b++;
+                if ((input_chains[chain].aas[idx_a].elements[a] >= 1.-EPSILON) && (input_chains[chain].aas[idx_b].elements[b] >= 1.-EPSILON))   count_ab++;
+            }
+            correlation += (double)count_ab / (double)n_chains * log2(
+                (double)count_ab * (double)n_chains / (double)count_a / (double)count_b
+            );
+        }
+    }
+    return correlation;
+}
+
+// @brief calculates correlation matrix
+// @param input_chains array of chains used as input
+// @param n_chains number of chains in inputted array
+// @returns output matrix used as output
+void aa_correlation_matrix(Chain *input_chains, int n_chains, double output[CHAINLEN][CHAINLEN]) {
+    for (int a = 0; a < CHAINLEN; a++) {
+        for (int b = 0; b < CHAINLEN; b++) {
+            output[a][b] = aa_correlation(input_chains, n_chains, a, b);
+        }
+    }
+}
+
+
+
+
+
+
+
+
 double scalar_product(double *a, double *b, int dims) {
     double sum = 0.;
     for (int i = 0; i < dims; i++) {
@@ -7,6 +51,11 @@ double scalar_product(double *a, double *b, int dims) {
     }
     return sum;
 }
+
+
+
+// ----------------- form here, not used code ---------------------
+
 
 // takes many chains of 1's and 0's (not frequencies), a position and an aa to check the conditioned frequencies given that aa in that position
 // the aminoacid to check for conditioning must be entered as the index in the AMINOACIDS list
