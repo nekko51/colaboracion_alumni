@@ -63,6 +63,13 @@ Organised in batch folders named by date and time. For every seed, a folder is g
 - $q$-order Renyi entropy, $q\in[0,1)$: $$S=\frac{1}{1-q}\log\sum_ip_i^q$$
 - $q$-order Tsallis entropy, $q\in[0,1)$: $$\frac{1}{q-1}\left(1-\sum_ip_i^q\right)$$
 
+### Correlation:
+Mutual information is given by:
+$$
+I(X,Y) = \sum_{x\in\mathcal X}\sum_{y\in\mathcal Y}p(x, y)\log_2\frac{p(x,y)}{p(x)p(y)},
+$$
+where $X$ and $Y$ are random variables that take values, $x$ and $y$, in $\mathcal X$ and $\mathcal Y$; and $p(x)=P(\{X=x\}),\ p(y)=P(\{Y=y\}),\ p(x,y)=P(\{X=x\}\cap \{Y=y\})$.
+
 ### Metropolis:
 $\beta$-values are defined to be variable, through two different mechanisms (what I call the engine and the damper)
 - **Engine**: $$\displaystyle\beta_i^j = k_i \cdot \frac{\alpha}{S_j + \varepsilon}, \quad k_i = \left(c_r\right)^i\ \forall i \in [1,N_\beta], j \in [1, L_\text{chain}]$$ where $c_r$ is the cooling rate, $\varepsilon$ avoids division by 0, $\alpha$ is a scale factor, and $S_j$ is entropy for position $j$ in Schrödinger chain.
