@@ -74,6 +74,7 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 #define L_HUMAN_N_LINES 1309
 #define FRECS "_freqs"
 #define ENTROPIS "_entropies"
+#define CORREL "_correlations"
 
 #define DECIMAL_PRECISION 5
 #define BETA_PRECISION 10
@@ -175,6 +176,8 @@ void print_entropies(Entropies *S);
 void print_entropies_to_file(Entropies *S, char* filename);
 
 //correlations.c
+void aa_correlation_matrix(Chain *input_chains, int n_chains, double output[CHAINLEN][CHAINLEN]);
+void print_correlation_matrix_to_file(FILE *f, double corr[CHAINLEN][CHAINLEN]);
 double scalar_product(double *a, double *b, int dims);
 Chain correlation_for_position_and_aacid(Chain* chains, int n_chains, int position_index, int aa_index);
 Chain correlation_for_position_and_prop(Chain* chains, int n_chains, int position_index, int prop_index);

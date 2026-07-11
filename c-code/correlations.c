@@ -8,21 +8,57 @@
 // @param idx_b the other index for correlation
 // @returns statistical correlation between those two positions 
 double aa_correlation(Chain *input_chains, int n_chains, int idx_a, int idx_b) {
-    double correlation = 0.;
-    for (int a = 0; a < N_AACIDS; a++) {
-        for (int b = 0; b < N_AACIDS; b++) {
-            int count_a = 0, count_b = 0, count_ab = 0;
-            for (int chain = 0; chain < n_chains; chain++) {
-                if (input_chains[chain].aas[idx_a].elements[a] >= 1.-EPSILON)   count_a++;
-                if (input_chains[chain].aas[idx_b].elements[b] >= 1.-EPSILON)   count_b++;
-                if ((input_chains[chain].aas[idx_a].elements[a] >= 1.-EPSILON) && (input_chains[chain].aas[idx_b].elements[b] >= 1.-EPSILON))   count_ab++;
-            }
-            correlation += (double)count_ab / (double)n_chains * log2(
-                (double)count_ab * (double)n_chains / (double)count_a / (double)count_b
-            );
+    int count_a[N_AACIDS]          = {0};
+    int count_b[N_AACIDS]          = {0};
+    int count_ab[N_AACIDS][N_AACIDS] = {0};
+    int valid = 0;
+
+    for (int chain = 0; chain < n_chains; chain++) {
+        int val_a = -1, val_b = -1;
+        for (int i = 0; i < N_AACIDS; i++) {
+            if (input_chains[chain].aas[idx_a].elements[i] >= 1.0 - EPSILON) val_a = i;
+            if (input_chains[chain].aas[idx_b].elements[i] >= 1.0 - EPSILON) val_b = i;
+        }
+        if (val_a != -1 && val_b != -1) {
+            count_a[val_a]++;
+            count_b[val_b]++;
+            count_ab[val_a][val_b]++;
+            valid++;
         }
     }
-    return correlation;
+
+    if (valid == 0) return 0.0;
+
+    // mutual information
+    double mi = 0.0;
+    for (int a = 0; a < N_AACIDS; a++) {
+        for (int b = 0; b < N_AACIDS; b++) {
+            if (count_ab[a][b] > 0) {
+                double p_ab = (double)count_ab[a][b] / valid;
+                double p_a  = (double)count_a[a]     / valid;
+                double p_b  = (double)count_b[b]     / valid;
+                mi += p_ab * log2(p_ab / (p_a * p_b));
+            }
+        }
+    }
+
+    // marginal entropies
+    double h_a = 0.0, h_b = 0.0;
+    for (int i = 0; i < N_AACIDS; i++) {
+        if (count_a[i] > 0) {
+            double p = (double)count_a[i] / valid;
+            h_a -= p * log2(p);
+        }
+        if (count_b[i] > 0) {
+            double p = (double)count_b[i] / valid;
+            h_b -= p * log2(p);
+        }
+    }
+
+    double denom = (h_a < h_b) ? h_a : h_b;
+    if (denom < EPSILON) return 0.0;
+
+    return mi / denom;
 }
 
 // @brief calculates correlation matrix
@@ -37,7 +73,14 @@ void aa_correlation_matrix(Chain *input_chains, int n_chains, double output[CHAI
     }
 }
 
-
+void print_correlation_matrix_to_file(FILE *f, double corr[CHAINLEN][CHAINLEN]) {
+    for (int i = 0; i < CHAINLEN; i++) {
+        for (int j = 0; j < CHAINLEN; j++) {
+            fprintf(f, "%lf\t", corr[i][j]);
+        }
+        fprintf(f, "\n");
+    }
+}
 
 
 

@@ -66,9 +66,17 @@ Organised in batch folders named by date and time. For every seed, a folder is g
 ### Correlation:
 Mutual information is given by:
 $$
-I(X,Y) = \sum_{x\in\mathcal X}\sum_{y\in\mathcal Y}p(x, y)\log_2\frac{p(x,y)}{p(x)p(y)},
+I(X;Y) = \sum_{x\in\mathcal X}\sum_{y\in\mathcal Y}p(x, y)\log_2\frac{p(x,y)}{p(x)p(y)},
 $$
 where $X$ and $Y$ are random variables that take values, $x$ and $y$, in $\mathcal X$ and $\mathcal Y$; and $p(x)=P(\{X=x\}),\ p(y)=P(\{Y=y\}),\ p(x,y)=P(\{X=x\}\cap \{Y=y\})$.
+
+In ``correlations.c`` it is normalized as follows:
+$$
+i(X;Y) = \frac{I(X;Y)}{\min\{H(X),H(Y)\}},
+$$
+where $H(X)$ and $H(Y)$ are the Shannon entropies of the variables $X$ and $Y$.
+
+When $\min\{H(X), H(Y)\} = 0$, the position is fully conserved and $I(X;Y)=0$ as well. In this case, the code outputs $i(X;Y) \equiv 0$, by convention.
 
 ### Metropolis:
 $\beta$-values are defined to be variable, through two different mechanisms (what I call the engine and the damper)
