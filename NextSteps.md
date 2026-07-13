@@ -6,16 +6,18 @@
 - For functions that take a const datatype as an input, we can just pass them by reference (remember pointers can also be made of const type) to prevent memory duplicates
 - Furthermore, we should delve in the differences between heap and stack memory (this last one seems to be pretty limited, and we might run out of it in execution) (https://www.reddit.com/r/cs2a/comments/1egymrr/stack_vs_heap_memory/)
 - Turn char_to_int function into a lookup table for metropolis (it's called chainlen* n_sweeps* n_betas* n_metropolis* n_lines); 1.119.000 times with these toy numbers (we can expect up to 747.500.000.000 function calls with some serious numbers)
+### others;
+- Maybe we should move metropolis parameters from head.h to main.c
 
 ## Functions:
+### main;
+- If we're only going to use shannon entropy for beta matrix generation, there's no need to call all_entropies function
 ### mega_metropolis;
 - The start could be optimized with realloc (instead of opening file twice)
 - Make the sigmoid act upon each individual chain position; if we have too many gaps for example, acceptance will be low
-
-### giga_metropolis conceptualization;
-- Variable betas for each position implementation (betas would now be a matrix of dimensions `n_betas*CHAINLEN`) where $\beta^i_j = k_i \cdot \frac{c}{S_j+\varepsilon}$, where $S_j$ is entropy for each chain position (ranging from `0` to `CHAINLEN-1`) and $k_i$ is a monotonous sequence (sucesión monótona, no sé cómo lo dicen los ingleses) which is function of (¿?), that dictates how `betas[i][]` should change as thermalization is reached for `betas[i-1][]`
-- Dynamic beta change in runtime
-- Prevent gap changing??
+- Dynamic beta change in runtime (midway there); we now need to taylor it to each sequence position instead of whole sequence (half the chain constantly mutating vs the other half not doing so $\neq$ whole chain mutating half the time)
+### weigh_entropies in chain-operations.c;
+- currently returns $\displaystyle\frac{\text{saa}+\text{spp}}{2}$
 
 
 ---
@@ -25,6 +27,7 @@
 - Implement parallel threading
 - Add info.txt that states initial betas -- to be able to compare the dynamic beta change
 - Prevent gap changing?? (should be implemented with $\beta \propto S_j$)
+- - Variable betas for each position implementation (betas would now be a matrix of dimensions `n_betas*CHAINLEN`) where $\beta^i_j = k_i \cdot \frac{c}{S_j+\varepsilon}$, where $S_j$ is entropy for each chain position (ranging from `0` to `CHAINLEN-1`) and $k_i$ is a monotonous sequence (sucesión monótona, no sé cómo lo dicen los ingleses) which is function of (¿?), that dictates how `betas[i][]` should change as thermalization is reached for `betas[i-1][]`
 
 
 

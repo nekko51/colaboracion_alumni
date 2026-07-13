@@ -101,7 +101,16 @@ double calculate_total_energy(const Energy* energies, double w_log, double w_pro
     return(w_log*energies->log_humanness + w_prop*energies->property_distance + w_penalty*energies->wanderer_penalty);
 }
 
-//generate betas matrix -- n_entropies should be CHAINLEN; cooling_rate should be > 1
+    /**
+    @brief generates betas matrix
+    @param entropies double array of entropies for each chain position
+    @param n_betas (rows) number of betas to be ran in metropolis
+    @param n_entropies use CHAINLEN (columns) 
+    @param scale_Factor \alpha in README.md
+    @param epsilon use EPSILON (avoids division by 0)
+    @param cooling_rate c_r in README.md -- SHOULD BE > 1
+    @return betas matrix according to README.md -> Metropolis
+    **/
 void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate) {
     double k_i = 1.0;
     for(int i=0; i<n_betas; i++) {

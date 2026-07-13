@@ -209,6 +209,20 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
     }
 }
 
+/*
+should weigh every entropy type to produce a single double, weighs:
+saa, laa, raa, taa
+spp, lpp, rpp, tpp*/
+void weigh_entropies(Entropies* input, double* output, double weighs[8]) {
+    for(int i=0; i<CHAINLEN; i++) {
+        // for(int j=0; j<8; j++) {
+        //     output[i] = input[j].saa;
+        // }
+        output[i] = 0.5*input[i].saa + 0.5*input[i].spp;
+    }
+    return;
+}
+
 void print_chain(Chain c) {
     for (int i = 0; i < CHAINLEN; i++) {
         printf("%d:\t", i+1);
@@ -266,18 +280,18 @@ void print_entropies_to_file(Entropies *S, char* filename) {
     fclose(f);
 }
 
-/*
-@brief outputs the list of positions that are non-CDRs
-@param S the list of entropies for the chain
-@param threshold limit to which CDRs are discriminated
-@param entropy_type chosen entropy to use for the discrimination
-    - 'l':    linear entropy
-    - 'r':    Renyi entropy
-    - 't':    Tsallis entropy
-    - none of the above:  Shannon entropy (default)
-@return out_indexes positions of the non-CDRs (inputted array must be at least CHAINLEN long)
-@return n_indexes number of positions outputted
-*/
+/**
+    @brief outputs the list of positions that are non-CDRs
+    @param S the list of entropies for the chain
+    @param threshold limit to which CDRs are discriminated
+    @param entropy_type chosen entropy to use for the discrimination
+        - 'l':    linear entropy
+        - 'r':    Renyi entropy
+        - 't':    Tsallis entropy
+        - none of the above:  Shannon entropy (default)
+    @return out_indexes positions of the non-CDRs (inputted array must be at least CHAINLEN long)
+    @return n_indexes number of positions outputted
+**/
 void noncdr_candidates(Entropies *S, double threshold, char entropy_type, int *out_indexes, int *n_indexes) {
     double entropy; *n_indexes = 0;
     for (int pos = 0; pos < CHAINLEN; pos++) {

@@ -22,13 +22,56 @@ test mouse:     1379
  *
 */
 
-//when calling mega_metropolis, for human ref use (SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES)
 
-int main() {
+int main() {//i'm so happy i don't have to free every single malloc'd array if there's an error; if we had to, I think it's the only use of GOTO that wouldn't get you fired
+    /*Initial parameters*/
+    int n_betas = 1000;
+    int n_sweeps = 10000;
+    int n_metropolis = 150;
+    int n_entropies = CHAINLEN;
+    double entropy_order_q = 0.34;
+    double scale_factor = 1.0;
+    double cooling_rate = 1.05;
+    double weighs[8] = {0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0};
+    Chain human_ref;
 
-    /*Variable Initializations*/
+    /*Variable & RNG Initializations*/
+    human_ref = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
     initialize_properties_matrix();
     ini_ran(time(NULL));
+    
+
+    double** betas = malloc(n_betas*sizeof(double*));
+    if(betas == NULL) {
+        fprintf(stderr, "Couldn't assign memory to betas matrix\n");
+        return(1);
+    }
+    for(int i=0; i<n_betas; i++) {
+        betas[i] = malloc(CHAINLEN*sizeof(double));
+        if(betas[i] == NULL) {
+            fprintf(stderr, "Couldn't assign memory to betas column %d/%d\n", i+1, n_betas);
+            return(1);
+        }
+    }
+
+    double* oll_entropies = malloc(CHAINLEN*sizeof(Entropies));
+    if(oll_entropies == NULL) {
+        fprintf(stderr, "Couldn't assign memory to all_entropies array\n");
+        return(1);
+    }
+    double* entropies = malloc(CHAINLEN*sizeof(double));
+    if(entropies == NULL) {
+        fprintf(stderr, "Couldn't assign memory to entropies array\n");
+        return(1);
+    }
+
+    all_entropies(human_ref, oll_entropies, entropy_order_q);
+    weigh_entropies(oll_entropies, entropies, weighs);//unfinished function, currently returns 1/2*(saa+spp)
+    generate_betas(betas, n_betas, entropies, CHAINLEN, scale_factor, EPSILON, cooling_rate);
+    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, n_sweeps, betas, n_betas, n_metropolis);
+
+
+
 
     /*Code preparation*/
     // Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
@@ -40,13 +83,14 @@ int main() {
     // all_entropies(ch, entropy, .5);
 
     // print_entropies_to_file(entropy, RESULTS FILE_L_MOUSE ENTROPIS TXT);
-    double betas[3];
-    betas[0] = 100;
-    betas[1] = 50;
-    betas[2] = 1;
-    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, 100, betas, 3, 10);
 
     /*Free memory*/
     
     return 0;
+    for(int i=0; i<n_betas; i++) {
+        free(betas[i]);
+    }
+    free(betas);
+    free(oll_entropies);
+    free(entropies);
 }

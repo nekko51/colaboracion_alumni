@@ -147,6 +147,7 @@ int negative_chain(const Chain* ch);
 FILE *get_file(char* filename, char* mode);
 
 //metropolis.c
+void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate);
 void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const Chain* human_ref_seq, double* local_beta, 
     double* acceptance, int chainlen, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, double** betas, int n_betas, char* filename);
@@ -170,10 +171,13 @@ Chain ch_normalize(Chain c);
 Chain file_megaAacids(char *filename, int n_lines);
 void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order);
 void all_entropies(Chain mega_chain, Entropies *output, double order);
+
 void print_chain(Chain c);
 void print_chain_to_file(Chain c, char* filename);
 void print_entropies(Entropies *S);
 void print_entropies_to_file(Entropies *S, char* filename);
+/*WIP*/
+void weigh_entropies(Entropies* input, double* output, double weighs[8]);
 
 //correlations.c
 void aa_correlation_matrix(Chain *input_chains, int n_chains, double output[CHAINLEN][CHAINLEN]);
