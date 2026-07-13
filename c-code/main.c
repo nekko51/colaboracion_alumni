@@ -30,13 +30,13 @@ void initialize(Chain* human_ref) {
 
 int main() {//i'm so happy i don't have to free every single malloc'd array if there's an error; if we had to, I think it's the only use of GOTO that wouldn't get you fired
     /*Initial parameters*/
-    int n_betas = 10;
-    int n_sweeps = 10;
-    int n_metropolis = 10;
+    int n_betas = 50;
+    int n_sweeps = 800;
+    int n_metropolis = 20;
     int n_entropies = CHAINLEN;
     double entropy_order_q = 0.34;
     double scale_factor = 1.0;
-    double cooling_rate = 1.05;
+    double cooling_rate = 1.02;
     double weighs[8] = {0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0};
     Chain human_ref;
 

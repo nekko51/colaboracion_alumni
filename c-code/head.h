@@ -54,9 +54,9 @@ extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 
 /*Metropolis parameters*/
 #define AA_MUTATION_PENALTY 1.5//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
-#define LAMBDA 5.0
+#define LAMBDA 3.0
 #define STARTING_TARGET_ACCEPTANCE 0.25
-#define MAX_AMORTIG 10.0
+#define MAX_AMORTIG 4.0
 //must sum to 1:
 #define WEIGHT_LOG 0.4
 #define WEIGHT_PROP 0.4
