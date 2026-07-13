@@ -1,0 +1,14 @@
+\section{Intro}
+
+The aim of this GitHub repository is to delve deeper into biophysics, using simulated annealing and science data to humanize murine antibodies.
+
+We use a frequentist analysis of the given data in \code{learn\_human.txt} and \code{learn\_mouse.txt} in order to measure entropies and correlations. 
+
+With those outputs we intend to fine-tune the simulated annealing algorithm for the humanization.
+
+\subsection{Raw data files} 
+The \code{learn\_human.txt} and \code{learn\_mouse.txt} data entries are chains of 298 aminoacids each. Every aminoacid is represented by a character in this string:
+\code{\textcolor{green!70!black}{-ACDEFGHIKLMNPQRSTVWY}}. The \code{\textcolor{green!70!black}{-}} is a gap in the chain, as used in the notation convention.
+
+\subsection{Aminoacid's properties}
+Every aminoacid is a certain chemical compound. Thus, it has chemical properties, which vary form aminoacid to aminoacid. The used properties in this project are (in order): porperty-gap, hydrophobic, aromatic, aliphatic, polar, small, minuscule, positively charged, and negatively charged. Every aminacid has asigned at least one property, so for consistency we added the property version of the gap: property-gap, denoted as \code{\textcolor{green!70!black}{-(PROP)}}.

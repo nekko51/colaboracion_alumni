@@ -1,4 +1,4 @@
-\documentclass{report}
+\documentclass{article}
 \usepackage{my_style}
 \begin{document}
 
@@ -21,12 +21,13 @@
 % \end{figure}
 \newpage
 \tableofcontents
+\newpage
 
-\include{sections/intro}
-\include{sections/modelization}
-\include{sections/entropies}
-\include{sections/correlations}
-\include{sections/metropolis}
-\include{sections/formatting}
+\input{sections/intro}
+\input{sections/modelization}
+\input{sections/entropies}
+\input{sections/correlations}
+\input{sections/metropolis}
+\input{sections/formatting}
 
 \end{document}

@@ -10,7 +10,7 @@
 \usepackage{amsfonts, amsthm}
 \usepackage[a4paper]{geometry}
 \usepackage[most]{tcolorbox}
-\usepackage{graphicx}
+\usepackage{graphicx, tcolorbox}
 \usepackage[colorlinks=true, linkcolor=blue!70!black]{hyperref}
 \geometry{top=2.54cm, bottom=2.54cm, left=2.54cm, right=2.54cm}
 \renewcommand{\baselinestretch}{1.5}
@@ -25,5 +25,19 @@
 \vspace*{-.6cm}
 
 \
+}
+
+\newtcbox{\code}{
+  on line,
+  fontupper=\ttfamily,
+  boxrule=0pt,
+  arc=2pt,
+  colback=lightgray!30,
+  colframe=lightgray!30,
+  boxsep=0pt,
+  left=3pt,
+  right=3pt,
+  top=1pt,
+  bottom=1pt
 }
 
