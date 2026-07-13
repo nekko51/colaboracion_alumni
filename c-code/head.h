@@ -145,6 +145,7 @@ void med_var(double* data, double* mean, double* variance, int n);
 void minmax(double* data, double* max, double* min, int n);
 int negative_chain(const Chain* ch);
 FILE *get_file(char* filename, char* mode);
+void sort_array(double* array, int n);
 
 //metropolis.c
 void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate);

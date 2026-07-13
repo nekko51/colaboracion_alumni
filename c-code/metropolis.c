@@ -176,8 +176,9 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
         fprintf(beta_f, "Beta matrix values (n_betas x CHAINLEN)\n\n");
         for (int i=0; i<n_betas; i++) {
             fprintf(beta_f, "Beta step %d:\n", i+1);
+            sort_array(betas[i], CHAINLEN);
             for (int j=0; j<CHAINLEN; j++) {
-                fprintf(beta_f, "%.*lf\t", DECIMAL_PRECISION, betas[i][j]);
+                fprintf(beta_f, "\t%8.*lf", DECIMAL_PRECISION, betas[i][j]);
             }
             fprintf(beta_f, "\n\n");
         }
@@ -204,15 +205,12 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
     fprintf(f, "\n\n");
     // fprtinf(f, "Schrödinger reference chain: ")
     for(int i=0; i<n_betas; i++) {
-        double min_beta, max_beta, avg_beta = 0.0;
+        double min_beta, max_beta, median_beta = 0.0;
         minmax(betas[i], &max_beta, &min_beta, CHAINLEN);
-        for(int j=0; j<CHAINLEN; j++) {
-            avg_beta += betas[i][j];
-        }
-        avg_beta /= CHAINLEN;
-        fprintf(f, "***** beta (min/avg/max) = %*.*lf / %*.*lf / %*.*lf (%d/%d) \t-\t acceptance med: %.*lf%%, \tacceptance var: %.*lf*****\n",
+        median_beta = betas[i][(int)CHAINLEN/2];
+        fprintf(f, "\n***** beta (min/median/max) = %*.*lf / %*.*lf / %*.*lf (%d/%d) \t-\t acceptance med: %.*lf%%, \tacceptance var: %.*lf*****\n",
             BETA_PRECISION, DECIMAL_PRECISION, min_beta,
-            BETA_PRECISION, DECIMAL_PRECISION, avg_beta,
+            BETA_PRECISION, DECIMAL_PRECISION, median_beta,
             BETA_PRECISION, DECIMAL_PRECISION, max_beta,
             i+1, n_betas, ACCEPTANCE_PRECISION, 100.0*acceptance[2*i], ACCEPTANCE_PRECISION, acceptance[2*i+1]);
         fprintf(f, "delta_e: %*.*lf, \tlog humanness: %*.*lf, \tprop humanness: %*.*lf, \twanderer penalty: %*.*lf, \ttotal energy: %*.*lf\n", 
@@ -426,6 +424,8 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
 
     Chain human_ref_seq = file_megaAacids(human_filename, n_human_lines);
 
+    time_t start_time = time(NULL);
+    int completed_lines = 0;
     int workers = (int) ((MAX_WORKER_PERCENTAGE/100.0) * omp_get_num_procs());
     if(workers < 1) workers = 1;
     int global_error = 0;
@@ -434,7 +434,7 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
         //openmp doesn't allow breaks, and the whole for has to be ran; if there's an error, threads just skip everything and end ASAP
         if(global_error) continue;
 
-        printf("Running metropolis %d time(s) for seed %d/%d...\n", n_metropolis, i+1, n_lines);
+        // printf("Running metropolis %d time(s) for seed %d/%d...\n", n_metropolis, i+1, n_lines);
         char current_seed[CHAINLEN+1];
         char seq_dir[MAX_STR_LEN];
         char filepath[MAX_STR_LEN];
@@ -453,6 +453,10 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
             fprintf(stderr, "Error: run_metropolis failed in interation %d; returning...\n", j);
             global_error = 1;
         }
+        completed_lines++;
+        double elapsed = difftime(time(NULL), start_time);
+        double remaining = (n_lines-completed_lines) * elapsed/completed_lines;
+        printf("Progress: ~%d/%d -- ETA: %.0f seconds\n", completed_lines, n_lines, remaining);
     }
 
     //safe error handling, oustide parallel for loop

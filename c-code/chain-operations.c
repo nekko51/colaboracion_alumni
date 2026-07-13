@@ -14,7 +14,7 @@ Aacid aacid_direct_sum(Aacid a, Aacid b) {
 
 // scales frequencies of an aa
 Aacid aa_scale_only_aacids(Aacid aa, double scalar) {
-    Aacid out;
+    Aacid out = aa;
     for (int i = 0; i < N_AACIDS; i++) {
         out.elements[i] = aa.elements[i] * scalar;
     }
@@ -22,7 +22,7 @@ Aacid aa_scale_only_aacids(Aacid aa, double scalar) {
 }
 
 Aacid aa_scale_only_properties(Aacid aa, double scalar) {
-    Aacid out;
+    Aacid out = aa;
     for (int i = 0; i < N_PROPERTIES; i++) {
         out.properties[i] = aa.properties[i] * scalar;
     }
@@ -68,8 +68,8 @@ void chain_deep_copy(const Chain a, Chain* b) {
 Chain ch_normalize(Chain c) {
     Chain out;
     for (int i = 0; i < CHAINLEN; i++) {
-        out.aas[i] = aa_normalize_aacids(c.aas[i]);
-        out.aas[i] = aa_normalize_properties(c.aas[i]);
+        Aacid temp = aa_normalize_aacids(c.aas[i]);
+        out.aas[i] = aa_normalize_properties(temp);
     }
     return out;
 }
@@ -136,8 +136,8 @@ Vec2 aa_tsallis_entropy(Aacid aa, double q) {
     for (int i = 0; i < N_AACIDS; i++) {
         sume += pow(aa.elements[i],q);
     }
-    for (int i = 0; i < N_AACIDS; i++) {
-        sump += pow(aa.elements[i],q);
+    for (int i = 0; i < N_PROPERTIES; i++) {
+        sump += pow(aa.properties[i],q);
     }
     return (Vec2){ .x = (1-sume)/(q-1), .y = (1-sump)/(q-1) };
 }
@@ -188,24 +188,30 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
 
         for (int i = 0; i < N_AACIDS; i++) {
             if (mega_chain.aas[aa].elements[i] >= EPSILON) {
-                plogp -= mega_chain.aas[aa].elements[i] * log2(mega_chain.aas[aa].elements[i]);
-                p1p += mega_chain.aas[aa].elements[i] * (1 - mega_chain.aas[aa].elements[i]);
-                ppowq += pow(mega_chain.aas[aa].elements[i], order);
+                double p = mega_chain.aas[aa].elements[i];
+                plogp -= p*(log(p)/log(2.0));
+                p1p += p*(1-p);
+                ppowq += pow(p, order);
             }
         }
         output[aa].saa = plogp; output[aa].laa = p1p; 
-        output[aa].taa = (ppowq-1)/(1-order); output[aa].raa = log(ppowq)/(1-order);
+        output[aa].taa = (ppowq-1)/(1-order);
+        if(ppowq > EPSILON) output[aa].raa = log(ppowq)/(1-order);
+        else output[aa].raa = -1.0;
 
         plogp = 0.; p1p = 0.; ppowq = 0.;
         for (int i = 0; i < N_PROPERTIES; i++) {
             if (mega_chain.aas[aa].properties[i] >= EPSILON) {
-                plogp -= mega_chain.aas[aa].properties[i] * log2(mega_chain.aas[aa].properties[i]);
-                p1p += mega_chain.aas[aa].properties[i] * (1 - mega_chain.aas[aa].properties[i]);
-                ppowq += pow(mega_chain.aas[aa].properties[i], order);
+                double p = mega_chain.aas[aa].properties[i];
+                plogp -= p*(log(p)/log(2.0));
+                p1p += p*(1-p);
+                ppowq += pow(p, order);
             }
         }
         output[aa].spp = plogp; output[aa].lpp = p1p; 
-        output[aa].rpp = log(ppowq)/(1-order); output[aa].tpp = (ppowq-1)/(1-order);
+        output[aa].tpp = (ppowq-1)/(1-order);
+        if(ppowq > EPSILON) output[aa].rpp = log(ppowq)/(1-order);
+        else output[aa].rpp = -1.0;
     }
 }
 
