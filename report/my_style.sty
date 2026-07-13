@@ -1,98 +1,23 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{my_style}
 
-\RequirePackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, calc}
-
-\usepackage{tikz}
-\usepackage{braket}
-\usetikzlibrary{datavisualization}
-\usetikzlibrary{calendar}
-\usetikzlibrary{graphs}
-\usetikzlibrary{positioning}
-\usetikzlibrary{mindmap,shadows}
-\usetikzlibrary{angles,calc,quotes}
-\usetikzlibrary{positioning}
-\usetikzlibrary{arrows.meta}
-\usetikzlibrary{patterns,patterns.meta}
 \usepackage{setspace}
 \usepackage{multicol}
-\usepackage{pst-node}
 \usepackage{mathtools}
-\usepackage{wrapfig}
-\usepackage{pgfplots}
-\usepackage{multirow}
-\usepackage{siunitx}
 \usepackage{graphicx}
 \usepackage{csquotes}
 \usepackage{amsmath, amssymb}
 \usepackage{amsfonts, amsthm}
-\usepackage{thmtools}
-\usepackage{empheq}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{subcaption}
 \usepackage[a4paper]{geometry}
 \usepackage[most]{tcolorbox}
-\usepackage{standalone}
 \usepackage{graphicx}
-\usepackage{cancel}
-\usepackage{enumitem}
-
 \usepackage[colorlinks=true, linkcolor=blue!70!black]{hyperref}
-
-\usepackage{environ}
-\pgfplotsset{compat=1.18}
 \geometry{top=2.54cm, bottom=2.54cm, left=2.54cm, right=2.54cm}
 \renewcommand{\baselinestretch}{1.5}
-\pgfplotsset{compat=1.18}
 
-\usepackage{bm}
-\newcommand{\R}{\mathbb{R}}
-\newcommand\RR[1]{
-    \mathbb{R}^{#1}
-}
-\newcommand{\K}{\mathbb{K}}
-\newcommand{\C}{\mathbb{C}}
-\newcommand{\B}{\mathbb{B}}
-\newcommand{\A}{\mathbb{A}}
-\newcommand{\N}{\mathbb{N}}
-\newcommand{\Z}{\mathbb{Z}}
-\newcommand{\Q}{\mathbb{Q}}
-\newcommand{\I}{\mathbb{I}}
-\newcommand{\Ll}{\mathcal{L}}
-\newcommand{\M}{\mathcal{M}}
-\newcommand{\U}{\mathcal{U}}
-\newcommand{\ent}{$\empty$\newline}
-
-\newcommand\myiint{%
-    \int\!\!\!\!\!\int
-}
-
-\newcommand\myiiint{%
-    \int\!\!\!\!\!\int\!\!\!\!\!\int
-}
-
-\newcommand\cajaparadibujos[1]{%
-    \begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-        \begin{center}
-            {\textcolor{red!75!black}{\Large #1}}
-        \end{center}
-    \end{tcolorbox}
-}
-
-\newcommand\completefuncion[5]{%
-    \begingroup
-    \setlength\arraycolsep{0pt}
-    #1\colon\begin{array}[t]{c >{{}}c<{{}} c}
-               #2 & \to & #3 \\ #4 & \mapsto & #5 
-            \end{array}%
-    \endgroup}
-
-% \renewcommand{\theenumi}{(\alph{enumi})}
-
+\newcommand\myiint{\int\!\!\!\!\!\int}
+\newcommand\myiiint{\int\!\!\!\!\!\int\!\!\!\!\!\int}
 \newcommand{\futnotetext}{$^[$\footnotemark$^]$}
-
 \newcommand{\futnotemath}{^[\footnotemark^]}
 
 \newcommand\aftermathspace{
@@ -101,151 +26,4 @@
 
 \
 }
-
-\newcommand{\beforemathspace}{
-
-\vspace*{-.5cm}
-
-}
-
-\newcommand\solucion[2]{\item[#1)] #2}
-
-\newcommand\summarytitle[1]{\vspace{\baselineskip}
-\noindent\textbf{{\large\color{blue!60!black}{#1}}}
-}
-
-\counterwithout{footnote}{chapter}
-
-\usetikzlibrary{babel}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\bfseries,
-notefont=\normalfont,
-bodyfont=\normalfont\itshape,
-postheadspace=1em,
-]{defistyle}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\bfseries\color{red!50!black},
-notefont=\normalfont\bfseries\color{red!50!black},
-bodyfont=\normalfont,
-postheadspace=1em,
-headpunct={.\\},
-shaded={bgcolor=orange!5!white,
-rulecolor=orange!10!white,
-rulewidth=1pt,
-textwidth={\textwidth-2pt}}
-]{thstyle}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\bfseries,
-notefont=\normalfont,
-bodyfont=\normalfont,
-postheadspace=1em,
-]{lemmstyle}
-
-\declaretheorem[style=defistyle,shaded={bgcolor=lightgray!10,
-rulewidth=1pt,
-textwidth={\textwidth-2pt}},name=Definición]{definicion}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\bfseries,
-notefont=\mdseries,
-bodyfont=\normalfont,
-postheadspace=1em,
-]{plainstyle}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\itshape,
-notefont=\mdseries,
-bodyfont=\normalfont\color{darkgray},
-postheadspace=1em,
-]{light}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\itshape,
-notefont=\mdseries\itshape,
-bodyfont=\normalfont,
-postheadspace=1em,
-qed=\qedsymbol,
-]{demostyle}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\scshape\color{blue!60!black},
-notefont=\mdseries,
-bodyfont=\normalfont\color{blue!60!black},
-postheadspace=1em,
-]{notestyle}
-
-\declaretheoremstyle[
-spaceabove=6pt, spacebelow=6pt,
-headfont=\normalfont\color{violet!70!black},
-notefont=\mdseries,
-bodyfont=\normalfont\itshape\color{violet!70!black},
-postheadspace=1em,
-]{commstyle}
-\declaretheorem[name=Comentario, style=commstyle]{comentario}
-
-\pgfplotsset{
-    2dstyle/.style={
-        width=4.5cm, height=4.5cm,
-        xmin=-1.5, xmax=1.5,
-        ymin=-1.5, ymax=1.5,
-        xlabel={$x$}, ylabel={$y$},
-        xtick=\empty, ytick=\empty,
-        axis lines=center,
-        axis line style={-Stealth},
-        clip=false
-    }
-}
-
-% --- ESTILO PARA EL RESUMEN ---
-\declaretheoremstyle[
-    spaceabove=15pt, spacebelow=15pt,
-    headfont=\normalfont\bfseries\Large\color{teal!80!black},
-    notefont=\normalfont\bfseries\color{teal!80!black},
-    bodyfont=\normalfont,
-    postheadspace=1em,
-    headpunct={\\},
-    shaded={
-        bgcolor=teal!5!white,     
-        rulecolor=teal!60!white,  
-        rulewidth=1.5pt,          
-        textwidth={\textwidth-3pt}
-    }
-]{resumenstyle}
-
-\declaretheorem[
-    name={},
-    style=resumenstyle,
-    numbered=no
-]{resumen}
-
-\newenvironment{soluciones}[1]{\noindent\textbf{Soluciones de la Hoja #1.}\begin{itemize}[noitemsep]}{\end{itemize}}
-
-\newenvironment{exdiv}
-  {}
-  {}
-\declaretheorem[name=Proposición, style=plainstyle]{proposicion}
-\declaretheorem[name=Teorema,style=plainstyle]{teorema}
-\declaretheorem[name=Observación, style=light]{observacion}
-\declaretheorem[name=Corolario]{corolario}
-\declaretheorem[name=Lema,style=lemmstyle]{lema}
-\declaretheorem[name=Ejemplo,style=plainstyle]{ejemplo}
-\declaretheorem[name=Nota,style=notestyle]{nota}
-\declaretheorem[name=Ejercicio]{ejercicio}
-\declaretheorem[name=Ejercicio, sibling=ejercicio]{exercise}
-\declaretheorem[name=Ejercicio, sibling=ejercicio, style=plainstyle]{resol}
-\declaretheorem[numbered=no,
-				name=Demostración,
-				style=demostyle]{demostracion}
-\declaretheorem[name=Teorema, style=thstyle]{boxteorema}
-\declaretheorem[name=Resolución, style=demostyle, numbered=no, qed=]{myresol}
 
