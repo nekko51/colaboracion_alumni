@@ -54,7 +54,7 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
         }
     }
 
-    double* oll_entropies = malloc(CHAINLEN*sizeof(Entropies));
+    Entropies* oll_entropies = malloc(CHAINLEN*sizeof(Entropies));
     if(oll_entropies == NULL) {
         fprintf(stderr, "Couldn't assign memory to all_entropies array\n");
         return(1);
@@ -67,7 +67,7 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
 
     all_entropies(human_ref, oll_entropies, entropy_order_q);
     weigh_entropies(oll_entropies, entropies, weighs);//unfinished function, currently returns 1/2*(saa+spp)
-    generate_betas(betas, n_betas, entropies, CHAINLEN, scale_factor, EPSILON, cooling_rate);
+    generate_betas(betas, n_betas, entropies, n_entropies, scale_factor, EPSILON, cooling_rate);
     mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, n_sweeps, betas, n_betas, n_metropolis);
 
 
