@@ -438,7 +438,7 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     
     /*create directories and run metropolis*/
     char metropolis_dir[MAX_STR_LEN];
-    char batch_dir[MAX_STR_LEN];
+    char batch_dir[2*MAX_STR_LEN];
     
     snprintf(metropolis_dir, sizeof(metropolis_dir), "%s%s", RESULTS, METROPOLIS);
 
@@ -446,7 +446,7 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d", metropolis_dir, time_str, n_lines, n_metropolis, n_betas);
     MKDIR(batch_dir);
 
-    char beta_filename[MAX_STR_LEN];
+    char beta_filename[3*MAX_STR_LEN];
     snprintf(beta_filename, sizeof(beta_filename), "%s/betas.txt", batch_dir);
     print_betas_to_file(betas, n_betas, beta_filename);
 
@@ -466,7 +466,7 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
         // printf("Running metropolis %d time(s) for seed %d/%d...\n", n_metropolis, i+1, n_lines);
         char current_seed[CHAINLEN+1];
         char seq_dir[MAX_STR_LEN];
-        char filepath[MAX_STR_LEN];
+        char filepath[2*MAX_STR_LEN];
         snprintf(seq_dir, sizeof(seq_dir), "%s/seq_%d", batch_dir, i+1);
         MKDIR(seq_dir);
 

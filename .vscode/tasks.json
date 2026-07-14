@@ -15,9 +15,13 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/c-code"
+                ]
+            },
             "detail": "Builds the debug version using the Makefile."
         },
         {
@@ -31,9 +35,13 @@
                 "cwd": "${workspaceFolder}/c-code"
             },
             "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ],
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/c-code"
+                ]
+            },
             "detail": "Builds the optimized (fast) version using the Makefile."
         },
         {
