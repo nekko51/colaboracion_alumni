@@ -1,0 +1,23 @@
+\subsection{Correlation}
+The measure of correlation between positions in a chain used in this project is mutual information. It is an entropy measure of how much information (in bits) we can deduce of one random variable given another one, and vice versa.
+
+Mutual information is given by:
+$$
+I(X;Y) = \sum_{x\in\mathcal X}\sum_{y\in\mathcal Y}
+P\big(\{X=x\}\cap \{Y=y\}\big)\log_2\frac{P\big(\{X=x\}\cap \{Y=y\}\big)}{P\big(\{X=x\}\big)P\big(\{Y=y\}\big)},
+$$
+where $X$ and $Y$ are discrete random variables that take values, $x$ and $y$, in $\mathcal X$ and $\mathcal Y$. Since we can identify our vectors, $v$ and $w$, with distribution functions, we are able to apply this method.
+
+Note that $I(X;Y)=I(Y;X)$, since the product and intersection are symmetric.
+
+Also, 
+$$I(X;X)=\sum_{x\in\mathcal X}P\big(\{X=x\}\big)\log_2 \frac{P\big(\{X=x\}\big)}{\big(
+P\big(\{X=x\}\big)\big)^2}=-\sum_{x\in\mathcal X}P\big(\{X=x\}\big)\log_2P\big(\{X=x\}\big)=S(X),$$
+where $S(X)$ is the entropy of the random variable $X$.
+
+In practice, we will get a $298\times298$ symmetric matrix for aminoacids ($v$-part of the chain) whose diagonal is the entropies of every position. However, for our correlation indeces we would rather have all 1's in the diagonal and the other elements going from 0 to 1. We normalize it as follows:
+$$
+i(X;Y) = \frac{I(X;Y)}{\min\{S(X),S(Y)\}}.
+$$
+
+When $\min\{H(X), H(Y)\} = 0$, the position is fully conserved and $I(X;Y)=0$ as well. In this case, the code outputs $i(X;Y) \equiv 0$, by convention.

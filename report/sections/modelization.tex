@@ -1,26 +1,28 @@
 \section{Representation and modelization of data}
 
 \subsection{Aminoacids and properties}
-Every aminoacid will be coded as a 21-dimensional vector of real numbers between 0 and 1 yuxtaposed to a 9-dimensional vector of real numbers between 1 and 0. To interpret as follows:
+Every aminoacid will be coded as a 21-dimensional vector of real numbers between 0 and 1 yuxtaposed to a 9-dimensional vector of real numbers between 1 and 0. That is, some aminoacid in our aminoacid space, $a\in\mathcal A$, will be $a=v \times w\in[0,1]^{21}\times[0,1]^{9}=\mathcal A\subset \mathbb R^{21}\times\mathbb R^{9}$.
+
+To interpret as follows:
 \begin{itemize}
     \item The first list will be the 21-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th aminoacid from the forementioned aminoacid string.
     \item The second list will be the 9-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th property from the forementioned property list.
 \end{itemize}
 
-As you can see, these variables are context dependent, since there is no reference for the frequency of aminoacids or properties. Therefore, if the chain is one that represents an actual protein, all frequencies may be 0 but one of them, which should be 1. Same will happen for the property vector. We will call this a \textit{concrete aminoacid}.
+As you can see, these variables are context dependent, since there is no reference for the frequency of aminoacids or properties. Therefore, if it is one that represents an actual aminoacid, all frequencies may be 0 but one of them, which should be 1. Same will happen for the property vector. We will call this a \textit{concrete aminoacid}.
 
-\paragraph{Example:} Let's encode the aminoacid cysteine (\code{\textcolor{green!70!black}{C}}). It is the third in the aminoacid list, thus, the first vector should be $v_{\text{elements} } = (0,0,1,0,...,0)$. Cysteine is hydrophobic and small, then: $v_{\text{properties}} = (0,1,0,0,0,1,0,0,0)$, since hydrophobic is in the 2nd position and small in the 6th.
+\paragraph{Example:} Let's encode the aminoacid cysteine (\code{\textcolor{green!70!black}{C}}). It is the third in the aminoacid list, thus, the first vector should be $v = (0,0,1,0,...,0)$. Cysteine is hydrophobic and small, then: $w= (0,1,0,0,0,1,0,0,0)$, since hydrophobic is in the 2nd position and small in the 6th.
 
-Now changing the context, another usual setting is the so called \textit{Schrödinger's aminoacid}. That will be the average aminoacid, which elements in both vectors will be *separately* the frequencies of every appearing aminoacid.
+Now changing the context, another usual setting is the so called \textit{Schrödinger's aminoacid}. That will be the average aminoacid, whose elements in both vectors will be *separately* the frequencies of every appearing aminoacid.
 
 *Separately* means that the sum of the components of the first list is 1 and the sum of the components of the second list will also be 1.\futnotetext
-\footnotetext{This is true for every kind of aminoacid, whether it is concrete or Schrödinger's.}
+\footnotetext{This is true for every kind of aminoacid, whether it is concrete or Schrödinger's.} More specifically: $\sum_{i=1}^{21} v^i = 1\ \wedge\ \sum_{i=1}^{9}w^i=1 $.\futnotetext\footnotetext{Using superindexes for convenience.}
 
 \subsection{Chains}
 
-A chain is an array of 298 aminoacids and it represents a whole antibody. Just as before, we will have concrete and Schrödinger's chains.
+A chain is an array of 298 aminoacids and it represents a whole antibody. Just as before, we will have concrete (all components must be concrete aminoacids) and Schrödinger's chains (the rest).
 
-This is a $298 \times (21 + 9)$ matrix of split row conditioned frequencies.
+This is a $298 \times (21 + 9)$ matrix of split row conditioned frequencies. We will name the space of all possible chains the chain space, $\mathcal C=\mathcal A^{298}$. Thus, $c\in \mathcal C$ will have the form $c=(c_1,...,c_j,...,c_{298})$, where $c_j=v_j\times w_j$ and $v_j=(v_j^1,...,v_j^i,...,v_j^{21}),\ \forall j\in[1,298]\subset\mathbb N$.
 
 % \subsection{Megachain}
 

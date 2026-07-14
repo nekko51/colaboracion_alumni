@@ -1,0 +1,15 @@
+\subsection{Entropies}
+
+We quantify the variability of the aminoacids in a Schrödinger's chain with entropies, applying its expression to both vectors of every aminoacid in that chain. This means the result will be a 298 element list of pairs of entropies.
+
+The compute them as follows:
+$$
+S_{v,j}=-\sum_{i=1}^{21}v^i_j\log_2 v^i_j,\quad S_{w,j}=-\sum_{i=1}^{9} w^i_j\log_2w^i_j,\quad S_j=\big(S_{v,j},S_{w,j}\big)\quad \forall j\in[1,298]\subset\mathbb N
+$$
+
+That previous one is the Shannon entropy, but we may need to use some others:
+\begin{itemize}
+    \item Linear entropy: $s=\sum_ip_i(1-p_i)$
+    \item Rényi entropy: $s_\alpha=\frac{1}{1-\alpha}\sum_ip_i^\alpha,\  \alpha\in[0,1)$
+    \item Tsallis entropy: $s_\alpha=\frac{1}{q-1}\big(1-\sum_{i}^{} p_i^\alpha \big),\  \alpha\in[0,1)$
+\end{itemize}
