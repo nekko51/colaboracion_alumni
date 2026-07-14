@@ -23,9 +23,7 @@ double log_humanness_energy(const Chain* human_ref_seq, const char* seq, int n) 
             energy += ZERO_FREQ_PENALTY_LOG;
             continue;
         }
-        double p = human_ref_seq->aas[i].elements[idx];
-        if(p > EPSILON) energy -= log(p);
-        else energy += ZERO_FREQ_PENALTY_LOG;
+        energy += human_ref_seq->aas[i].log_elements[idx];
     }
     return(energy);
 }
@@ -154,29 +152,12 @@ void cleanup_mega_metropolis(FILE* f, char** murine_seeds, int n_lines) {
     }
 }
 
-void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
-    double** betas, int n_betas, const double* acceptance, int n_sweeps,
-    double w_log, double w_prop, double w_penalty, const char* filename) {
-    FILE *f = fopen(filename, "w");
-    if(f == NULL) {fprintf(stderr, "Error: couldn't open file %s; returning...\n", filename); return;}
-    
-    //separate file for betas matrix
-    char beta_filename[MAX_STR_LEN];
-    strncpy(beta_filename, filename, sizeof(beta_filename));
-    beta_filename[sizeof(beta_filename)-1] = '\0';
-    //find last dot position
-    char *dot = strrchr(beta_filename, '.');
-    if (dot != NULL) {
-        *dot = '\0';
-    }
-    strncat(beta_filename, "_betas.txt", sizeof(beta_filename)-strlen(beta_filename)-1);
-
+void print_betas_to_file(double** betas, int n_betas, const char* beta_filename) {
     FILE *beta_f = fopen(beta_filename, "w");
     if (beta_f != NULL) {
         fprintf(beta_f, "Beta matrix values (n_betas x CHAINLEN)\n\n");
         for (int i=0; i<n_betas; i++) {
             fprintf(beta_f, "Beta step %d:\n", i+1);
-            sort_array(betas[i], CHAINLEN);
             for (int j=0; j<CHAINLEN; j++) {
                 fprintf(beta_f, "\t%8.*lf", DECIMAL_PRECISION, betas[i][j]);
             }
@@ -184,6 +165,39 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
         }
         fclose(beta_f);
     }
+}
+
+void print_metropolis_data_to_file(const char** seq_history, const Chain* reference, const Energy* energy_history, 
+    double** betas, int n_betas, const double* acceptance, int n_sweeps,
+    double w_log, double w_prop, double w_penalty, const char* filename) {
+    FILE *f = fopen(filename, "w");
+    if(f == NULL) {fprintf(stderr, "Error: couldn't open file %s; returning...\n", filename); return;}
+    
+    /*amortig betas begin (WIP)*/
+    // //separate file for betas matrix
+    // char beta_filename[MAX_STR_LEN];
+    // strncpy(beta_filename, filename, sizeof(beta_filename));
+    // beta_filename[sizeof(beta_filename)-1] = '\0';
+    // //find last dot position
+    // char *dot = strrchr(beta_filename, '.');
+    // if (dot != NULL) {
+    //     *dot = '\0';
+    // }
+    // strncat(beta_filename, "_betas.txt", sizeof(beta_filename)-strlen(beta_filename)-1);
+
+    // FILE *beta_f = fopen(beta_filename, "w");
+    // if (beta_f != NULL) {
+    //     fprintf(beta_f, "Beta matrix values (n_betas x CHAINLEN)\n\n");
+    //     for (int i=0; i<n_betas; i++) {
+    //         fprintf(beta_f, "Beta step %d:\n", i+1);
+    //         for (int j=0; j<CHAINLEN; j++) {
+    //             fprintf(beta_f, "\t%8.*lf", DECIMAL_PRECISION, betas[i][j]);
+    //         }
+    //         fprintf(beta_f, "\n\n");
+    //     }
+    //     fclose(beta_f);
+    // }
+    /*amortig betas end (WIP)*/
     
     fprintf(f, "***************Metropolis data report version 1.0.2***************\n");
 
@@ -203,11 +217,19 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
         ENERGY_PRECISION, DECIMAL_PRECISION, calculate_total_energy(&energy_history[0], w_log, w_prop, w_penalty));
     fprintf(f, "seed: %s", seq_history[0]);
     fprintf(f, "\n\n");
+
+    /*WIP - left unused for now*/
     // fprtinf(f, "Schrödinger reference chain: ")
+    (void)reference;
+
+
     for(int i=0; i<n_betas; i++) {
         double min_beta, max_beta, median_beta = 0.0;
         minmax(betas[i], &max_beta, &min_beta, CHAINLEN);
-        median_beta = betas[i][(int)CHAINLEN/2];
+        double temp_betas[CHAINLEN];
+        memcpy(temp_betas, betas[i], CHAINLEN*sizeof(double));
+        sort_array(temp_betas, CHAINLEN);
+        median_beta = temp_betas[(int)CHAINLEN/2];
         fprintf(f, "\n***** beta (min/median/max) = %*.*lf / %*.*lf / %*.*lf (%d/%d) \t-\t acceptance med: %.*lf%%, \tacceptance var: %.*lf*****\n",
             BETA_PRECISION, DECIMAL_PRECISION, min_beta,
             BETA_PRECISION, DECIMAL_PRECISION, median_beta,
@@ -227,7 +249,7 @@ void print_metropolis_data_to_file(const char** seq_history, const Chain* refere
 }
 
 
-void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const Chain* human_ref_seq, double* local_beta, 
+void metropolis_sweep(char* murine_seq, const int* original_murine_indices, const Chain* human_ref_seq, double* local_beta, 
     double* acceptance, int chainlen, double w_log, double w_prop, double w_penalty) {
     /**
     * @brief Performs one Metropolis sweep over the sequence, attempting to mutate each position
@@ -262,16 +284,8 @@ void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const C
 
         //C. Calculate delta_e for the Log Humanness Energy
         Energy delta_e;
-        double old_p = human_ref_seq->aas[i].elements[old_AA_idx];
-        double old_log_contrib;
-        if(old_p > EPSILON) old_log_contrib = -log(old_p);
-        else old_log_contrib = ZERO_FREQ_PENALTY_LOG;
-
-        double new_p = human_ref_seq->aas[i].elements[new_AA_idx];
-        double new_log_contrib;
-        if(new_p > EPSILON) new_log_contrib = -log(new_p);
-        else new_log_contrib = ZERO_FREQ_PENALTY_LOG;
-
+        double old_log_contrib = human_ref_seq->aas[i].log_elements[old_AA_idx];
+        double new_log_contrib = human_ref_seq->aas[i].log_elements[new_AA_idx];
         delta_e.log_humanness = new_log_contrib - old_log_contrib;
 
         //D. Calculate delta_e for the Property Distance Energy
@@ -280,7 +294,7 @@ void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const C
         delta_e.property_distance = new_prop_dist - old_prop_dist;
 
         //E. Calculate delta_e for penalty term
-        int original_AA_idx = char_to_int(original_murine_seq[i]);
+        int original_AA_idx = original_murine_indices[i];
         /*3 possible cases:
         * if both are different from original, penalties cancel each other
         * if new isn't original and old one is, a penalty is added
@@ -317,6 +331,12 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
     double *per_beta_acceptance = NULL;
     char original_murine_seq[CHAINLEN+1];
     strcpy(original_murine_seq, murine_seq);
+
+    int original_murine_indices[CHAINLEN];
+    for(int i=0; i<CHAINLEN; i++) {
+        original_murine_indices[i] = char_to_int(original_murine_seq[i]);
+    }
+
     Energy* energy_history = NULL;
     char** murine_history = NULL;
     acceptance = malloc(n_sweeps*sizeof(double));
@@ -345,22 +365,25 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
     for(int i=0; i<n_betas; i++) {
         for(int j=0; j<CHAINLEN; j++) local_beta[j] = betas[i][j];
 
-        double progress = (double)(i+1) / (double)n_betas;
-        double current_target = STARTING_TARGET_ACCEPTANCE*(1.0-progress);
+        /*amortig betas begin (WIP)*/
+        // double progress = (double)(i+1) / (double)n_betas;
+        // double current_target = STARTING_TARGET_ACCEPTANCE*(1.0-progress);
 
-        int local_success[CHAINLEN];
+        // int local_success[CHAINLEN];
 
-        double last_acceptance = current_target;//we begin by assuming we're in our target acceptance
+        // double last_acceptance = current_target;//we begin by assuming we're in our target acceptance
 
         for(int j=0; j<n_sweeps; j++) {
-            double deviation = last_acceptance - current_target;
-            double factor = sigmoid(deviation, LAMBDA);
+            // double deviation = last_acceptance - current_target;
+            // double factor = sigmoid(deviation, LAMBDA);
 
-            double amortig_beta[CHAINLEN];
-            for(int k=0; k<CHAINLEN; k++) amortig_beta[k]=factor*local_beta[k];
+            // double amortig_beta[CHAINLEN];
+            // for(int k=0; k<CHAINLEN; k++) amortig_beta[k]=factor*local_beta[k];
 
-            metropolis_sweep(murine_seq, original_murine_seq, human_ref_seq, amortig_beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP, WEIGHT_PENALTY);
-            last_acceptance = acceptance[j];
+            // metropolis_sweep(murine_seq, original_murine_indices, human_ref_seq, amortig_beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP, WEIGHT_PENALTY);
+            // last_acceptance = acceptance[j];
+            /*amortig betas end (WIP)*/
+            metropolis_sweep(murine_seq, original_murine_indices, human_ref_seq, local_beta, &acceptance[j], CHAINLEN, WEIGHT_LOG, WEIGHT_PROP, WEIGHT_PENALTY);
         }
         strcpy(murine_history[i+1], murine_seq);
         energy_history[i+1] = energy_calculation(human_ref_seq, murine_history[i+1], original_murine_seq, CHAINLEN);
@@ -423,7 +446,12 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d", metropolis_dir, time_str, n_lines, n_metropolis, n_betas);
     MKDIR(batch_dir);
 
-    Chain human_ref_seq = file_megaAacids(human_filename, n_human_lines);
+    char beta_filename[MAX_STR_LEN];
+    snprintf(beta_filename, sizeof(beta_filename), "%s/betas.txt", batch_dir);
+    print_betas_to_file(betas, n_betas, beta_filename);
+
+    Chain human_ref_seq;
+    file_megaAacids(human_filename, n_human_lines, &human_ref_seq);
 
     time_t start_time = time(NULL);
     int completed_lines = 0;

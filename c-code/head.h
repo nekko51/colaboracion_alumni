@@ -47,6 +47,7 @@ extern void ini_ran(int SEMILLA);
 #define MAX_STR_LEN 256
 /*Energy penalizations & weights*/
 extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
+extern int CHAR_TO_INT_LUT[256];
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
@@ -112,6 +113,7 @@ extern char *PROPERTIES[N_PROPERTIES];
 // CHARGEDMINUS
 typedef struct {
     double elements[N_AACIDS];
+    double log_elements[N_AACIDS];//we can optimize calculations in metropolis_sweep calling log only once
     double properties[N_PROPERTIES];
 } Aacid;
 
@@ -149,7 +151,7 @@ void sort_array(double* array, int n);
 
 //metropolis.c
 void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate);
-void metropolis_sweep(char* murine_seq, const char* original_murine_seq, const Chain* human_ref_seq, double* local_beta, 
+void metropolis_sweep(char* murine_seq, const int* original_murine_indices, const Chain* human_ref_seq, double* local_beta, 
     double* acceptance, int chainlen, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, double** betas, int n_betas, char* filename);
 void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis);
@@ -157,24 +159,27 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
 //parsing.c
 int char_to_int(char X);
 char int_to_char(int X);
-Chain get_next_chain(FILE *f);
-void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int starting_idx);
+void initialize_char_to_int_LUT();
 void initialize_properties_matrix();
+void get_next_chain(FILE *f, Chain* out);
+void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int starting_idx);
 void read_next_line(FILE *f, char* out);
 
 //chain-operations.c
-Aacid aacid_direct_sum(Aacid a, Aacid b);
-Aacid aa_scale_only_aacids(Aacid aa, double scalar);
-Aacid aa_scale_only_properties(Aacid aa, double scalar);
-Chain chain_direct_sum(Chain a, Chain b);
-void chain_deep_copy(const Chain a, Chain* b);
-Chain ch_normalize(Chain c);
-Chain file_megaAacids(char *filename, int n_lines);
-void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order);
-void all_entropies(Chain mega_chain, Entropies *output, double order);
+void aacid_direct_sum(const Aacid* a, const Aacid* b, Aacid* out);
+void aa_scale_only_aacids(const Aacid* aa, double scalar, Aacid* out);
+void aa_scale_only_properties(const Aacid* aa, double scalar, Aacid* out);
+void aa_normalize_properties(const Aacid* aa, Aacid* out);
+void aa_normalize_aacids(const Aacid* aa, Aacid* out);
+void chain_direct_sum(const Chain* a, const Chain* b, Chain* out);
+void chain_deep_copy(const Chain* a, Chain* b);
+void ch_normalize(const Chain* c, Chain* out);
+void file_megaAacids(char *filename, int n_lines, Chain* out);
+void entropy_vector(const Chain* mega_chain, Vec2 *output, char type, double order);
+void all_entropies(const Chain* mega_chain, Entropies *output, double order);
 
-void print_chain(Chain c);
-void print_chain_to_file(Chain c, char* filename);
+void print_chain(const Chain* c);
+void print_chain_to_file(const Chain* c, char* filename);
 void print_entropies(Entropies *S);
 void print_entropies_to_file(Entropies *S, char* filename);
 /*WIP*/
@@ -184,6 +189,6 @@ void weigh_entropies(Entropies* input, double* output, double weighs[8]);
 void aa_correlation_matrix(Chain *input_chains, int n_chains, double output[CHAINLEN][CHAINLEN]);
 void print_correlation_matrix_to_file(FILE *f, double corr[CHAINLEN][CHAINLEN]);
 double scalar_product(double *a, double *b, int dims);
-Chain correlation_for_position_and_aacid(Chain* chains, int n_chains, int position_index, int aa_index);
-Chain correlation_for_position_and_prop(Chain* chains, int n_chains, int position_index, int prop_index);
+void correlation_for_position_and_aacid(Chain* chains, int n_chains, int position_index, int aa_index, Chain* out);
+void correlation_for_position_and_prop(Chain* chains, int n_chains, int position_index, int prop_index, Chain* out);
 void first_order_correlations(Chain* input_chains, int n_chains, Chain out_aacid[][N_AACIDS], Chain out_prop[][N_PROPERTIES]);

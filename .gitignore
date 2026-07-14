@@ -3,8 +3,15 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Ignore build artifacts from the C code
+c-code/obj/
+c-code/*.exe
+
 # C extensions
 *.so
+# Ignore executables for other platforms (Linux/macOS)
+c-code/antibody_sim_debug
+c-code/antibody_sim_fast
 
 # Distribution / packaging
 .Python

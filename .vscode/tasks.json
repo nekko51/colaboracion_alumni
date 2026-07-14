@@ -2,92 +2,53 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Build DEBUG",
             "type": "shell",
-            "label": "Build DEBUG (Windows)",
-            "command": "gcc",
+            "command": "mingw32-make",
             "args": [
-                "-Wall",
-                "-g",
-                "-fopenmp",
-                "${workspaceFolder}/c-code/*.c",
-                "-lm",
-                "-o",
-                "${workspaceFolder}/c-code/antibody_sim_debug.exe"
+                "debug"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/c-code"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
             },
             "problemMatcher": [
                 "$gcc"
             ],
-            "group": "build",
-            "detail": "Windows: Compiles .c files with debug symbols."
+            "detail": "Builds the debug version using the Makefile."
         },
         {
+            "label": "Build FAST",
             "type": "shell",
-            "label": "Build FAST (Windows)",
-            "command": "gcc",
+            "command": "mingw32-make",
             "args": [
-                "-Wall",
-                "-O3",
-                "-fopenmp",
-                "${workspaceFolder}/c-code/*.c",
-                "-lm",
-                "-o",
-                "${workspaceFolder}/c-code/antibody_sim_fast.exe"
+                "fast"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/c-code"
             },
+            "group": "build",
             "problemMatcher": [
                 "$gcc"
             ],
-            "group": "build",
-            "detail": "Windows: Compiles .c files with maximum speed optimization."
+            "detail": "Builds the optimized (fast) version using the Makefile."
         },
         {
+            "label": "Clean Project",
             "type": "shell",
-            "label": "Build DEBUG (Linux)",
-            "command": "gcc",
+            "command": "mingw32-make",
             "args": [
-                "-Wall",
-                "-g",
-                "-fopenmp",
-                "${workspaceFolder}/c-code/*.c",
-                "-lm",
-                "-o",
-                "${workspaceFolder}/c-code/antibody_sim_debug"
+                "clean"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/c-code"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
             "group": "build",
-            "detail": "Linux: Compiles .c files with debug symbols."
-        },
-        {
-            "type": "shell",
-            "label": "Build FAST (Linux)",
-            "command": "gcc",
-            "args": [
-                "-Wall",
-                "-O3",
-                "-fopenmp",
-                "${workspaceFolder}/c-code/*.c",
-                "-lm",
-                "-o",
-                "${workspaceFolder}/c-code/antibody_sim_fast"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": "build",
-            "detail": "Linux: Compiles .c files with maximum speed optimization."
+            "problemMatcher": [],
+            "detail": "Removes all build artifacts using 'make clean'."
         }
     ]
 }

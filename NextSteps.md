@@ -18,6 +18,7 @@
 - Dynamic beta change in runtime (midway there); we now need to taylor it to each sequence position instead of whole sequence (half the chain constantly mutating vs the other half not doing so $\neq$ whole chain mutating half the time)
 ### weigh_entropies in chain-operations.c;
 - currently returns $\displaystyle\frac{\text{saa}+\text{spp}}{2}$
+- property distance for AA & - is way lower than we would want (not a problem because beta is too big?)
 
 
 ---

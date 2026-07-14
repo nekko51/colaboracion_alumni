@@ -3,6 +3,29 @@ The aim of this GitHub is to delve deeper into biophysics, using simulated annea
 ---
 167 days without incident (merge conflicts)
 
+## How-to: compiling the project
+
+In order to compile the project, you need the following things to be installed:
+
+- C compiler (GCC is recommended)
+- The **Make** utility (in Windows, we use `mingw32-make`)
+
+### Windows installation
+
+1.  Install msys2 from msys2.org
+2.  Once installed, open a msys2 terminal and run:
+    ```sh
+    pacman -S --needed base-devel mingw-w64-x86_64-toolchain
+    ```
+3.  Add MinGW-w64 to windows path (environment system variables); it should be something like `C:\msys64\mingw64\bin`
+
+### Linux installation
+
+A single command should be enough:
+```sh
+sudo apt-get install build-essential
+```
+
 ## Important things to take into account:
 - We **CANNOT** have more than one "main", or else our beautiful .json won't work, and we'd have to add each .c file manually and all that (maybe we should consider making a "makefile")
 - When using AAcid indexes & properties, **MAKE SURE you are using the correct order** (maybe we should consider streamlining the idx finding and properties handling when building new functions that need these informations)

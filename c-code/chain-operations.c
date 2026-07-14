@@ -1,98 +1,96 @@
 #include "head.h"
 
 // sums frequencies of two aa
-Aacid aacid_direct_sum(Aacid a, Aacid b) {
-    Aacid out;
+void aacid_direct_sum(const Aacid* a, const Aacid* b, Aacid* out) {
     for (int i = 0; i < N_AACIDS; i++) {
-        out.elements[i] = a.elements[i] + b.elements[i];
+        out->elements[i] = a->elements[i] + b->elements[i];
     }
     for (int i = 0; i < N_PROPERTIES; i++) {
-        out.properties[i] = a.properties[i] + b.properties[i];
+        out->properties[i] = a->properties[i] + b->properties[i];
     }
-    return out;
 }
 
 // scales frequencies of an aa
-Aacid aa_scale_only_aacids(Aacid aa, double scalar) {
-    Aacid out = aa;
+void aa_scale_only_aacids(const Aacid* aa, double scalar, Aacid* out) {
     for (int i = 0; i < N_AACIDS; i++) {
-        out.elements[i] = aa.elements[i] * scalar;
+        out->elements[i] = aa->elements[i] * scalar;
     }
-    return out;
 }
 
-Aacid aa_scale_only_properties(Aacid aa, double scalar) {
-    Aacid out = aa;
+void aa_scale_only_properties(const Aacid* aa, double scalar, Aacid* out) {
     for (int i = 0; i < N_PROPERTIES; i++) {
-        out.properties[i] = aa.properties[i] * scalar;
+        out->properties[i] = aa->properties[i] * scalar;
     }
-    return out;
 }
 
-Aacid aa_normalize_properties(Aacid aa) {
+void aa_normalize_properties(const Aacid* aa, Aacid* out) {
     double sum = 0.;
     for (int i = 0; i < N_PROPERTIES; i++) {
-        sum += aa.properties[i];
+        sum += aa->properties[i];
     }
-    if (sum > EPSILON)  return aa_scale_only_properties(aa, 1/sum);
-    else                return aa_scale_only_properties(aa, 0.);
+    if (sum > EPSILON)  aa_scale_only_properties(aa, 1/sum, out);
+    else                aa_scale_only_properties(aa, 0., out);
 }
 
-Aacid aa_normalize_aacids(Aacid aa) {
+void aa_normalize_aacids(const Aacid* aa, Aacid* out) {
     double sum = 0.;
     for (int i = 0; i < N_AACIDS; i++) {
-        sum += aa.elements[i];
+        sum += aa->elements[i];
     }
-    if (sum > EPSILON)  return aa_scale_only_aacids(aa, 1/sum);
-    else                return aa_scale_only_aacids(aa, 0.);
+    if (sum > EPSILON)  aa_scale_only_aacids(aa, 1/sum, out);
+    else                aa_scale_only_aacids(aa, 0., out);
 }
 
 // sums frequencies of two chains
-Chain chain_direct_sum(Chain a, Chain b) {
-    Chain out;
+void chain_direct_sum(const Chain* a, const Chain* b, Chain* out) {
     for (int i = 0; i < CHAINLEN; i++) {
-        out.aas[i] = aacid_direct_sum(a.aas[i], b.aas[i]);
+        aacid_direct_sum(&a->aas[i], &b->aas[i], &out->aas[i]);
     }
-    return out;
 }
 
 //deep copies chain a data to chain b (this only needs to be used when both are declared using malloc? can't find good info on this online)
-void chain_deep_copy(const Chain a, Chain* b) {
+void chain_deep_copy(const Chain* a, Chain* b) {
     for(int i=0; i<CHAINLEN; i++) {
-        for(int j=0; j<N_AACIDS; j++) b->aas[i].elements[j] = a.aas[i].elements[j];
-        for(int j=0; j<N_PROPERTIES; j++) b->aas[i].properties[j] = a.aas[i].properties[j];
+        for(int j=0; j<N_AACIDS; j++) b->aas[i].elements[j] = a->aas[i].elements[j];
+        for(int j=0; j<N_PROPERTIES; j++) b->aas[i].properties[j] = a->aas[i].properties[j];
     }
 }
 
 // scales frequencies of a chain
-Chain ch_normalize(Chain c) {
-    Chain out;
+void ch_normalize(const Chain* c, Chain* out) {
     for (int i = 0; i < CHAINLEN; i++) {
-        Aacid temp = aa_normalize_aacids(c.aas[i]);
-        out.aas[i] = aa_normalize_properties(temp);
+        aa_normalize_aacids(&c->aas[i], &out->aas[i]);
+        aa_normalize_properties(&c->aas[i], &out->aas[i]);
     }
-    return out;
 }
 
 // returns the schrödinger chain of a file, needs file and number of lines
-Chain file_megaAacids(char *filename, int n_lines) {
+void file_megaAacids(char *filename, int n_lines, Chain* out) {
     FILE *f = fopen(filename, "r");
     if (f == NULL) {
         fprintf(stderr, "Error: Could not open %s; returning -1.0 chain...\n", filename);
-        Chain out;
         for(int i=0; i<CHAINLEN; i++) {
-            for(int j=0; j<N_AACIDS; j++) out.aas[i].elements[j] = -1.;
-            for(int j=0; j<N_PROPERTIES; j++) out.aas[i].properties[j] = -1.;
+            for(int j=0; j<N_AACIDS; j++) out->aas[i].elements[j] = -1.;
+            for(int j=0; j<N_PROPERTIES; j++) out->aas[i].properties[j] = -1.;
         }
-        return(out);
+        return;
     }
-    Chain out = get_next_chain(f);
+    get_next_chain(f, out);
     for (int i = 1; i < n_lines; i++) {
-        out = chain_direct_sum(out, get_next_chain(f));
+        Chain temp;
+        get_next_chain(f, &temp);
+        chain_direct_sum(out, &temp, out);
         if (i%100 == 0) printf("%d read lines\n", i);
     }
     fclose(f);
-    return ch_normalize(out);
+    ch_normalize(out, out);
+    for(int i=0; i<CHAINLEN; i++) {
+        for(int j=0; j<N_AACIDS; j++) {
+            double p = out->aas[i].elements[j];
+            if(p > EPSILON) out->aas[i].log_elements[j] = -log(out->aas[i].elements[j]);
+            else out->aas[i].log_elements[j] = ZERO_FREQ_PENALTY_LOG;
+        }
+    }
 }
 
 
@@ -153,26 +151,26 @@ for argument ''type'':
 
 output's elements are 2-vecs: (aa entropy, property entropy)
 */
-void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order) {
+void entropy_vector(const Chain* mega_chain, Vec2 *output, char type, double order) {
     if (type == 'l') {
         //linear
         for (int i = 0; i < CHAINLEN; i++) {
-            output[i] = aa_linear_entropy(mega_chain.aas[i]);
+            output[i] = aa_linear_entropy(mega_chain->aas[i]);
         }
     } else if (type == 'r') {
         //renyi
         for (int i = 0; i < CHAINLEN; i++) {
-            output[i] = aa_renyi_entropy(mega_chain.aas[i], order);
+            output[i] = aa_renyi_entropy(mega_chain->aas[i], order);
         }
     } else if (type == 't') {
         //tsallis
         for (int i = 0; i < CHAINLEN; i++) {
-            output[i] = aa_tsallis_entropy(mega_chain.aas[i], order);
+            output[i] = aa_tsallis_entropy(mega_chain->aas[i], order);
         }
     } else {
         //shannon
         for (int i = 0; i < CHAINLEN; i++) {
-            output[i] = aa_shannon_entropy(mega_chain.aas[i]);
+            output[i] = aa_shannon_entropy(mega_chain->aas[i]);
         }
     }
 }
@@ -181,14 +179,14 @@ void entropy_vector(Chain mega_chain, Vec2 *output, char type, double order) {
 output must be at least CHAINLEN long
 order \in [0,1)
 */
-void all_entropies(Chain mega_chain, Entropies *output, double order) {
+void all_entropies(const Chain* mega_chain, Entropies *output, double order) {
     double plogp, p1p, ppowq;
     for (int aa = 0; aa < CHAINLEN; aa++) {
         plogp = 0.; p1p = 0.; ppowq = 0.;
 
         for (int i = 0; i < N_AACIDS; i++) {
-            if (mega_chain.aas[aa].elements[i] >= EPSILON) {
-                double p = mega_chain.aas[aa].elements[i];
+            if (mega_chain->aas[aa].elements[i] >= EPSILON) {
+                double p = mega_chain->aas[aa].elements[i];
                 plogp -= p*(log(p)/log(2.0));
                 p1p += p*(1-p);
                 ppowq += pow(p, order);
@@ -201,8 +199,8 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
 
         plogp = 0.; p1p = 0.; ppowq = 0.;
         for (int i = 0; i < N_PROPERTIES; i++) {
-            if (mega_chain.aas[aa].properties[i] >= EPSILON) {
-                double p = mega_chain.aas[aa].properties[i];
+            if (mega_chain->aas[aa].properties[i] >= EPSILON) {
+                double p = mega_chain->aas[aa].properties[i];
                 plogp -= p*(log(p)/log(2.0));
                 p1p += p*(1-p);
                 ppowq += pow(p, order);
@@ -216,10 +214,12 @@ void all_entropies(Chain mega_chain, Entropies *output, double order) {
 }
 
 /*
+WIP
 should weigh every entropy type to produce a single double, weighs:
 saa, laa, raa, taa
 spp, lpp, rpp, tpp*/
 void weigh_entropies(Entropies* input, double* output, double weighs[8]) {
+    (void)weighs;//removes compiler warning -- intentionally left unused
     for(int i=0; i<CHAINLEN; i++) {
         // for(int j=0; j<8; j++) {
         //     output[i] = input[j].saa;
@@ -229,21 +229,21 @@ void weigh_entropies(Entropies* input, double* output, double weighs[8]) {
     return;
 }
 
-void print_chain(Chain c) {
+void print_chain(const Chain* c) {
     for (int i = 0; i < CHAINLEN; i++) {
         printf("%d:\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {
-            printf("%.6g\t", c.aas[i].elements[j]);
+            printf("%.6g\t", c->aas[i].elements[j]);
         }
         printf("\t");
         for(int j = 0; j < N_PROPERTIES; j++) {
-            printf("%.6g\t", c.aas[i].properties[j]);
+            printf("%.6g\t", c->aas[i].properties[j]);
         }
         printf("\n");
     }
 }
 
-void print_chain_to_file(Chain c, char* filename) {
+void print_chain_to_file(const Chain* c, char* filename) {
     FILE *f = get_file(filename, "w");
 
     fprintf(f, "idx\t");
@@ -254,10 +254,10 @@ void print_chain_to_file(Chain c, char* filename) {
     for (int i = 0; i < CHAINLEN; i++) {
         fprintf(f, "%d\t", i+1);
         for (int j = 0; j < N_AACIDS; j++) {
-            fprintf(f, "%.10lf\t", c.aas[i].elements[j]);
+            fprintf(f, "%.10lf\t", c->aas[i].elements[j]);
         }
         for (int j = 0; j < N_PROPERTIES; j++) {
-            fprintf(f, "%.10lf\t", c.aas[i].properties[j]);
+            fprintf(f, "%.10lf\t", c->aas[i].properties[j]);
         }
         fprintf(f, "\n");
     }

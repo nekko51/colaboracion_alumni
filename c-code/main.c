@@ -24,8 +24,8 @@ test mouse:     1379
 void initialize(Chain* human_ref) {
     ini_ran(time(NULL));
     initialize_properties_matrix();
-    *human_ref = file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES);
-    
+    initialize_char_to_int_LUT();
+    file_megaAacids(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, human_ref);
 }
 
 int main() {//i'm so happy i don't have to free every single malloc'd array if there's an error; if we had to, I think it's the only use of GOTO that wouldn't get you fired
@@ -67,7 +67,7 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
         return(1);
     }
 
-    all_entropies(human_ref, oll_entropies, entropy_order_q);
+    all_entropies(&human_ref, oll_entropies, entropy_order_q);
     weigh_entropies(oll_entropies, entropies, weighs);//unfinished function, currently returns 1/2*(saa+spp)
     print_entropies(oll_entropies);
     generate_betas(betas, n_betas, entropies, n_entropies, scale_factor, EPSILON, cooling_rate);
