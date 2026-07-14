@@ -1,0 +1,122 @@
+\section{Metropolis}
+\subsection{Simulation Workflow: From Batch to Single Run}
+
+Two functions are used for running the simulation: a high-level manager 
+(\texttt{mega\_metropolis}), and a core simulation engine (\texttt{run\_metropolis}). 
+This design allows for parallelized execution of simulations on multiple 
+initial murine sequences.
+
+\subsubsection{The \texttt{mega\_metropolis} Manager}
+
+\texttt{mega\_metropolis}'s primary responsibilities are:
+
+\begin{enumerate}
+    \item \textbf{Data Loading:} It begins by reading a list of initial murine sequences 
+        (which we call seeds) from a specified file and saves them for later use.
+    \item \textbf{Batch Management:} It creates a timestamped main directory for the entire 
+        simulation batch (format \texttt{results/metropolis/YYYY-MM-DD\_HH\_MM\_SS\_.../}). .
+    \item \textbf{Parallel Execution:} It iterates through each seed sequence using an OpenMP parallel loop. 
+    For each seed, it creates a dedicated subdirectory (e.g., \texttt{seq\_1}, \texttt{seq\_2}).
+    \item \textbf{Replication:} For each seed, it calls the \texttt{run\_metropolis} function \texttt{n\_metropolis} times. 
+        This allows for multiple independent simulation runs starting from the same seed, providing statistical 
+        significance to the results. The output of each run is saved to a separate file (e.g., \texttt{run\_1.txt}, 
+        \texttt{run\_2.txt}) within the corresponding seed's subdirectory.
+\end{enumerate}
+
+\subsubsection{The \texttt{run\_metropolis} Engine}
+
+The \texttt{run\_metropolis} function performs a single, complete simulated annealing run on one given sequence:
+
+\begin{enumerate}
+    \item \textbf{Initialization:} It takes an initial sequence, the human Schrödinger chain, and the 
+        pre-calculated matrix of $\beta$ values.
+    \item \textbf{Simulated Annealing Loop:} It iterates through each row of the $\beta$ matrix, 
+        representing a step in the ``cooling'' schedule.
+    \item \textbf{Metropolis Sweeps:} For each $\beta^i$ step, it performs a specified number of 
+        Metropolis sweeps (\texttt{n\_sweeps}). A single sweep involves attempting a mutation at every position in the sequence.
+    \item \textbf{State Acceptance:} We begin by proposing a new state, selecting a new AA (including the gap character) 
+        uniformly from the 21 possibilities (ensuring it's different from the current one). 
+        Each proposed mutation is accepted or rejected based on the change in total energy 
+        ($\Delta E$) and the current, position-specific, $\beta^i_j$ value, following the Metropolis criterion: 
+        accept if $\Delta E < 0$ or if a random number is less than $e^{-\beta^i_j \Delta E}$.
+    \item \textbf{Data Logging:} After the simulation is complete, it calls a dedicated function to write a detailed report 
+        file containing the initial parameters, the final sequence and energy for each $\beta$ step, 
+        and overall acceptance statistics.
+\end{enumerate}
+
+\subsection{Simulated Annealing Schedule ($\beta$)}
+The $\beta$-values, which are inverse of the temperature ($1/k_B T$), are not constant; instead, they are defined through 
+% two different mechanisms (the ``engine'' and the ``damper'').
+a mechanism, which we call the ``engine'':
+\begin{itemize}
+    \item \textbf{Engine:} 
+    $$\displaystyle\beta_i^j = k_i \cdot \frac{\alpha}{S_j + \varepsilon}, \quad k_i = \left(c_r\right)^i\ 
+    \forall i \in [1,N_\beta], j \in [1, L_\text{chain}]$$ 
+    where $c_r$ is the cooling rate, $\varepsilon$ avoids division by 0, $\alpha$ is a scale factor, and $S_j$ is 
+    entropy for position $j$ in human reference Schrödinger chain.
+    % \item \textbf{Damper:} 
+    % $$\varphi(\sigma, \lambda) = \frac{L}{\displaystyle 1+(1-L)e^{-\lambda \sigma}}$$ 
+    % where $\lambda$ is a global variable (the dampening coefficient), $L$ is a global variable too (maximum value our $\beta$ 
+    % will be multiplied by), and $\sigma$ is the deviation of the last sweep acceptance from the target acceptance. 
+    % Since we want acceptance to decay as our system explores the energy landscape, we begin with a \texttt{STARTING\_TARGET\_ACCEPTANCE}
+    % value, $\alpha_0$, (defined in \texttt{head.h}), and slowly decrease it using the following equation: 
+    % $$\alpha_i = \alpha_0 \left(1-\frac{i}{N_\beta}\right)$$ 
+    % where $N_\beta$ is the number of betas we have, and $i$ is the current iteration 
+    % with our pre-defined $\beta$ given by the engine.
+    % $\newline$ Lastly, $\sigma = \alpha_{ij}-\alpha_i$, where $\alpha_{ij}$ is 
+    % acceptance from last sweep iteration $(j\in[1,\text{n\_sweeps}])$
+\end{itemize}
+
+\subsection{Energy Function}
+The total energy, $E_\text{total}$, is a weighted sum of three components, which we aim to minimize:
+    $$E_\text{total} = w_\text{log} E_\text{log} + w_\text{prop} E_\text{prop} + w_\text{penalty} E_\text{penalty}$$
+    The weights for each component (\texttt{WEIGHT\_LOG}, \texttt{WEIGHT\_PROP}, \texttt{WEIGHT\_PENALTY}) are defined in `head.h`.
+    \begin{enumerate}
+        \item \textbf{Log Humanness Energy, }$\mathbf{E_\text{log}}$:
+        This term quantifies how "human-like" a sequence is based on AA frequencies from a 
+        reference set of human sequences (the Schrödinger chain):
+        $$E_\text{log} = -\sum_{i=1}^{L_\text{chain}} \log(p_i(a_i))$$
+        where $p_i(a_i)$ is the frequency of the amino acid $a_i$ at position $i$ in the human reference. 
+        A large penalty (\texttt{ZERO\_FREQ\_PENALTY\_LOG}) is added for amino acids with a frequency below a 
+        small threshold (\texttt{EPSILON}).
+        \item \textbf{Property Distance Energy, }$\mathbf{E_\text{prop}}$:
+        This term measures the similarity between the properties of the sequence and the human reference; 
+        it's calculated as the squared Euclidean distance in the property space for each position:
+        $$E_\text{prop} = \sum_{i=1}^{L_\text{chain}} \sum_{j=1}^{N_\text{props}} \left( \text{prop}_j(a_i) - 
+        \overline{\text{prop}_j(i)} \right)^2$$
+        where $\text{prop}_j(a_i)$ is the value of property $j$ for amino acid $a_i$, and $\overline{\text{prop}_j(i)}$ 
+        is the average value of property $j$ at position $i$ in the Schrödinger chain.
+        \item \textbf{Wandering Penatly Energy, }$\mathbf{E_\text{penalty}}$:
+        This term discourages the sequence from deviating too far from the original murine sequence; 
+        we thus only incentivize mutation if there's a relatively big gain in humanness. 
+        It consists of a penalty based on property distance and a (for now) constant penalty for any mutation:
+        $$E_\text{penalty} = \sum_{i=1}^{L_\text{chain}} \left[ \left( \sum_{j=1}^{N_\text{props}} 
+        (\text{prop}_j(a_i) - \text{prop}_j(a_i^\text{original}))^2 \right) + P \cdot 
+        \delta_{\displaystyle  a_i}^{\displaystyle a_i^{\text{original}}}\right]$$
+        where $a_i^\text{original}$ is the amino acid at position $i$ in the original murine sequence, 
+        $P$ is the \texttt{AA\_MUTATION\_PENALTY}, and $\delta$ is the ``generalized Kronecker delta'' (logical if gate). 
+        This approach ensures each mutation has a minimum energy cost, while heavily penalizing big property changes.
+    \end{enumerate}
+
+\subsection{Model Parameters}
+The following table summarizes the key parameters for metropolis in our simulations. These values are defined in \texttt{main.c} and \texttt{head.h}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Parameter} & \textbf{Value (provisional)} & \textbf{Description} \\
+\hline
+\texttt{n\_betas} & 50 & Number of cooling steps in the annealing schedule. \\
+\texttt{n\_sweeps} & 800 & Number of Metropolis sweeps per $\beta$ step. \\
+\texttt{n\_metropolis} & 20 & Number of independent runs per murine seed sequence. \\
+\texttt{w\_log} & 0.4 (from head.h) & Weight for the log-humanness energy component. \\
+\texttt{w\_prop} & 0.4 (from head.h) & Weight for the property-distance energy component. \\
+\texttt{w\_penalty} & 0.2 (from head.h) & Weight for the wandering penalty energy component. \\
+\texttt{cooling\_rate ($c_r$)} & 1.02 & Multiplicative factor for increasing $k_i$ at each step. \\
+\texttt{scale\_factor ($\alpha$)} & 1.0 & Global scaling factor for all $\beta$ values. \\
+\texttt{AA\_MUTATION\_PENALTY ($P$)} & 1.5 (from head.h) & Constant penalty added for any AA mutation away from the original. \\
+\hline
+\end{tabular}
+\label{tab:metropolis_params}
+\end{table}

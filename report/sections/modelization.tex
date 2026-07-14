@@ -1,15 +1,15 @@
 \section{Representation and modelization of data}
 
 \subsection{Aminoacids and properties}
-Every aminoacid will be coded as a 21-dimensional vector of real numbers between 0 and 1 yuxtaposed to a 9-dimensional vector of real numbers between 1 and 0. That is, some aminoacid in our aminoacid space, $a\in\mathcal A$, will be $a=v \times w\in[0,1]^{21}\times[0,1]^{9}=\mathcal A\subset \mathbb R^{21}\times\mathbb R^{9}$.
+Every aminoacid will be simulated/coded as a 21-dimensional vector of real numbers between 0 and 1 yuxtaposed to a 9-dimensional vector of real numbers between 1 and 0. 
+That is, some aminoacid in our aminoacid space, $a\in\mathcal A$, will be $a=v \times w\in[0,1]^{21}\times[0,1]^{9}=\mathcal A\subset \mathbb R^{21}\times\mathbb R^{9}$.
 
-To interpret as follows:
 \begin{itemize}
-    \item The first list will be the 21-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th aminoacid from the forementioned aminoacid string.
-    \item The second list will be the 9-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th property from the forementioned property list.
+    \item The first list will be a 21-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th aminoacid from the aforementioned aminoacid string.
+    \item The second list will be a 9-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th property from the aforementioned property list.
 \end{itemize}
 
-As you can see, these variables are context dependent, since there is no reference for the frequency of aminoacids or properties. Therefore, if it is one that represents an actual aminoacid, all frequencies may be 0 but one of them, which should be 1. Same will happen for the property vector. We will call this a \textit{concrete aminoacid}.
+As you can see, these variables are context-dependent, since there is no reference for the frequency of aminoacids or properties. Therefore, if it is one that represents an actual aminoacid, all frequencies may be 0 but one of them, which should be 1. Same will happen for the property vector. We will call this a \textit{concrete aminoacid}.
 
 \paragraph{Example:} Let's encode the aminoacid cysteine (\code{\textcolor{green!70!black}{C}}). It is the third in the aminoacid list, thus, the first vector should be $v = (0,0,1,0,...,0)$. Cysteine is hydrophobic and small, then: $w= (0,1,0,0,0,1,0,0,0)$, since hydrophobic is in the 2nd position and small in the 6th.
 
