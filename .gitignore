@@ -13,6 +13,9 @@ c-code/*.exe
 c-code/antibody_sim_debug
 c-code/antibody_sim_fast
 
+# Ignore metropolis not-concise results
+results/metropolis
+
 # Distribution / packaging
 .Python
 build/
