@@ -87,7 +87,7 @@ void file_megaAacids(char *filename, int n_lines, Chain* out) {
     for(int i=0; i<CHAINLEN; i++) {
         for(int j=0; j<N_AACIDS; j++) {
             double p = out->aas[i].elements[j];
-            if(p > EPSILON) out->aas[i].log_elements[j] = -log(out->aas[i].elements[j]);
+            if(p > EPSILON) out->aas[i].log_elements[j] = -log(p);
             else out->aas[i].log_elements[j] = ZERO_FREQ_PENALTY_LOG;
         }
     }

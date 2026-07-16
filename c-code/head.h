@@ -44,7 +44,7 @@ extern void ini_ran(int SEMILLA);
 #define N_PROPERTIES 9
 #define CHAINLEN 298
 #define EPSILON 1e-10 //Avoid division by 0
-#define MAX_STR_LEN 256
+#define MAX_STR_LEN 256 //Max_str_len will really be thrice this value
 /*Energy penalizations & weights*/
 extern int PROPS_AA[N_AACIDS][N_PROPERTIES];
 extern int CHAR_TO_INT_LUT[256];
@@ -54,14 +54,13 @@ extern int CHAR_TO_INT_LUT[256];
 
 
 /*Metropolis parameters*/
-#define AA_MUTATION_PENALTY 1.5//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
+extern double AA_MUTATION_PENALTY;
 #define LAMBDA 3.0
 #define STARTING_TARGET_ACCEPTANCE 0.25
 #define MAX_AMORTIG 4.0
-//must sum to 1:
-#define WEIGHT_LOG 0.4
-#define WEIGHT_PROP 0.4
-#define WEIGHT_PENALTY 0.2
+extern double WEIGHT_LOG;
+extern double WEIGHT_PROP;
+extern double WEIGHT_PENALTY;
 
 /*Files*/
 #define SEQS "seqs/"
