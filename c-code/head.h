@@ -51,7 +51,8 @@ extern int CHAR_TO_INT_LUT[256];
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
-
+#define SVM_DISTANCE_PROP_FACTOR 1 // idk for the moment
+#define SVM_PARAMETER_LIMIT 1
 
 /*Metropolis parameters*/
 extern double AA_MUTATION_PENALTY;
