@@ -59,9 +59,9 @@ extern double AA_MUTATION_PENALTY;
 #define LAMBDA 3.0
 #define STARTING_TARGET_ACCEPTANCE 0.25
 #define MAX_AMORTIG 4.0
-extern double WEIGHT_LOG;
-extern double WEIGHT_PROP;
-extern double WEIGHT_PENALTY;
+// extern double WEIGHT_LOG;
+// extern double WEIGHT_PROP;
+// extern double WEIGHT_PENALTY;
 
 /*Files*/
 #define SEQS "seqs/"
@@ -76,6 +76,7 @@ extern double WEIGHT_PENALTY;
 #define FRECS "_freqs"
 #define ENTROPIS "_entropies"
 #define CORREL "_correlations"
+#define SVM_ "svm_annealing"
 
 #define DECIMAL_PRECISION 5
 #define BETA_PRECISION 10
@@ -164,6 +165,8 @@ void initialize_properties_matrix();
 void get_next_chain(FILE *f, Chain* out);
 void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int starting_idx);
 void read_next_line(FILE *f, char* out);
+void print_matrix_to_file(double **matrix, int dim, char *filename);
+void get_matrix_from_file(char *filename, int dim, double **out);
 
 //chain-operations.c
 void aacid_direct_sum(const Aacid* a, const Aacid* b, Aacid* out);
@@ -192,3 +195,11 @@ double scalar_product(double *a, double *b, int dims);
 void correlation_for_position_and_aacid(Chain* chains, int n_chains, int position_index, int aa_index, Chain* out);
 void correlation_for_position_and_prop(Chain* chains, int n_chains, int position_index, int prop_index, Chain* out);
 void first_order_correlations(Chain* input_chains, int n_chains, Chain out_aacid[][N_AACIDS], Chain out_prop[][N_PROPERTIES]);
+
+//svm.c
+void svm_gram_matrix(Chain *chains, int n_chains, double **out);
+double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains);
+double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains);
+double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim);
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas,
+    int n_betas, int iterations_per_beta, int print_to_file, char *filename);
