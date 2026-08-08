@@ -1,13 +1,17 @@
 \documentclass{article}
 \usepackage{my_style}
+\usepackage{setspace}
 \begin{document}
 
 \vspace*{3cm}
 \thispagestyle{empty}
 \begin{center}
-    {\huge \textbf{Murine antibody humanization via frequentist analysis and simulated annealing}}\\
-    \vspace*{1cm}
-    {\LARGE Eneko Acevedo, Íñigo Aliod}
+    \begin{spacing}{3}
+        {\Huge \textbf{Murine antibody humanization via frequentist analysis, simulated annealing, and support vector machine algorithm}}\\
+    \end{spacing}
+
+\vspace*{1cm}
+    % {\LARGE Eneko Acevedo, Íñigo Aliod}
 
     % \vspace*{.5cm}
 
@@ -31,5 +35,7 @@
 
 \input{sections/metropolis}
 \input{sections/formatting}
+
+\input{sections/svm.tex}
 
 \end{document}
