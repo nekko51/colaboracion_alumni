@@ -147,6 +147,8 @@ def main():
                 seq_folders.append(item)
         seq_folders.sort(key=natural_sort_key)
  
+        all_average_hammings_list = []
+
         for folder in seq_folders:
             seq_path = os.path.join(latest_batch, folder)
             summary_file.write(f"==================== {folder.upper()} ====================\n\n")
@@ -163,8 +165,8 @@ def main():
  
             #seed is same for all runs of a given seq
             with open(os.path.join(seq_path, run_files[0]), 'r') as f:
-                lineas = f.readlines()
-            original_seed, original_energy, _, _, _ = process_run_file(lineas)
+                lines = f.readlines()
+            original_seed, original_energy, _, _, _ = process_run_file(lines)
  
             summary_file.write(f"Original seed:\n")
             summary_file.write(f"{original_seed}\n")
@@ -175,19 +177,27 @@ def main():
             absolute_best_hamming = None
             absolute_best_run_name = None
 
+            all_hammings_for_seq = []
+
             #look for best result
             for run_name in run_files:
                 with open(os.path.join(seq_path, run_name), 'r') as f:
-                    lineas = f.readlines()
+                    lines = f.readlines()
                 
                 #best step of THAT specific run
-                _, _, best_sequence, best_energy, best_hamming = process_run_file(lineas)
+                _, _, best_sequence, best_energy, best_hamming = process_run_file(lines)
  
                 summary_file.write(f"Best step from '{run_name}':\n")
                 if best_sequence:
                     summary_file.write(f"{best_sequence}\n")
                     summary_file.write(f"Energy: {best_energy}\n")
                     summary_file.write(f"Hamming distance to original: {best_hamming}\n\n")
+
+                    if best_hamming is not None:
+                        try:
+                            all_hammings_for_seq.append(float(best_hamming))
+                        except (ValueError, TypeError):
+                            pass
 
                     if best_energy is not None  and  best_energy < absolute_best_energy:
                         absolute_best_energy = best_energy
@@ -197,17 +207,31 @@ def main():
                 else:
                     summary_file.write("Could not find a valid result in this run.\n\n")
  
+            average_hamming = None
+            if all_hammings_for_seq:
+                average_hamming = sum(all_hammings_for_seq)/len(all_hammings_for_seq)
+                all_average_hammings_list.append(average_hamming)
+
             if absolute_best_sequence:
                 ultra_summary_file.write(f"Best result for {folder.upper()} (from '{absolute_best_run_name}'):\n\n")
                 ultra_summary_file.write(f"Seed: {original_seed}\n")
                 ultra_summary_file.write(f"Best: {absolute_best_sequence}\n")
                 ultra_summary_file.write(f"Energy: {absolute_best_energy}\n")
-                ultra_summary_file.write(f"Hamming distance to original: {absolute_best_hamming}\n\n\n")
+                ultra_summary_file.write(f"Hamming distance to original: {absolute_best_hamming}\n")
+                if average_hamming is not None:
+                    ultra_summary_file.write(f"Average Hamming Distance: {average_hamming:.2f}\n\n\n")
+                else:
+                    ultra_summary_file.write("\n\n\n")
             else:
                 ultra_summary_file.write(f"Could not find any valid result for {folder.upper()}.\n\n\n")
 
             print(f"Processed folder: {folder}")
  
+        if all_average_hammings_list:
+            total_average_of_averages = sum(all_average_hammings_list)/len(all_average_hammings_list)
+            ultra_summary_file.write("==================== OVERALL ====================\n\n")
+            ultra_summary_file.write(f"Average of Average Hamming Distances: {total_average_of_averages:.2f}\n")
+
     print("\nDone!")
 
 if __name__ == "__main__":

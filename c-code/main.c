@@ -36,7 +36,8 @@ void initialize(Chain* human_ref) {
 
 int main() {//i'm so happy i don't have to free every single malloc'd array if there's an error; if we had to, I think it's the only use of GOTO that wouldn't get you fired
     /*Initial parameters*/
-    AA_MUTATION_PENALTY = 4;//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
+    AA_MUTATION_PENALTY = 10;//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
+    //weight of 0.35, 0.35, 0.3 & penalty of 4 => 57.99 avg of avg hamming dist; penalty of 10 => 18.02 avg of avgs
     WEIGHT_LOG = 0.35;//weights must sum to 1
     WEIGHT_PROP = 0.35;
     WEIGHT_PENALTY = 0.3;
