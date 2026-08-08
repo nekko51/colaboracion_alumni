@@ -95,8 +95,25 @@ void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int
     }
 }
 
+void print_matrix_to_file(double **matrix, int dim, char *filename) {
+    FILE *f = get_file(filename, "w");
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            fprintf(f, "%g\n", matrix[i][j]);
+        }
+    }
+    fclose(f);
+}
 
-
+void get_matrix_from_file(char *filename, int dim, double **out) {
+    FILE *f = get_file(filename, "r");
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            fscanf(f, "%lf\n", &out[i][j]);
+        }
+    }
+    fclose(f);
+}
 
 
 
