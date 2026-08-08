@@ -80,7 +80,7 @@ void file_megaAacids(char *filename, int n_lines, Chain* out) {
         Chain temp;
         get_next_chain(f, &temp);
         chain_direct_sum(out, &temp, out);
-        if (i%100 == 0) printf("%d read lines\n", i);
+        if (i%325 == 0) printf("%d read lines\n", i);
     }
     fclose(f);
     ch_normalize(out, out);

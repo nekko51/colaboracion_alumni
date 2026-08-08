@@ -21,6 +21,12 @@ test mouse:     1379
  * @param ENTROPIS "_entropies"
  *
 */
+
+double AA_MUTATION_PENALTY;
+double WEIGHT_LOG;
+double WEIGHT_PROP;
+double WEIGHT_PENALTY;
+
 void initialize(Chain* human_ref) {
     ini_ran(time(NULL));
     initialize_properties_matrix();
@@ -30,10 +36,10 @@ void initialize(Chain* human_ref) {
 
 int main() {//i'm so happy i don't have to free every single malloc'd array if there's an error; if we had to, I think it's the only use of GOTO that wouldn't get you fired
     /*Initial parameters*/
-    AA_MUTATION_PENALTY = 1.5;//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
-    WEIGHT_LOG = 0.4;//weights must sum to 1
-    WEIGHT_PROP = 0.4;
-    WEIGHT_PENALTY = 0.2;
+    AA_MUTATION_PENALTY = 4;//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
+    WEIGHT_LOG = 0.35;//weights must sum to 1
+    WEIGHT_PROP = 0.35;
+    WEIGHT_PENALTY = 0.3;
     int n_betas = 50;
     int n_sweeps = 800;
     int n_metropolis = 20;
