@@ -96,13 +96,17 @@ void append_file_to_chain_vector(char* filename, int n_lines, Chain *output, int
 }
 
 void print_matrix_to_file(double **matrix, int dim, char *filename) {
+    printf("starting gram matrix printing...\n");
     FILE *f = get_file(filename, "w");
     for (int i = 0; i < dim; i++) {
         for (int j = 0; j < dim; j++) {
             fprintf(f, "%g\n", matrix[i][j]);
+            printf("progress:\t%5.2f%%\r", (double)(i*dim+j+1)/(double)(dim*dim) * 100.);
+            fflush(stdout);
         }
     }
     fclose(f);
+    printf("finished gram matrix printing!\n");
 }
 
 void get_matrix_from_file(char *filename, int dim, double **out) {

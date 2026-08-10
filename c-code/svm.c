@@ -35,12 +35,14 @@ double custom_distance(Chain a, Chain b) {
 // @brief computes (signed) gram matrix for a series of learn chains
 // @returns a matrix of size n_chains * n_chains
 void svm_gram_matrix(Chain *chains, int n_chains, double **out) {
+    printf("starting gram matrix computation...\n");
     for (int i = 0; i < n_chains; i++) {
         for (int j = 0; j < n_chains; j++) {
             out[i][j] = custom_distance(chains[i], chains[j]);
         }
         if (i%10 == 0)  printf("gram matrix progress:\t%5.2f%%\n", (double)(i+1)/(double)n_chains * 100);
     }
+    printf("finished gram matrix!\n");
 }
 
 /**
@@ -124,6 +126,7 @@ int svm_metropolis(double e_old, double e_new, double beta) {
 }
 
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim) {
+    printf("starting initial beta computation...\n");
     double *lambdas_ = malloc(dim * sizeof(double));
     double energy_old = svm_energy(gram_matrix, signs, initial_lambdas, dim);
     double sum = 0.0;
@@ -132,12 +135,12 @@ double svm_initial_beta(double *initial_lambdas, double eps, int iterations, dou
         svm_change(initial_lambdas, lambdas_, dim, eps, signs);
         double delta = svm_energy(gram_matrix, signs, lambdas_, dim) - energy_old;
         sum += fabs(delta);
-        printf("initial beta progress:\t%5.2f%%\r", (double)(i+1)/(double)iterations * 100.);
+        printf("progress:\t%5.2f%%\r", (double)(i+1)/(double)iterations * 100.);
         fflush(stdout);
     }
-    printf("\n");
     
     free(lambdas_);
+    printf("finished initial beta computation!\n");
     return (double)iterations / sum;
 }
 
@@ -154,23 +157,29 @@ double svm_initial_beta(double *initial_lambdas, double eps, int iterations, dou
  * more to do: acceptance, outputting energy, printing to file
  */
 void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, char *filename) {
+    printf("starting simulated annealing...\n");
     double energy_old, energy_new; double *lambdas_ = calloc(dimension, sizeof(double)); int acceptance_count;
     energy_old = svm_energy(gram_matrix, signs, lambdas, dimension);
+    printf("progress:\t%5.2f%%\r", 0.);
+    fflush(stdout);
     if (print_to_file) {
-        FILE *file = get_file(filename, "w");
 
-        fprintf(file, "energy,");
-        fprintf(file, "acceptance,");
-        for (int i = 0; i < dimension - 1; i++) {
-            fprintf(file, "lambda_%d,", i);
-        }
-        fprintf(file, "lambda_%d\n", dimension -1);
+        /*file things*/
+        char summry_file_name[MAX_STR_LEN];
+        char log_file_name[MAX_STR_LEN];
+        sprintf(summry_file_name, "%s/summary.txt", filename);
+        sprintf(log_file_name, "%s/full-log.txt", filename);
 
-        fprintf(file, "%lf,0.,", energy_old);
-        for (int i = 0; i < dimension; i++) {
-            fprintf(file, "%lf,", lambdas[i]);
-        }
-        fprintf(file, "%lf\n", lambdas[dimension-1]);
+        FILE *sum_file = get_file(summry_file_name, "w");
+        FILE *log_file = get_file(log_file_name, "w");
+
+        fprintf(sum_file, "B-idx\tEnergy\tAcceptance\t");
+        for (int i = 0; i < dimension; i++) fprintf(sum_file, "lambda_%d\t", i);
+        fprintf(sum_file, "0\t%lf\t0.\t", energy_old);
+        for (int i = 0; i < dimension; i++) fprintf(sum_file, "%lf\t", lambdas[i]);
+
+        fprintf(log_file, "B-idx\tIt-idx\tEnergy\tAcceptance~\n");
+        /*end of file things*/
 
         for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
             acceptance_count = 0;
@@ -186,25 +195,23 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                         lambdas[i] = lambdas_[i];
                     }
                 }
+
+                fprintf(log_file, "%d\t%d\t%g\t%g\n", beta_idx, iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
             }
 
-            fprintf(file, "%lf,", energy_old);
-            fprintf(file, "%lf,", (double)acceptance_count/(double)iterations_per_beta);
-            for (int i = 0; i < dimension; i++) {
-                fprintf(file, "%lf,", lambdas[i]);
-            }
-            fprintf(file, "%lf\n", lambdas[dimension-1]);
+            fprintf(sum_file, "%d\t%lf\t", beta_idx+1, energy_old);
+            fprintf(sum_file, "%lf\t", (double)acceptance_count/(double)iterations_per_beta);
+            for (int i = 0; i < dimension; i++) fprintf(sum_file, "%lf\t", lambdas[i]);
 
-            printf("annealing progress:\t%5.2f%%\r", (double)(beta_idx+1)/(double)n_betas * 100.);
+            printf("progress:\t%5.2f%%\r", (double)(beta_idx+1)/(double)n_betas * 100.);
             fflush(stdout);
-            if ((double)acceptance_count/(double)iterations_per_beta > 0.5) {
-                epsilon *= 1.05; 
-            } else {
-                epsilon *= 0.95; 
-            }
+
+            if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
+            else                                                            epsilon *= 0.95;
+
         }
-        fclose(file);
-        printf("\n");
+        fclose(sum_file);
+        fclose(log_file);
     } else {
         for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
 
@@ -220,14 +227,14 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                     }
                 }
             }
-            printf("annealing progress:\t%5.2f%%\r", (double)(beta_idx+1)/(double)n_betas * 100.);
+
+            printf("progress:\t%5.2f%%\r", (double)(beta_idx+1)/(double)n_betas * 100.);
             fflush(stdout);
-            if ((double)acceptance_count/(double)iterations_per_beta > 0.5) {
-                epsilon *= 1.05; 
-            } else {
-                epsilon *= 0.95; 
-            }
+
+            if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
+            else                                                            epsilon *= 0.95;
         }
     }
     free(lambdas_);
+    printf("finished simulated annealing!\n");
 }

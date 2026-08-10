@@ -1,5 +1,31 @@
 #include "head.h"
 
+/**
+ * @brief Recursively creates a directory path.
+ *
+ * @param path The full directory path to create.
+ * @return 0 on success, -1 on error.
+ */
+int mkdir_p(const char *path) {
+    char *p;
+    char *temp = strdup(path);
+    if (temp == NULL) {
+        fprintf(stderr, "Error: strdup failed in mkdir_p\n");
+        return -1;
+    }
+
+    for (p = temp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = '\0';
+            MKDIR(temp);
+            *p = '/';
+        }
+    }
+    MKDIR(temp);
+    free(temp);
+    return 0;
+}
+
 void med_var(double* data, double* mean, double* variance, int n) {
     int i;
     double sum, res;

@@ -147,6 +147,7 @@ typedef struct {
 void med_var(double* data, double* mean, double* variance, int n);
 void minmax(double* data, double* max, double* min, int n);
 int negative_chain(const Chain* ch);
+int mkdir_p(const char *path);
 FILE *get_file(char* filename, char* mode);
 void sort_array(double* array, int n);
 
@@ -201,5 +202,5 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out);
 double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains);
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains);
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim);
-void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas,
-    int n_betas, int iterations_per_beta, int print_to_file, char *filename);
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas,
+    int iterations_per_beta, int print_to_file, char *filename);
