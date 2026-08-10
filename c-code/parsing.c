@@ -100,7 +100,7 @@ void print_matrix_to_file(double **matrix, int dim, char *filename) {
     FILE *f = get_file(filename, "w");
     for (int i = 0; i < dim; i++) {
         for (int j = 0; j < dim; j++) {
-            fprintf(f, "%g\n", matrix[i][j]);
+            fprintf(f, "%.15e\n", matrix[i][j]);
             printf("progress:\t%5.2f%%\r", (double)(i*dim+j+1)/(double)(dim*dim) * 100.);
             fflush(stdout);
         }

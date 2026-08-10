@@ -51,8 +51,12 @@ extern int CHAR_TO_INT_LUT[256];
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
-#define SVM_DISTANCE_PROP_FACTOR 1 // idk for the moment
+
+/*svm parameters*/
+#define SVM_KERNEL_PROP_FACTOR .01 // idk for the moment
 #define SVM_PARAMETER_LIMIT 1
+#define SVM_KERNEL_LAG -2.065
+#define SVM_KERNEL_POW 1
 
 /*Metropolis parameters*/
 extern double AA_MUTATION_PENALTY;
@@ -170,6 +174,10 @@ void print_matrix_to_file(double **matrix, int dim, char *filename);
 void get_matrix_from_file(char *filename, int dim, double **out);
 
 //chain-operations.c
+double aa_sq_distance(Aacid aa, Aacid ab);
+double aa_dot_product(Aacid aa, Aacid ab);
+double chain_sq_distance(Chain a, Chain b);
+double chain_dot_product(Chain a, Chain b);
 void aacid_direct_sum(const Aacid* a, const Aacid* b, Aacid* out);
 void aa_scale_only_aacids(const Aacid* aa, double scalar, Aacid* out);
 void aa_scale_only_properties(const Aacid* aa, double scalar, Aacid* out);
@@ -202,5 +210,4 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out);
 double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains);
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains);
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim);
-void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas,
-    int iterations_per_beta, int print_to_file, char *filename);
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, char *filename);

@@ -1,5 +1,37 @@
 #include "head.h"
 
+double aa_sq_distance(Aacid aa, Aacid ab) {
+    double sum = 0.;
+    for (int i = 0; i < N_AACIDS; i++) {
+        sum += (aa.elements[i] - ab.elements[i]) * (aa.elements[i] - ab.elements[i]);
+    }
+    return sum;
+}
+
+double aa_dot_product(Aacid aa, Aacid ab) {
+    double sum = 0;
+    for (int i = 0; i < N_AACIDS; i++) {
+        sum += aa.elements[i] * ab.elements[i];
+    }
+    return sum;
+}
+
+double chain_sq_distance(Chain a, Chain b) {
+    double sum = 0.;
+    for (int i = 0; i < CHAINLEN; i++) {
+        sum += aa_sq_distance(a.aas[i], b.aas[i]);
+    }
+    return sum;
+}
+
+double chain_dot_product(Chain a, Chain b) {
+    double sum = 0;
+    for (int i = 0; i < CHAINLEN; i++) {
+        sum += aa_dot_product(a.aas[i], b.aas[i]);
+    }
+    return sum;
+}
+
 // sums frequencies of two aa
 void aacid_direct_sum(const Aacid* a, const Aacid* b, Aacid* out) {
     for (int i = 0; i < N_AACIDS; i++) {

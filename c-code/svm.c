@@ -1,24 +1,24 @@
 #include "head.h"
 
-double aa_sq_distance(Aacid aa, Aacid ab) {
-    double sum = 0.;
-    for (int i = 0; i < N_AACIDS; i++) {
-        sum += (aa.elements[i] - ab.elements[i]) * (aa.elements[i] - ab.elements[i]);
-    }
-    return sum;
-}
 
-double chain_sq_distance(Chain a, Chain b) {
-    double sum = 0.;
-    for (int i = 0; i < CHAINLEN; i++) {
-        sum += aa_sq_distance(a.aas[i], b.aas[i]);
-    }
-    return sum;
-}
 
 // @return exp( - SVD_DISTANCE_PROP_FACTOR * chain_sq_distance(a, b))
-double custom_distance(Chain a, Chain b) {
-    return exp( - SVM_DISTANCE_PROP_FACTOR * chain_sq_distance(a, b));
+double gaussian_radial_basis_function(Chain a, Chain b) {
+    return exp( - SVM_KERNEL_PROP_FACTOR * chain_sq_distance(a, b) );
+}
+
+
+double sigmoid_function(Chain a, Chain b) {
+    return tanh( SVM_KERNEL_PROP_FACTOR * chain_dot_product(a, b) + SVM_KERNEL_LAG );
+}
+
+double polynomial_inhom_function(Chain a, Chain b) {
+    double lin_poly = chain_dot_product(a, b) + SVM_KERNEL_LAG;
+    double ret = 1.;
+    for (int i = 0; i < SVM_KERNEL_POW; i++) {
+        ret *= lin_poly;
+    }
+    return ret;
 }
 
 // // @brief [a_i], [b_j], takes the index-th element in the concatenation of *c1 and *c2
@@ -38,9 +38,10 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out) {
     printf("starting gram matrix computation...\n");
     for (int i = 0; i < n_chains; i++) {
         for (int j = 0; j < n_chains; j++) {
-            out[i][j] = custom_distance(chains[i], chains[j]);
+            out[i][j] = sigmoid_function(chains[i], chains[j]);
+
         }
-        printf("progress:\t%5.2f%%\r", (double)(i+1)/(double)n_chains * 100.);
+        printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_chains * 100.);
         fflush(stdout);
     }
     printf("finished gram matrix!\n");
@@ -71,7 +72,7 @@ double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains) 
 
     double bias = signs[idx];
     for (int i = 0; i < n_chains; i++) {
-        bias -= lambda[i] * signs[i] * custom_distance(chains[i], chains[idx]);
+        bias -= lambda[i] * signs[i] * gaussian_radial_basis_function(chains[i], chains[idx]);
     }
     return bias;
 }
@@ -79,7 +80,7 @@ double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains) 
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains) {
     double out = bias;
     for (int i = 0; i < n_chains; i++) {
-        out += lambda[i] * signs[i] * custom_distance(x_input, chains[i]);
+        out += lambda[i] * signs[i] * gaussian_radial_basis_function(x_input, chains[i]);
     }
     return out;
 }
@@ -192,8 +193,6 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
     printf("progress:\t%5.2f%%\r", 0.);
     fflush(stdout);
     if (print_to_file) {
-
-        /*file things*/
         char summry_file_name[MAX_STR_LEN];
         char log_file_name[MAX_STR_LEN];
         sprintf(summry_file_name, "%s/summary.txt", filename);
@@ -205,7 +204,7 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
         fprintf(sum_file, "B-idx\tEnergy\tAcceptance\n");
         fprintf(sum_file, "0\t%lf\t0.\n", energy_old);
 
-        fprintf(log_file, "B-idx\tIt-idx\tEnergy\tAcceptance~\n");
+        fprintf(log_file, "line\tB-idx\tIt-idx\tEnergy\tAcceptance~\n");
         /*end of file things*/
 
         for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
@@ -226,7 +225,7 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                 printf("progress:\t%5.2f%%\r", (double)(beta_idx*iterations_per_beta+iteration_idx+1)/(double)(n_betas*iterations_per_beta) * 100.);
                 fflush(stdout);
 
-                fprintf(log_file, "%d\t%d\t%g\t%g\n", beta_idx, iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
+                fprintf(log_file, "%d\t%d\t%d\t%g\t%g\n", iteration_idx+beta_idx*iterations_per_beta, beta_idx, iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
             }
 
             fprintf(sum_file, "%d\t%lf\t", beta_idx+1, energy_old);
@@ -236,6 +235,15 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
             else                                                            epsilon *= 0.95;
 
         }
+
+        char res_file_name[MAX_STR_LEN];
+        sprintf(res_file_name, "%s/result-lambdas.txt", filename);
+        FILE *res_file = get_file(res_file_name, "w");
+
+        fprintf(res_file, "%g\t", energy_old);
+        for(int i = 0; i < dimension; i++)  fprintf(res_file, "%g\t", lambdas[i]);
+
+        fclose(res_file);
         fclose(sum_file);
         fclose(log_file);
     } else {
