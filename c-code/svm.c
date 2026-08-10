@@ -40,7 +40,8 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out) {
         for (int j = 0; j < n_chains; j++) {
             out[i][j] = custom_distance(chains[i], chains[j]);
         }
-        if (i%10 == 0)  printf("gram matrix progress:\t%5.2f%%\n", (double)(i+1)/(double)n_chains * 100);
+        printf("progress:\t%5.2f%%\r", (double)(i+1)/(double)n_chains * 100.);
+        fflush(stdout);
     }
     printf("finished gram matrix!\n");
 }
@@ -105,16 +106,44 @@ double svm_energy(double **gram_matrix, int *signs, double *lambda, int dim) {
 }
 
 void svm_change(double *v, double *v_, int v_dim, double eps, int *signs) {
+    for (int k = 0; k < v_dim; k++) v_[k] = v[k];
+
+    int i, j;
+    double min_delta, max_delta, delta;
+
     do {
-        v_[v_dim-1] = 0;
-        for (int i = 0; i < v_dim - 1; i++) {
-            do {
-                v_[i] = v[i] + Random() * 2 * eps - eps;
-            } while (v_[i] <= 0. || v_[i] >= SVM_PARAMETER_LIMIT);
-            v_[v_dim-1] -= v_[i] * signs[i];
+        i = (int)(Random() * v_dim);
+        if (i >= v_dim) i = v_dim - 1;
+        do {
+            j = (int)(Random() * v_dim);
+            if (j >= v_dim) j = v_dim - 1;
+        } while (i == j);
+
+        double min_di = -v[i];
+        double max_di = SVM_PARAMETER_LIMIT - v[i];
+        double min_dj, max_dj;
+
+        if (signs[i] == signs[j]) {
+            min_dj = v[j] - SVM_PARAMETER_LIMIT;
+            max_dj = v[j];
+        } else {
+            min_dj = -v[j];
+            max_dj = SVM_PARAMETER_LIMIT - v[j];
         }
-        v_[v_dim-1] *= signs[v_dim-1]; 
-    } while (v_[v_dim-1] <= 0. || v_[v_dim-1] >= SVM_PARAMETER_LIMIT);
+
+        min_delta = min_di > min_dj ? min_di : min_dj;
+        max_delta = max_di < max_dj ? max_di : max_dj;
+        
+        double eps_min = -eps > min_delta ? -eps : min_delta;
+        double eps_max = eps < max_delta ? eps : max_delta;
+
+        if (eps_max > eps_min) {
+            delta = eps_min + Random() * (eps_max - eps_min);
+            v_[i] = v[i] + delta;
+            v_[j] = v[j] - delta * signs[i] * signs[j];
+            break;
+        }
+    } while (1); 
 }
 
 int svm_metropolis(double e_old, double e_new, double beta) {
@@ -173,10 +202,8 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
         FILE *sum_file = get_file(summry_file_name, "w");
         FILE *log_file = get_file(log_file_name, "w");
 
-        fprintf(sum_file, "B-idx\tEnergy\tAcceptance\t");
-        for (int i = 0; i < dimension; i++) fprintf(sum_file, "lambda_%d\t", i);
-        fprintf(sum_file, "0\t%lf\t0.\t", energy_old);
-        for (int i = 0; i < dimension; i++) fprintf(sum_file, "%lf\t", lambdas[i]);
+        fprintf(sum_file, "B-idx\tEnergy\tAcceptance\n");
+        fprintf(sum_file, "0\t%lf\t0.\n", energy_old);
 
         fprintf(log_file, "B-idx\tIt-idx\tEnergy\tAcceptance~\n");
         /*end of file things*/
@@ -196,15 +223,14 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                     }
                 }
 
+                printf("progress:\t%5.2f%%\r", (double)(beta_idx*iterations_per_beta+iteration_idx+1)/(double)(n_betas*iterations_per_beta) * 100.);
+                fflush(stdout);
+
                 fprintf(log_file, "%d\t%d\t%g\t%g\n", beta_idx, iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
             }
 
             fprintf(sum_file, "%d\t%lf\t", beta_idx+1, energy_old);
-            fprintf(sum_file, "%lf\t", (double)acceptance_count/(double)iterations_per_beta);
-            for (int i = 0; i < dimension; i++) fprintf(sum_file, "%lf\t", lambdas[i]);
-
-            printf("progress:\t%5.2f%%\r", (double)(beta_idx+1)/(double)n_betas * 100.);
-            fflush(stdout);
+            fprintf(sum_file, "%lf\n", (double)acceptance_count/(double)iterations_per_beta);
 
             if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
             else                                                            epsilon *= 0.95;
@@ -226,10 +252,10 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                         lambdas[i] = lambdas_[i];
                     }
                 }
-            }
 
-            printf("progress:\t%5.2f%%\r", (double)(beta_idx+1)/(double)n_betas * 100.);
-            fflush(stdout);
+                printf("progress:\t%5.2f%%\r", (double)(beta_idx*iterations_per_beta+iteration_idx+1)/(double)(n_betas*iterations_per_beta) * 100.);
+                fflush(stdout);
+            }
 
             if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
             else                                                            epsilon *= 0.95;
