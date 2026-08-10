@@ -21,6 +21,10 @@ double polynomial_inhom_function(Chain a, Chain b) {
     return ret;
 }
 
+double kernel(Chain a, Chain b) {
+    return sigmoid_function(a, b);
+}
+
 // // @brief [a_i], [b_j], takes the index-th element in the concatenation of *c1 and *c2
 // // @returns -1 if it was taken from the 1st list, 1 if from the 2nd
 // int get_chain_from_yuxtaposed_arrays(Chain *c1, int n_c1, Chain *c2, int n_c2, int index, Chain* out) {
@@ -38,7 +42,7 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out) {
     printf("starting gram matrix computation...\n");
     for (int i = 0; i < n_chains; i++) {
         for (int j = 0; j < n_chains; j++) {
-            out[i][j] = sigmoid_function(chains[i], chains[j]);
+            out[i][j] = kernel(chains[i], chains[j]);
 
         }
         printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_chains * 100.);
@@ -72,7 +76,7 @@ double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains) 
 
     double bias = signs[idx];
     for (int i = 0; i < n_chains; i++) {
-        bias -= lambda[i] * signs[i] * gaussian_radial_basis_function(chains[i], chains[idx]);
+        bias -= lambda[i] * signs[i] * kernel(chains[i], chains[idx]);
     }
     return bias;
 }
@@ -80,7 +84,7 @@ double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains) 
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains) {
     double out = bias;
     for (int i = 0; i < n_chains; i++) {
-        out += lambda[i] * signs[i] * gaussian_radial_basis_function(x_input, chains[i]);
+        out += lambda[i] * signs[i] * kernel(x_input, chains[i]);
     }
     return out;
 }
