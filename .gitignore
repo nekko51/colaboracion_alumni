@@ -228,3 +228,5 @@ __marimo__/
 
 *.ini
 *.latexmkrc
+
+results/svm/annealing/batches/*
