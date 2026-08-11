@@ -21,8 +21,17 @@ double polynomial_inhom_function(Chain a, Chain b) {
     return ret;
 }
 
-double kernel(Chain a, Chain b) {
-    return gaussian_radial_basis_function(a, b);
+/**
+ * 's' for sigmoid (tanh)
+ * 'p' for polynomial
+ * any other one will be for gaussian (RBF)
+ */
+double kernel(Chain a, Chain b, char kernel_char) {
+    switch (kernel_char) {
+    case 's':   return sigmoid_function(a, b);
+    case 'p':   return polynomial_inhom_function(a, b);
+    default:    return gaussian_radial_basis_function(a, b);
+    };
 }
 
 // // @brief [a_i], [b_j], takes the index-th element in the concatenation of *c1 and *c2
@@ -36,13 +45,24 @@ double kernel(Chain a, Chain b) {
 //     return -1;
 // }
 
-// @brief computes (signed) gram matrix for a series of learn chains
-// @returns a matrix of size n_chains * n_chains
-void svm_gram_matrix(Chain *chains, int n_chains, double **out) {
+
+/**
+ * @brief computes (signed) gram matrix for a series of learn chains
+ * @returns a matrix of size n_chains * n_chains
+ * 
+ * @param kernel_char choose the kernel for the outut matrix
+ * 
+ * - 's' for sigmoid (tanh): tanh( k * (a·b + r) )
+ * 
+ * - 'p' for polynomial: ( a·b + r )^d
+ * 
+ * - any other (standard to g) for gaussian RBF: exp( - k * ||a - b|| )
+ */
+void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char) {
     printf("starting gram matrix computation...\n");
     for (int i = 0; i < n_chains; i++) {
         for (int j = 0; j < n_chains; j++) {
-            out[i][j] = kernel(chains[i], chains[j]);
+            out[i][j] = kernel(chains[i], chains[j], kernel_char);
 
         }
         printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_chains * 100.);
@@ -61,7 +81,7 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out) {
  * 
  */
 
-double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains) {
+double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char) {
     int idx = -1;
     for (int i = 0; i < n_chains; i++) {
         if (lambda[i] > EPSILON) {
@@ -76,18 +96,24 @@ double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains) 
 
     double bias = signs[idx];
     for (int i = 0; i < n_chains; i++) {
-        bias -= lambda[i] * signs[i] * kernel(chains[i], chains[idx]);
+        bias -= lambda[i] * signs[i] * kernel(chains[i], chains[idx], kernel_char);
     }
     return bias;
 }
 
-double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains) {
+double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char) {
     double out = bias;
     for (int i = 0; i < n_chains; i++) {
-        out += lambda[i] * signs[i] * kernel(x_input, chains[i]);
+        out += lambda[i] * signs[i] * kernel(x_input, chains[i], kernel_char);
     }
     return out;
 }
+
+
+/*********************************************************************************************************************************/
+/*******************************************************simulated annealing*******************************************************/
+/*********************************************************************************************************************************/
+
 
 
 SvmMove svm_propose_move(double *v, int v_dim, double eps, int *signs) {
@@ -400,4 +426,108 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
 
     free(F);
     printf("\nfinished simulated annealing!\n");
+}
+
+/**
+ * @brief Reads an aggregated CSV file, finds the row with the minimum energy,
+ *        and loads the corresponding lambda values.
+ *
+ * @param filename The path to the aggregated CSV file.
+ * @param best_lambdas A pointer to a double array (size n_data_points) to store the resulting lambdas.
+ * @param n_data_points The number of data points (and lambdas) to read.
+ * @return 0 on success, -1 on file error, -2 if no data found.
+ */
+void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points) {
+    const char* filename = "results/svm/annealing/aggregated_svm_lambdas.csv";
+    FILE *f = get_file((char*)filename, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Error: Could not open aggregated lambda file %s\n", filename);
+        return;
+    }
+
+    char line[MAX_STR_LEN * 100]; // Buffer to hold a full line from the CSV
+    char best_line[MAX_STR_LEN * 100] = "";
+    double min_energy = 1e30; // Initialize with a very large number
+
+    // Skip header line
+    if (fgets(line, sizeof(line), f) == NULL) {
+        fprintf(stderr, "Error: CSV file %s is empty or unreadable.\n", filename);
+        fclose(f);
+        return;
+    }
+
+    // Find the line with the minimum energy
+    while (fgets(line, sizeof(line), f) != NULL) {
+        double current_energy;
+        // sscanf to extract the third value (energy)
+        if (sscanf(line, "%*[^,],%*[^,],%lf", &current_energy) == 1) {
+            if (current_energy < min_energy) {
+                min_energy = current_energy;
+                strcpy(best_line, line);
+            }
+        }
+    }
+    fclose(f);
+
+    if (strlen(best_line) == 0) {
+        fprintf(stderr, "No data found in %s\n", filename);
+        return;
+    }
+
+    printf("Found best run with energy: %g\n", min_energy);
+
+    // Parse the best line to extract lambdas
+    char *token = strtok(best_line, ",");
+    // Skip n_betas, n_iterations, and energy
+    for (int i = 0; i < 3; ++i) {
+        if (token == NULL) {
+            fprintf(stderr, "Error: Malformed CSV line.\n");
+            return;
+        }
+        token = strtok(NULL, ",");
+    }
+
+    // Read the lambda values
+    for (int i = 0; i < n_data_points; ++i) {
+        if (token != NULL) {
+            best_lambdas[i] = atof(token);
+            token = strtok(NULL, ",");
+        } else {
+            fprintf(stderr, "Error: Not enough lambda values in CSV line for n_data_points=%d.\n", n_data_points);
+            break;
+        }
+    }
+    printf("Successfully loaded best lambda vector.\n");
+}
+
+/********************************************************************************************************************************/
+/***************************************************end of simulated annealing***************************************************/
+/********************************************************************************************************************************/
+
+void test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char) {
+    printf("starting tests...\n");
+    double bias = compute_bias(lambdas, tags, learn_chs, learn_dims, kernel_char);
+
+    char time_str[80];
+    time_t now = time(NULL);
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H:%M:%S", localtime(&now));
+    char run_dir[MAX_STR_LEN];
+    sprintf(run_dir, "results/svm/decision-function-tests/kernel-%c/%s", kernel_char, time_str);
+    mkdir_p(run_dir);
+    printf("directory '%s' created!\n", time_str);
+
+    char filename[2*MAX_STR_LEN];
+    sprintf(filename, "%s/test-results.txt", run_dir);
+
+    FILE *f = get_file(filename, "w");
+    double decision_f;
+
+    for (int i = 0; i < n_test_chs; i++) {
+        decision_f = decision_function(test_chs[i], bias, lambdas, tags, learn_chs, learn_dims, kernel_char);
+        fprintf(f, "%.15e\n", decision_f);
+        printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_test_chs * 100.);
+        fflush(stdout);
+    }
+
+    printf("tests complete and written!\n");
 }
