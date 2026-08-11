@@ -143,6 +143,11 @@ typedef struct {
     double wanderer_penalty;
 } Energy;
 
+typedef struct {
+    int i;
+    int j;
+    double delta;
+} SvmMove;
 
 
 /*Functions:*/

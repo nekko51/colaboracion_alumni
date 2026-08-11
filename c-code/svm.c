@@ -90,6 +90,51 @@ double decision_function(Chain x_input, double bias, double *lambda, int *signs,
 }
 
 
+SvmMove svm_propose_move(double *v, int v_dim, double eps, int *signs) {
+    SvmMove move;
+    int intentos = 0;
+    double min_delta, max_delta;
+
+    do {
+        move.i = (int)(Random() * v_dim);
+        if (move.i >= v_dim) move.i = v_dim - 1;
+        do {
+            move.j = (int)(Random() * v_dim);
+            if (move.j >= v_dim) move.j = v_dim - 1;
+        } while (move.i == move.j);
+
+        double min_di = -v[move.i];
+        double max_di = SVM_PARAMETER_LIMIT - v[move.i];
+        double min_dj, max_dj;
+
+        if (signs[move.i] == signs[move.j]) {
+            min_dj = v[move.j] - SVM_PARAMETER_LIMIT;
+            max_dj = v[move.j];
+        } else {
+            min_dj = -v[move.j];
+            max_dj = SVM_PARAMETER_LIMIT - v[move.j];
+        }
+
+        min_delta = min_di > min_dj ? min_di : min_dj;
+        max_delta = max_di < max_dj ? max_di : max_dj;
+        
+        double eps_min = -eps > min_delta ? -eps : min_delta;
+        double eps_max = eps < max_delta ? eps : max_delta;
+
+        if (eps_max > eps_min) {
+            move.delta = eps_min + Random() * (eps_max - eps_min);
+            return move;
+        }
+        
+        intentos++;
+        if (intentos > 1000) {
+            move.delta = 0.0;
+            return move;
+        }
+    } while (1); 
+}
+
+
 /**
  * maximize 
  * \sum_i \lambda_i - \frac{1}{2} \sum_i \sum_j \lambda_i \lambda_j s_i s_j * dist(x_i, x_j)
@@ -161,20 +206,44 @@ int svm_metropolis(double e_old, double e_new, double beta) {
 
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim) {
     printf("starting initial beta computation...\n");
-    double *lambdas_ = malloc(dim * sizeof(double));
-    double energy_old = svm_energy(gram_matrix, signs, initial_lambdas, dim);
+    
+    double *F = calloc(dim, sizeof(double));
+    for (int k = 0; k < dim; k++) {
+        for (int m = 0; m < dim; m++) {
+            F[k] += initial_lambdas[m] * signs[m] * gram_matrix[k][m];
+        }
+    }
+
     double sum = 0.0;
     
-    for (int i = 0; i < iterations; i++) {
-        svm_change(initial_lambdas, lambdas_, dim, eps, signs);
-        double delta = svm_energy(gram_matrix, signs, lambdas_, dim) - energy_old;
-        sum += fabs(delta);
-        printf("progress:\t%5.2f%%\r", (double)(i+1)/(double)iterations * 100.);
-        fflush(stdout);
+    for (int it = 0; it < iterations; it++) {
+        SvmMove move = svm_propose_move(initial_lambdas, dim, eps, signs);
+        
+        if (move.delta != 0.0) {
+            double d = move.delta;
+            int i = move.i;
+            int j = move.j;
+            
+            double delta_E = -d * (1.0 - signs[i] * signs[j]) 
+                             + d * signs[i] * (F[i] - F[j]) 
+                             + 0.5 * d * d * (gram_matrix[i][i] + gram_matrix[j][j] - 2.0 * gram_matrix[i][j]);
+            
+            sum += fabs(delta_E);
+        }
+        
+        if (it % 100 == 0 || it == iterations - 1) {
+            printf("progress:\t%5.2f%%\r", (double)(it+1)/(double)iterations * 100.);
+            fflush(stdout);
+        }
     }
     
-    free(lambdas_);
-    double ret = (double)iterations / sum;
+    free(F);
+    
+    double ret = 1.0;
+    if (sum > EPSILON) {
+        ret = (double)iterations / sum;
+    }
+    
     printf("finished initial beta computation! b = %.3g\n", ret);
     return ret;
 }
