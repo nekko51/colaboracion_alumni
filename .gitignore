@@ -230,3 +230,5 @@ __marimo__/
 *.latexmkrc
 
 results/svm/annealing/batches/*
+results/svm/decision-function-tests/kernel-g/*
+results/svm/decision-function-tests/kernel-s/*
