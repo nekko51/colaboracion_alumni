@@ -66,7 +66,10 @@ int negative_chain(const Chain* ch) {
 
 FILE *get_file(char* filename, char* mode) {
     FILE* f = fopen(filename, mode);
-    if (f == NULL) fprintf(stderr, "Error: Could not open %s\n", filename);
+    if (f == NULL) {
+        fprintf(stderr, "Error: Could not open %s\n", filename);
+        printf("Error: Could not open %s\n", filename);
+    }
     return f;
 }
 

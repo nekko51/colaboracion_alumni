@@ -53,9 +53,9 @@ extern int CHAR_TO_INT_LUT[256];
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
 
 /*svm parameters*/
-#define SVM_KERNEL_PROP_FACTOR .01 // idk for the moment
+#define SVM_KERNEL_PROP_FACTOR (1./230.1105) // now i know
 #define SVM_PARAMETER_LIMIT 1
-#define SVM_KERNEL_LAG -2.065
+#define SVM_KERNEL_LAG 0
 #define SVM_KERNEL_POW 1
 
 /*Metropolis parameters*/

@@ -9,7 +9,7 @@ double gaussian_radial_basis_function(Chain a, Chain b) {
 
 
 double sigmoid_function(Chain a, Chain b) {
-    return tanh( SVM_KERNEL_PROP_FACTOR * chain_dot_product(a, b) + SVM_KERNEL_LAG );
+    return tanh( SVM_KERNEL_PROP_FACTOR * (chain_dot_product(a, b) + SVM_KERNEL_LAG));
 }
 
 double polynomial_inhom_function(Chain a, Chain b) {
@@ -22,7 +22,7 @@ double polynomial_inhom_function(Chain a, Chain b) {
 }
 
 double kernel(Chain a, Chain b) {
-    return sigmoid_function(a, b);
+    return gaussian_radial_basis_function(a, b);
 }
 
 // // @brief [a_i], [b_j], takes the index-th element in the concatenation of *c1 and *c2
@@ -174,8 +174,30 @@ double svm_initial_beta(double *initial_lambdas, double eps, int iterations, dou
     }
     
     free(lambdas_);
-    printf("finished initial beta computation!\n");
-    return (double)iterations / sum;
+    double ret = (double)iterations / sum;
+    printf("finished initial beta computation! b = %.3g\n", ret);
+    return ret;
+}
+
+void svm_initialize_lambdas(double *lambdas, int *signs, int dim) {
+    double sum_pos = 0.0;
+    double sum_neg = 0.0;
+
+    for (int i = 0; i < dim; i++) {
+        lambdas[i] = Random() * (SVM_PARAMETER_LIMIT * 0.1);
+        if (signs[i] == 1) sum_pos += lambdas[i];
+        else               sum_neg += lambdas[i];
+    }
+
+    if (sum_pos > sum_neg && sum_pos > 0.0) {
+        for (int i = 0; i < dim; i++) {
+            if (signs[i] == 1) lambdas[i] *= (sum_neg / sum_pos);
+        }
+    } else if (sum_neg > 0.0) {
+        for (int i = 0; i < dim; i++) {
+            if (signs[i] == -1) lambdas[i] *= (sum_pos / sum_neg);
+        }
+    }
 }
 
 /**
@@ -205,10 +227,9 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
         FILE *sum_file = get_file(summry_file_name, "w");
         FILE *log_file = get_file(log_file_name, "w");
 
-        fprintf(sum_file, "B-idx\tEnergy\tAcceptance\n");
-        fprintf(sum_file, "0\t%lf\t0.\n", energy_old);
+        fprintf(sum_file, "B-idx\tBeta\tEnergy\tAcceptance\n");
 
-        fprintf(log_file, "line\tB-idx\tIt-idx\tEnergy\tAcceptance~\n");
+        fprintf(log_file, "Line\tB-idx\tBeta\tIt-idx\tEnergy\tAcceptance~\n");
         /*end of file things*/
 
         for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
@@ -229,11 +250,10 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                 printf("progress:\t%5.2f%%\r", (double)(beta_idx*iterations_per_beta+iteration_idx+1)/(double)(n_betas*iterations_per_beta) * 100.);
                 fflush(stdout);
 
-                fprintf(log_file, "%d\t%d\t%d\t%g\t%g\n", iteration_idx+beta_idx*iterations_per_beta, beta_idx, iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
+                fprintf(log_file, "%d\t%d\t%lf\t%d\t%lf\t%g\n", iteration_idx+beta_idx*iterations_per_beta, beta_idx, betas[beta_idx], iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
             }
 
-            fprintf(sum_file, "%d\t%lf\t", beta_idx+1, energy_old);
-            fprintf(sum_file, "%lf\n", (double)acceptance_count/(double)iterations_per_beta);
+            fprintf(sum_file, "%d\t%lf\t%lf\t%lf\n", beta_idx+1, betas[beta_idx], energy_old, (double)acceptance_count/(double)iterations_per_beta);
 
             if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
             else                                                            epsilon *= 0.95;
