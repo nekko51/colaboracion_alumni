@@ -172,7 +172,7 @@ void generate_betas(double** betas, int n_betas, double* entropies, int n_entrop
 void metropolis_sweep(char* murine_seq, const int* original_murine_indices, const Chain* human_ref_seq, double* local_beta, 
     double* acceptance, int chainlen, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, double** betas, int n_betas, char* filename);
-void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis);
+void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis, double threshold);
 
 //parsing.c
 int char_to_int(char X);

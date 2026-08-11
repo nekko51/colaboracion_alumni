@@ -41,15 +41,15 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
     WEIGHT_PROP = 0.35;
     WEIGHT_PENALTY = 0.3;
     int n_betas = 50;
-    int n_sweeps = 800;
-    int n_metropolis = 20;
+    int n_sweeps = 80;
+    int n_metropolis = 10;
     int n_entropies = CHAINLEN;
     double entropy_order_q = 0.34;
     double scale_factor = 1.0;
     double cooling_rate = 1.02;
     double weighs[8] = {0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0};
     Chain human_ref;
-    double cdr_entropy_threshold = 2.25; //max Shannon entropy is log2(21) ~ 4.39
+    double cdr_entropy_threshold = 3.25; //max Shannon entropy is log2(21) ~ 4.39
 
     /*Variable & RNG Initializations*/
     initialize(&human_ref);
@@ -95,7 +95,7 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
 
     /*Metropolis*/
     generate_betas(betas, n_betas, entropies, n_entropies, scale_factor, EPSILON, cooling_rate, cdr_regions, n_cdrs_found);
-    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, n_sweeps, betas, n_betas, n_metropolis);
+    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, n_sweeps, betas, n_betas, n_metropolis, cdr_entropy_threshold);
 
     /*Free memory*/
     for(int i=0; i<n_betas; i++) {

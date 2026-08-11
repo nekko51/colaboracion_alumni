@@ -414,7 +414,7 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
 }
 
 //runs metropolis using every single sequence in a given filename as seed n_metropolis times for each seed
-void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis) {
+void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis, double threshold) {
     /*initial declarations for cleanup*/
     FILE *f = NULL;
     char** murine_seeds = NULL;
@@ -459,7 +459,7 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     snprintf(metropolis_dir, sizeof(metropolis_dir), "%s%s", RESULTS, METROPOLIS);
 
     strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H_%M_%S", localtime(&now));
-    snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d", metropolis_dir, time_str, n_lines, n_metropolis, n_betas);
+    snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d_th%f", metropolis_dir, time_str, n_lines, n_metropolis, n_betas, threshold);
     MKDIR(batch_dir);
 
     char beta_filename[3*MAX_STR_LEN];
