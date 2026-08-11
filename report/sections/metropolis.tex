@@ -94,29 +94,31 @@ The total energy, $E_\text{total}$, is a weighted sum of three components, which
         (\text{prop}_j(a_i) - \text{prop}_j(a_i^\text{original}))^2 \right) + P \cdot 
         \delta_{\displaystyle  a_i}^{\displaystyle a_i^{\text{original}}}\right]$$
         where $a_i^\text{original}$ is the amino acid at position $i$ in the original murine sequence, 
-        $P$ is the \texttt{AA\_MUTATION\_PENALTY}, and $\delta$ is the ``generalized Kronecker delta'' (logical if gate). 
+        $P$ is the mutation penalty (\texttt{AA\_MUTATION\_PENALTY}), and $\delta$ is the ``generalized Kronecker delta'' (logical if gate). 
         This approach ensures each mutation has a minimum energy cost, while heavily penalizing big property changes.
     \end{enumerate}
 
 \subsection{Model Parameters}
 The following table summarizes the key parameters for metropolis in our simulations. These values are defined in \texttt{main.c} and \texttt{head.h}.
 
-\begin{table}[h!]
+\begin{table}[ht!]
 \centering
-\begin{tabular}{|l|l|p{7cm}|}
+\begin{tabular}{llp{8cm}}
 \hline
-\textbf{Parameter} & \textbf{Value (provisional)} & \textbf{Description} \\
+\textbf{Parameter} & \textbf{Value\futnotetext} & \textbf{Description} \\
 \hline
 \texttt{n\_betas} & 50 & Number of cooling steps in the annealing schedule. \\
 \texttt{n\_sweeps} & 800 & Number of Metropolis sweeps per $\beta$ step. \\
 \texttt{n\_metropolis} & 20 & Number of independent runs per murine seed sequence. \\
-\texttt{w\_log} & 0.4 (from head.h) & Weight for the log-humanness energy component. \\
-\texttt{w\_prop} & 0.4 (from head.h) & Weight for the property-distance energy component. \\
-\texttt{w\_penalty} & 0.2 (from head.h) & Weight for the wandering penalty energy component. \\
+\texttt{w\_log} & 0.4 (\texttt{head.h}) & Weight for the log-humanness energy component. \\
+\texttt{w\_prop} & 0.4 (\texttt{head.h}) & Weight for the property-distance energy component. \\
+\texttt{w\_penalty} & 0.2 (\texttt{head.h}) & Weight for the wandering penalty energy component. \\
 \texttt{cooling\_rate ($c_r$)} & 1.02 & Multiplicative factor for increasing $k_i$ at each step. \\
 \texttt{scale\_factor ($\alpha$)} & 1.0 & Global scaling factor for all $\beta$ values. \\
-\texttt{AA\_MUTATION\_PENALTY ($P$)} & 1.5 (from head.h) & Constant penalty added for any AA mutation away from the original. \\
+\texttt{AA\_MUTATION\_PENALTY} {($P$)} & 1.5 (\texttt{head.h}) & Constant penalty added for any AA mutation away from the original. \\
 \hline
 \end{tabular}
 \label{tab:metropolis_params}
 \end{table}
+\footnotetext{Provisional values.}
+\newpage
