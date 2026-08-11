@@ -504,7 +504,7 @@ void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points) {
 /***************************************************end of simulated annealing***************************************************/
 /********************************************************************************************************************************/
 
-void test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char) {
+Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign) {
     printf("starting tests...\n");
     double bias = compute_bias(lambdas, tags, learn_chs, learn_dims, kernel_char);
 
@@ -521,13 +521,16 @@ void test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *lea
 
     FILE *f = get_file(filename, "w");
     double decision_f;
+    int correct = 0;
 
     for (int i = 0; i < n_test_chs; i++) {
         decision_f = decision_function(test_chs[i], bias, lambdas, tags, learn_chs, learn_dims, kernel_char);
+        if (decision_f * correct_sign > 0) correct++;
         fprintf(f, "%.15e\n", decision_f);
         printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_test_chs * 100.);
         fflush(stdout);
     }
-
     printf("tests complete and written!\n");
+    return (Int2){ .x = correct, .y = n_test_chs - correct };
 }
+

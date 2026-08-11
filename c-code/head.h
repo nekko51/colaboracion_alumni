@@ -75,9 +75,13 @@ extern double WEIGHT_PENALTY;
 #define TXT ".txt"
 
 #define FILE_L_MOUSE "learn_mouse"
+#define FILE_T_MOUSE "test_mouse"
 #define L_MOUSE_N_LINES 373
+#define T_MOUSE_N_LINES 1379
 #define FILE_L_HUMAN "learn_human"
+#define FILE_T_HUMAN "test_human"
 #define L_HUMAN_N_LINES 1309
+#define T_HUMAN_N_LINES 1388
 #define N_DATA_POINTS (L_HUMAN_N_LINES+L_MOUSE_N_LINES)
 #define FRECS "_freqs"
 #define ENTROPIS "_entropies"
@@ -136,6 +140,10 @@ typedef struct {
 typedef struct {
     double x, y;
 } Vec2;
+
+typedef struct {
+    int x, y;
+} Int2;
 
 typedef struct {
     double saa, laa, raa, taa;
@@ -226,5 +234,6 @@ double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, cha
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char);
 void svm_initialize_lambdas(double *lambdas, int *signs, int dim);
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim);
-void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, 
-    int iterations_per_beta, int print_to_file, char *filename);
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, char *filename);
+void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points);
+Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign);

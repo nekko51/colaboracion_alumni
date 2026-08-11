@@ -6,55 +6,63 @@ void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int init
 
 
 int main() {
-    svm_initNgram('p');
-}
 
-// int main() {
+    /*initialization*/
+    printf("\nstarting initialization...\n");
 
-//     /*initialization*/
-//     printf("\nstarting initialization...\n");
+    initialize();
 
-//     initialize();
+    //lambdas
+    double* lambdas = calloc(N_DATA_POINTS, sizeof(double));
+    get_best_lambdas_from_csv(lambdas, N_DATA_POINTS);
 
-//     //lambdas
-//     double* lambdas = calloc(N_DATA_POINTS, sizeof(double));
-//     get_best_lambdas_from_csv(lambdas, N_DATA_POINTS);
+    //tags
+    int *signs = malloc(N_DATA_POINTS * sizeof(int));
+    for (int i = 0; i < L_HUMAN_N_LINES; i++) signs[i] = 1;
+    for (int i = 0; i < L_MOUSE_N_LINES; i++) signs[i + L_HUMAN_N_LINES] = -1;
 
-//     //tags
-//     int *signs = malloc(N_DATA_POINTS * sizeof(int));
-//     for (int i = 0; i < L_HUMAN_N_LINES; i++) signs[i] = 1;
-//     for (int i = 0; i < L_MOUSE_N_LINES; i++) signs[i + L_HUMAN_N_LINES] = -1;
+    //gram matrix
+    double **gram = malloc(N_DATA_POINTS * sizeof(double*));
+    for (int i = 0; i < N_DATA_POINTS; i++) { gram[i] = malloc(N_DATA_POINTS * sizeof(double)); }
+    get_matrix_from_file("results/svm/gram/gram_matrix_gaussian.txt", N_DATA_POINTS, gram);
 
-//     //gram matrix
-//     double **gram = malloc(N_DATA_POINTS * sizeof(double*));
-//     for (int i = 0; i < N_DATA_POINTS; i++) { gram[i] = malloc(N_DATA_POINTS * sizeof(double)); }
-//     get_matrix_from_file("results/svm/gram/gram_matrix_sigmoid.txt", N_DATA_POINTS, gram);
+    //learn chains
+    Chain *learn_chs = malloc(N_DATA_POINTS * sizeof(Chain));
+    append_file_to_chain_vector(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, learn_chs, 0);
+    append_file_to_chain_vector(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES, learn_chs, L_HUMAN_N_LINES);
 
-//     //learn chains
-//     Chain *learn_chs = malloc(N_DATA_POINTS * sizeof(Chain));
-//     append_file_to_chain_vector(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, learn_chs, 0);
-//     append_file_to_chain_vector(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES, learn_chs, L_HUMAN_N_LINES);
+    //test chains
+    Chain *test_h = malloc(T_HUMAN_N_LINES * sizeof(Chain));
+    append_file_to_chain_vector(SEQS FILE_T_HUMAN TXT, T_HUMAN_N_LINES, test_h, 0);
+    Chain *test_m = malloc(T_MOUSE_N_LINES * sizeof(Chain));
+    append_file_to_chain_vector(SEQS FILE_T_MOUSE TXT, T_MOUSE_N_LINES, test_m, 0);
 
-//     //test chains
-//     Chain *test_h = malloc(T_HUMAN_N_LINES * sizeof(Chain));
-//     append_file_to_chain_vector(SEQS FILE_T_HUMAN TXT, T_HUMAN_N_LINES, test_h, 0);
-//     Chain *test_m = malloc(T_MOUSE_N_LINES * sizeof(Chain));
-//     append_file_to_chain_vector(SEQS FILE_T_MOUSE TXT, T_MOUSE_N_LINES, test_m, 0);
+    printf("initialization complete!\n\n");
+    /**/
 
-//     printf("initialization complete!\n\n");
-//     /**/
+    Int2 human, mouse;
 
-//     test_results_to_file(N_DATA_POINTS, lambdas, signs, learn_chs, test_h, T_HUMAN_N_LINES, 's');
-//     test_results_to_file(N_DATA_POINTS, lambdas, signs, learn_chs, test_m, T_MOUSE_N_LINES, 's');
+    human = test_results_to_file(N_DATA_POINTS, lambdas, signs, learn_chs, test_h, T_HUMAN_N_LINES, 'g', 1);
+    mouse = test_results_to_file(N_DATA_POINTS, lambdas, signs, learn_chs, test_m, T_MOUSE_N_LINES, 'g', -1);
 
-//     free(lambdas);
-//     free(signs);
-//     for (int i = 0; i < N_DATA_POINTS; i++) free(gram[i]);
-//     free(gram);
-//     free(learn_chs);
+    int total_count = human.x + human.y + mouse.x + mouse.y;
+    int correct = human.x + mouse.x;
+    int failed = human.y + mouse.y;
+    double cor_perc = (double)correct/(double)total_count;
+    double fai_perc = (double)failed/(double)total_count;
+    double F1H = 2. * (double)human.x / (double)(2 * human.x + failed);
+    double F1M = 2. * (double)mouse.x / (double)(2 * mouse.x + failed);
+
+    printf("\n\nresults\n\tF1H: %.5lf\t\tF1M: %.5lf\n\tTH:\t%4d\t\tFM:\t%4d\n\tTM:\t%4d\t\tFH:\t%4d\n\tOK%%: %.5lf\t\tFA%%: %.5lf\n\n\n", F1H, F1M, human.x, human.y, mouse.x, mouse.y, cor_perc, fai_perc);
+
+    free(lambdas);
+    free(signs);
+    for (int i = 0; i < N_DATA_POINTS; i++) free(gram[i]);
+    free(gram);
+    free(learn_chs);
     
-//     return 0;
-// }
+    return 0;
+}
 
 void initialize() {
     ini_ran(time(NULL));
