@@ -73,10 +73,10 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char
 
 /**
  * decision function
- * f(x) = b + \sum_i \lambda_i s_i dist(x_i, x)
+ * f(x) = b + \sum_i \lambda_i s_i kern(x_i, x)
  * 
  * bias
- * b = s_p - \sum_i \lambda_i s_i dist(x_i, x_p) 
+ * b = s_p - \sum_i \lambda_i s_i kern(x_i, x_p) 
  * where \lambda_p > 0
  * 
  */
@@ -163,7 +163,7 @@ SvmMove svm_propose_move(double *v, int v_dim, double eps, int *signs) {
 
 /**
  * maximize 
- * \sum_i \lambda_i - \frac{1}{2} \sum_i \sum_j \lambda_i \lambda_j s_i s_j * dist(x_i, x_j)
+ * \sum_i \lambda_i - \frac{1}{2} \sum_i \sum_j \lambda_i \lambda_j s_i s_j * kern(x_i, x_j)
  * 
  * with
  * \lambda_i \ge 0
