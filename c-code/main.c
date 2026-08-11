@@ -37,7 +37,6 @@ void initialize(Chain* human_ref) {
 int main() {//i'm so happy i don't have to free every single malloc'd array if there's an error; if we had to, I think it's the only use of GOTO that wouldn't get you fired
     /*Initial parameters*/
     AA_MUTATION_PENALTY = 10;//0.5 would be less than almost every human mutation; 2.0 if it's clearly more human; 4.0 is pretty conservative (used log values for this)
-    //weight of 0.35, 0.35, 0.3 & penalty of 4 => 57.99 avg of avg hamming dist; penalty of 10 => 18.02 avg of avgs
     WEIGHT_LOG = 0.35;//weights must sum to 1
     WEIGHT_PROP = 0.35;
     WEIGHT_PENALTY = 0.3;
@@ -50,6 +49,7 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
     double cooling_rate = 1.02;
     double weighs[8] = {0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0};
     Chain human_ref;
+    double cdr_entropy_threshold = 2.25; //max Shannon entropy is log2(21) ~ 4.39
 
     /*Variable & RNG Initializations*/
     initialize(&human_ref);
@@ -78,25 +78,24 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
         return(1);
     }
 
+    /*Main code*/
     all_entropies(&human_ref, oll_entropies, entropy_order_q);
     weigh_entropies(oll_entropies, entropies, weighs);//unfinished function, currently returns 1/2*(saa+spp)
     print_entropies(oll_entropies);
-    generate_betas(betas, n_betas, entropies, n_entropies, scale_factor, EPSILON, cooling_rate);
+
+    /*CDR finding*/
+    CDRRegion *cdr_regions = NULL;
+    int n_cdrs_found = 0;//will be filled by find_cdr_regions()
+    cdr_regions = find_cdr_regions(oll_entropies, cdr_entropy_threshold, 's', &n_cdrs_found);
+
+    printf("Found %d CDR regions using %.2f as threshold:\n", n_cdrs_found, cdr_entropy_threshold);
+    for (int i=0; i<n_cdrs_found; i++) {
+        printf("\t CDR %d: from %d to %d\n", i+1, cdr_regions[i].start, cdr_regions[i].end);
+    }
+
+    /*Metropolis*/
+    generate_betas(betas, n_betas, entropies, n_entropies, scale_factor, EPSILON, cooling_rate, cdr_regions, n_cdrs_found);
     mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, n_sweeps, betas, n_betas, n_metropolis);
-
-
-
-
-    /*Code preparation*/
-    // Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
-    // if(negative_chain(&ch) == 1) return 1;
-
-    // print_chain_to_file(ch, RESULTS FILE_L_MOUSE FRECS TXT);
-    
-    // Entropies *entropy = malloc(CHAINLEN * sizeof(Entropies));
-    // all_entropies(ch, entropy, .5);
-
-    // print_entropies_to_file(entropy, RESULTS FILE_L_MOUSE ENTROPIS TXT);
 
     /*Free memory*/
     for(int i=0; i<n_betas; i++) {
@@ -104,7 +103,19 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
     }
     free(betas);
     free(oll_entropies);
+    free(cdr_regions);
     free(entropies);
     
     return 0;
 }
+
+/*Code preparation*/
+// Chain ch = file_megaAacids(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES);
+// if(negative_chain(&ch) == 1) return 1;
+
+// print_chain_to_file(ch, RESULTS FILE_L_MOUSE FRECS TXT);
+
+// Entropies *entropy = malloc(CHAINLEN * sizeof(Entropies));
+// all_entropies(ch, entropy, .5);
+
+// print_entropies_to_file(entropy, RESULTS FILE_L_MOUSE ENTROPIS TXT);

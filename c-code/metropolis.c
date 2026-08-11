@@ -109,11 +109,25 @@ double calculate_total_energy(const Energy* energies, double w_log, double w_pro
     @param cooling_rate c_r in README.md -- SHOULD BE > 1
     @return betas matrix according to README.md -> Metropolis
     **/
-void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate) {
+void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate, const CDRRegion* cdr_regions, int n_cdrs) {
     double k_i = 1.0;
     for(int i=0; i<n_betas; i++) {
         for(int j=0; j<n_entropies; j++) {
-            betas[i][j] = k_i * scale_factor / (epsilon + entropies[j]);
+
+            bool is_cdr = false;
+            for (int k=0; k<n_cdrs; k++) {
+                if (j >= cdr_regions[k].start && j <= cdr_regions[k].end) {
+                    is_cdr = true;
+                    break;
+                }
+            }
+
+            if (is_cdr) {//freeze CDRs
+                betas[i][j] = BETA_FREEZE;
+            }
+            else {
+                betas[i][j] = k_i * scale_factor / (epsilon + entropies[j]);
+            }
         }
         k_i *= cooling_rate;
     }

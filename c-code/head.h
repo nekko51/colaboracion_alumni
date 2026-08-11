@@ -51,6 +51,7 @@ extern int CHAR_TO_INT_LUT[256];
 #define ZERO_FREQ_PENALTY_LOG 100000 //Energy to sum for a zero-frequency AA in log humanness energy
 #define ZERO_FREQ_PENALTY_LINEAR 6 //Energy to sum for a zero-frequency AA in linear humanness energy
 #define ZERO_FREQ_PENALTY_PROPERTIES_DISTANCE 6700 //Energy to sum for a zero-frequency AA in properties distance energy
+#define BETA_FREEZE 1e10
 
 /*svm parameters*/
 #define SVM_KERNEL_PROP_FACTOR (1./230.1105) // now i know
@@ -128,6 +129,11 @@ typedef struct {
 } Chain;
 
 typedef struct {
+    int start;
+    int end;
+} CDRRegion;
+
+typedef struct {
     double x, y;
 } Vec2;
 
@@ -162,7 +168,7 @@ FILE *get_file(char* filename, char* mode);
 void sort_array(double* array, int n);
 
 //metropolis.c
-void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate);
+void generate_betas(double** betas, int n_betas, double* entropies, int n_entropies, double scale_factor, double epsilon, double cooling_rate, const CDRRegion* cdr_regions, int n_cdrs);
 void metropolis_sweep(char* murine_seq, const int* original_murine_indices, const Chain* human_ref_seq, double* local_beta, 
     double* acceptance, int chainlen, double w_log, double w_prop, double w_penalty);
 int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, double** betas, int n_betas, char* filename);
@@ -195,6 +201,7 @@ void ch_normalize(const Chain* c, Chain* out);
 void file_megaAacids(char *filename, int n_lines, Chain* out);
 void entropy_vector(const Chain* mega_chain, Vec2 *output, char type, double order);
 void all_entropies(const Chain* mega_chain, Entropies *output, double order);
+CDRRegion* find_cdr_regions(const Entropies *S, double threshold, char entropy_type, int *n_cdrs);
 
 void print_chain(const Chain* c);
 void print_chain_to_file(const Chain* c, char* filename);

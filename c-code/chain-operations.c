@@ -349,3 +349,91 @@ void noncdr_candidates(Entropies *S, double threshold, char entropy_type, int *o
         }
     }
 }
+
+/**
+ @brief identifies CDR regions based on a given entropy threshold
+ @param S entropies for the chain
+ @param threshold entropy value above which a position is considered to be part of a CDR
+ @param entropy_type chosen entropy to use for the discrimination
+        - 'l':    linear entropy
+        - 'r':    Renyi entropy
+        - 't':    Tsallis entropy
+        - none of the above:  Shannon entropy (default)
+ @param n_cdrs pointer to integer that will store the number of CDRs found
+ @return dynamically allocated array of CDRRegion structs; returns NULL if no CDRs are found or allocation fails - CALLER HAS THE RESPONSIBILITY TO FREE THE ARRAY
+**/
+CDRRegion* find_cdr_regions(const Entropies *S, double threshold, char entropy_type, int *n_cdrs) {
+    *n_cdrs = 0;
+    bool in_cdr = false;
+    int temp_n_cdrs = 0; //to count CDRs in first pass
+    double current_entropy;
+
+    //first pass - count number of CDRs
+    for (int i=0; i<CHAINLEN; i++) {
+        if (entropy_type == 'l') {
+            current_entropy = S[i].laa;
+        } else if (entropy_type == 'r') {
+            current_entropy = S[i].raa;
+        } else if (entropy_type == 't') {
+            current_entropy = S[i].taa;
+        } else {
+            current_entropy = S[i].saa;
+        }
+
+        if (current_entropy > threshold && in_cdr == false) {
+            in_cdr = true;
+        } 
+        else if (current_entropy <= threshold && in_cdr) {
+            in_cdr = false;
+            temp_n_cdrs++;
+        }
+    }
+    //handle case where last chain position is part of a CDR
+    if (in_cdr) {
+        temp_n_cdrs++;
+    }
+
+    if (temp_n_cdrs == 0) {
+        *n_cdrs = 0;
+        return(NULL);
+    }
+    CDRRegion *cdr_regions = malloc(temp_n_cdrs*sizeof(CDRRegion));
+    if (cdr_regions == NULL) {
+        fprintf(stderr, "Error: Failed to allocate memory for CDR regions.\n");
+        *n_cdrs = 0;
+        return(NULL);
+    }
+
+    //second pass - populate CDR regions
+    in_cdr = false;
+    int cdr_idx = 0;
+    for (int i=0; i<CHAINLEN; i++) {
+        if (entropy_type == 'l') {
+            current_entropy = S[i].laa;
+        } else if (entropy_type == 'r') {
+            current_entropy = S[i].raa;
+        } else if (entropy_type == 't') {
+            current_entropy = S[i].taa;
+        } else {
+            current_entropy = S[i].saa;
+        }
+
+        if (current_entropy > threshold && in_cdr == false) {
+            in_cdr = true;
+            cdr_regions[cdr_idx].start = i;
+        } 
+        else if (current_entropy <= threshold && in_cdr) {
+            in_cdr = false;
+            cdr_regions[cdr_idx].end = i-1;
+            cdr_idx++;
+        }
+    }
+    //handle case where last chain position is part of a CDR
+    if (in_cdr) {
+        cdr_regions[cdr_idx].end = CHAINLEN-1;
+        cdr_idx++;
+    }
+
+    *n_cdrs = cdr_idx;
+    return(cdr_regions);
+}
