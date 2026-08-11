@@ -117,6 +117,7 @@ void get_matrix_from_file(char *filename, int dim, double **out) {
         }
     }
     fclose(f);
+    printf("finished reading gram matrix!\n");
 }
 
 
