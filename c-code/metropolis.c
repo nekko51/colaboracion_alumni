@@ -413,8 +413,41 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
     return 0;
 }
 
+void print_info_to_file(const char* batch_dir, int n_betas, int n_sweeps, int n_metropolis, double scale_factor, double cooling_rate, double entropy_q, double cdr_threshold, const CDRRegion* cdr_regions, int n_cdrs) {
+    char info_filename[3*MAX_STR_LEN];
+    snprintf(info_filename, sizeof(info_filename), "%s/Info.txt", batch_dir);
+
+    FILE* f = fopen(info_filename, "w");
+    if (f == NULL) {
+        fprintf(stderr, "Error: couldn't open file %s to write info.\n", info_filename);
+        return;
+    }
+
+    fprintf(f, "--- Simulation Parameters ---\n");
+    fprintf(f, "n_betas: %d\n", n_betas);
+    fprintf(f, "n_sweeps: %d\n", n_sweeps);
+    fprintf(f, "n_metropolis (runs per murine seed): %d\n", n_metropolis);
+    fprintf(f, "\n--- Energy Weights ---\n");
+    fprintf(f, "WEIGHT_LOG: %.5f\n", WEIGHT_LOG);
+    fprintf(f, "WEIGHT_PROP: %.5f\n", WEIGHT_PROP);
+    fprintf(f, "WEIGHT_PENALTY: %.5f\n", WEIGHT_PENALTY);
+    fprintf(f, "AA_MUTATION_PENALTY: %.2f\n", AA_MUTATION_PENALTY);
+    fprintf(f, "\n--- Beta Generation ---\n");
+    fprintf(f, "scale_factor: %.5f\n", scale_factor);
+    fprintf(f, "cooling_rate: %.5f\n", cooling_rate);
+    fprintf(f, "\n--- Entropy & CDRs ---\n");
+    fprintf(f, "entropy_order_q: %.5f\n", entropy_q);
+    fprintf(f, "cdr_entropy_threshold: %.5f\n", cdr_threshold);
+    fprintf(f, "Found %d CDR regions:\n", n_cdrs);
+    for (int i = 0; i < n_cdrs; i++) {
+        fprintf(f, "\t CDR %d: from %d to %d\n", i + 1, cdr_regions[i].start, cdr_regions[i].end);
+    }
+
+    fclose(f);
+}
+
 //runs metropolis using every single sequence in a given filename as seed n_metropolis times for each seed
-void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis, double threshold) {
+void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_human_lines, int n_sweeps, double** betas, int n_betas, int n_metropolis, double cdr_threshold, const CDRRegion* cdr_regions, int n_cdrs, double scale_factor, double cooling_rate, double entropy_q) {
     /*initial declarations for cleanup*/
     FILE *f = NULL;
     char** murine_seeds = NULL;
@@ -459,8 +492,10 @@ void mega_metropolis(char* murine_seeds_filename, char* human_filename, int n_hu
     snprintf(metropolis_dir, sizeof(metropolis_dir), "%s%s", RESULTS, METROPOLIS);
 
     strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H_%M_%S", localtime(&now));
-    snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d_th%f", metropolis_dir, time_str, n_lines, n_metropolis, n_betas, threshold);
+    snprintf(batch_dir, sizeof(batch_dir), "%s%s_l%d_m%d_b%d_th%f", metropolis_dir, time_str, n_lines, n_metropolis, n_betas, cdr_threshold);
     MKDIR(batch_dir);
+
+    print_info_to_file(batch_dir, n_betas, n_sweeps, n_metropolis, scale_factor, cooling_rate, entropy_q, cdr_threshold, cdr_regions, n_cdrs);
 
     char beta_filename[3*MAX_STR_LEN];
     snprintf(beta_filename, sizeof(beta_filename), "%s/betas.txt", batch_dir);

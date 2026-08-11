@@ -83,7 +83,7 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
     weigh_entropies(oll_entropies, entropies, weighs);//unfinished function, currently returns 1/2*(saa+spp)
     print_entropies(oll_entropies);
 
-    /*CDR finding*/
+    /*CDR finding --- SEQUENCES NEED TO BE PROPERLY ALIGNED FOR THIS TO BE VALID*/
     CDRRegion *cdr_regions = NULL;
     int n_cdrs_found = 0;//will be filled by find_cdr_regions()
     cdr_regions = find_cdr_regions(oll_entropies, cdr_entropy_threshold, 's', &n_cdrs_found);
@@ -95,7 +95,8 @@ int main() {//i'm so happy i don't have to free every single malloc'd array if t
 
     /*Metropolis*/
     generate_betas(betas, n_betas, entropies, n_entropies, scale_factor, EPSILON, cooling_rate, cdr_regions, n_cdrs_found);
-    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, n_sweeps, betas, n_betas, n_metropolis, cdr_entropy_threshold);
+    mega_metropolis(SEQS FILE_L_MOUSE TXT, SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, 
+                    n_sweeps, betas, n_betas, n_metropolis, cdr_entropy_threshold, cdr_regions, n_cdrs_found, scale_factor, cooling_rate, entropy_order_q);
 
     /*Free memory*/
     for(int i=0; i<n_betas; i++) {

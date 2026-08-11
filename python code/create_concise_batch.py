@@ -216,7 +216,7 @@ def main():
                 ultra_summary_file.write(f"Best result for {folder.upper()} (from '{absolute_best_run_name}'):\n\n")
                 ultra_summary_file.write(f"Seed: {original_seed}\n")
                 ultra_summary_file.write(f"Best: {absolute_best_sequence}\n")
-                ultra_summary_file.write(f"Energy: {absolute_best_energy}\n")
+                ultra_summary_file.write(f"Energy: {original_energy} -> {absolute_best_energy}\n")
                 ultra_summary_file.write(f"Hamming distance to original: {absolute_best_hamming}\n")
                 if average_hamming is not None:
                     ultra_summary_file.write(f"Average Hamming Distance: {average_hamming:.2f}\n\n\n")
