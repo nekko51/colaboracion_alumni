@@ -214,5 +214,6 @@ void first_order_correlations(Chain* input_chains, int n_chains, Chain out_aacid
 void svm_gram_matrix(Chain *chains, int n_chains, double **out);
 double compute_bias(double *lambda, double *signs, Chain *chains, int n_chains);
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains);
+void svm_initialize_lambdas(double *lambdas, int *signs, int dim);
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim);
 void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, char *filename);

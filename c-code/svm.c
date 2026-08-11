@@ -267,6 +267,7 @@ void svm_initialize_lambdas(double *lambdas, int *signs, int dim) {
             if (signs[i] == -1) lambdas[i] *= (sum_pos / sum_neg);
         }
     }
+    printf("lambdas initialized!\n");
 }
 
 /**
@@ -283,85 +284,120 @@ void svm_initialize_lambdas(double *lambdas, int *signs, int dim) {
  */
 void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, char *filename) {
     printf("starting simulated annealing...\n");
-    double energy_old, energy_new; double *lambdas_ = calloc(dimension, sizeof(double)); int acceptance_count;
-    energy_old = svm_energy(gram_matrix, signs, lambdas, dimension);
-    printf("progress:\t%5.2f%%\r", 0.);
-    fflush(stdout);
+    
+    double energy_old = svm_energy(gram_matrix, signs, lambdas, dimension);
+    int acceptance_count;
+    
+    double *F = calloc(dimension, sizeof(double));
+    for (int k = 0; k < dimension; k++) {
+        for (int m = 0; m < dimension; m++) {
+            F[k] += lambdas[m] * signs[m] * gram_matrix[k][m];
+        }
+    }
+
+    FILE *sum_file = NULL;
+    FILE *log_file = NULL;
+    
     if (print_to_file) {
         char summry_file_name[MAX_STR_LEN];
         char log_file_name[MAX_STR_LEN];
         sprintf(summry_file_name, "%s/summary.txt", filename);
         sprintf(log_file_name, "%s/full-log.txt", filename);
 
-        FILE *sum_file = get_file(summry_file_name, "w");
-        FILE *log_file = get_file(log_file_name, "w");
+        sum_file = get_file(summry_file_name, "w");
+        log_file = get_file(log_file_name, "w");
 
         fprintf(sum_file, "B-idx\tBeta\tEnergy\tAcceptance\n");
-
         fprintf(log_file, "Line\tB-idx\tBeta\tIt-idx\tEnergy\tAcceptance~\n");
-        /*end of file things*/
+    }
 
-        for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
-            acceptance_count = 0;
+    printf("progress:\t%5.2f%%\r", 0.);
+    fflush(stdout);
 
-            for (int iteration_idx = 0; iteration_idx < iterations_per_beta; iteration_idx++) {
-                svm_change(lambdas, lambdas_, dimension, epsilon, signs);
-                energy_new = svm_energy(gram_matrix, signs, lambdas_, dimension);
+    for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
+        acceptance_count = 0;
 
-                if (svm_metropolis(energy_old, energy_new, betas[beta_idx])) {
-                    energy_old = energy_new;
+        for (int iteration_idx = 0; iteration_idx < iterations_per_beta; iteration_idx++) {
+            
+            SvmMove move = svm_propose_move(lambdas, dimension, epsilon, signs);
+
+            if (move.delta != 0.0) {
+                double d = move.delta;
+                int i = move.i;
+                int j = move.j;
+                
+                double delta_E = -d * (1.0 - signs[i] * signs[j]) 
+                                 + d * signs[i] * (F[i] - F[j]) 
+                                 + 0.5 * d * d * (gram_matrix[i][i] + gram_matrix[j][j] - 2.0 * gram_matrix[i][j]);
+
+                if (delta_E < 0.0 || exp(-betas[beta_idx] * delta_E) > Random()) {
+                    
+                    lambdas[i] += d;
+                    lambdas[j] -= d * signs[i] * signs[j];
+                    
+                    if (lambdas[i] < 0.0) lambdas[i] = 0.0;
+                    if (lambdas[i] > SVM_PARAMETER_LIMIT) lambdas[i] = SVM_PARAMETER_LIMIT;
+                    if (lambdas[j] < 0.0) lambdas[j] = 0.0;
+                    if (lambdas[j] > SVM_PARAMETER_LIMIT) lambdas[j] = SVM_PARAMETER_LIMIT;
+
+                    energy_old += delta_E;
                     acceptance_count++;
-                    for (int i = 0; i < dimension; i++) {
-                        lambdas[i] = lambdas_[i];
+
+                    for (int k = 0; k < dimension; k++) {
+                        F[k] += d * signs[i] * (gram_matrix[k][i] - gram_matrix[k][j]);
                     }
                 }
-
-                printf("progress:\t%5.2f%%\r", (double)(beta_idx*iterations_per_beta+iteration_idx+1)/(double)(n_betas*iterations_per_beta) * 100.);
-                fflush(stdout);
-
-                fprintf(log_file, "%d\t%d\t%lf\t%d\t%lf\t%g\n", iteration_idx+beta_idx*iterations_per_beta, beta_idx, betas[beta_idx], iteration_idx, energy_old, (double)acceptance_count/iterations_per_beta);
             }
 
-            fprintf(sum_file, "%d\t%lf\t%lf\t%lf\n", beta_idx+1, betas[beta_idx], energy_old, (double)acceptance_count/(double)iterations_per_beta);
+            if ((iteration_idx + 1) % 100 == 0 || iteration_idx == iterations_per_beta - 1) {
+                printf("progress:\t%5.2f%%\r", (double)(beta_idx * iterations_per_beta + iteration_idx + 1) / (double)(n_betas * iterations_per_beta) * 100.);
+                fflush(stdout);
+            }
 
-            if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
-            else                                                            epsilon *= 0.95;
-
+            if (print_to_file) {
+                fprintf(log_file, "%d\t%d\t%lf\t%d\t%lf\t%g\n", 
+                        iteration_idx + beta_idx * iterations_per_beta, 
+                        beta_idx, betas[beta_idx], iteration_idx, 
+                        energy_old, (double)acceptance_count / (iteration_idx + 1));
+            }
         }
 
+        energy_old = svm_energy(gram_matrix, signs, lambdas, dimension);
+        for (int k = 0; k < dimension; k++) {
+            F[k] = 0.0;
+            for (int m = 0; m < dimension; m++) {
+                F[k] += lambdas[m] * signs[m] * gram_matrix[k][m];
+            }
+        }
+
+        if (print_to_file) {
+            fprintf(sum_file, "%d\t%lf\t%lf\t%lf\n", 
+                    beta_idx + 1, betas[beta_idx], energy_old, 
+                    (double)acceptance_count / (double)iterations_per_beta);
+        }
+
+        if ((double)acceptance_count / (double)iterations_per_beta > 0.5) {
+            epsilon *= 1.05; 
+        } else {
+            epsilon *= 0.95;
+        }
+    }
+
+    if (print_to_file) {
         char res_file_name[MAX_STR_LEN];
         sprintf(res_file_name, "%s/result-lambdas.txt", filename);
         FILE *res_file = get_file(res_file_name, "w");
 
         fprintf(res_file, "%g\t", energy_old);
-        for(int i = 0; i < dimension; i++)  fprintf(res_file, "%g\t", lambdas[i]);
+        for(int i = 0; i < dimension; i++) {
+            fprintf(res_file, "%g\t", lambdas[i]);
+        }
 
         fclose(res_file);
         fclose(sum_file);
         fclose(log_file);
-    } else {
-        for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
-
-            for (int iteration_idx = 0; iteration_idx < iterations_per_beta; iteration_idx++) {
-                svm_change(lambdas, lambdas_, dimension, epsilon, signs);
-                energy_new = svm_energy(gram_matrix, signs, lambdas_, dimension);
-
-                if (svm_metropolis(energy_old, energy_new, betas[beta_idx])) {
-                    energy_old = energy_new;
-                    acceptance_count++;
-                    for (int i = 0; i < dimension; i++) {
-                        lambdas[i] = lambdas_[i];
-                    }
-                }
-
-                printf("progress:\t%5.2f%%\r", (double)(beta_idx*iterations_per_beta+iteration_idx+1)/(double)(n_betas*iterations_per_beta) * 100.);
-                fflush(stdout);
-            }
-
-            if ((double)acceptance_count/(double)iterations_per_beta > 0.5) epsilon *= 1.05; 
-            else                                                            epsilon *= 0.95;
-        }
     }
-    free(lambdas_);
-    printf("finished simulated annealing!\n");
+
+    free(F);
+    printf("\nfinished simulated annealing!\n");
 }
