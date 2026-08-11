@@ -63,9 +63,9 @@ extern double AA_MUTATION_PENALTY;
 #define LAMBDA 3.0
 #define STARTING_TARGET_ACCEPTANCE 0.25
 #define MAX_AMORTIG 4.0
-// extern double WEIGHT_LOG;
-// extern double WEIGHT_PROP;
-// extern double WEIGHT_PENALTY;
+extern double WEIGHT_LOG;
+extern double WEIGHT_PROP;
+extern double WEIGHT_PENALTY;
 
 /*Files*/
 #define SEQS "seqs/"

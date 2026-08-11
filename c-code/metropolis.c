@@ -114,6 +114,7 @@ void generate_betas(double** betas, int n_betas, double* entropies, int n_entrop
     for(int i=0; i<n_betas; i++) {
         for(int j=0; j<n_entropies; j++) {
             betas[i][j] = k_i * scale_factor / (epsilon + entropies[j]);
+            betas[i][j] = 1 / betas[i][j];
         }
         k_i *= cooling_rate;
     }
