@@ -1,6 +1,41 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{my_style}
 
+\usepackage{tikz}
+\usepackage{braket}
+\usetikzlibrary{datavisualization}
+\usetikzlibrary{calendar}
+\usetikzlibrary{graphs}
+\usetikzlibrary{positioning}
+\usetikzlibrary{mindmap,shadows}
+\usetikzlibrary{angles,calc,quotes}
+\usetikzlibrary{positioning}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{patterns,patterns.meta}
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage{pst-node}
+\usepackage{mathtools}
+\usepackage{wrapfig}
+\usepackage{pgfplots}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{csquotes}
+\usepackage{amsmath, amssymb}
+\usepackage{amsfonts, amsthm}
+\usepackage{thmtools}
+\usepackage{empheq}
+\usepackage{float}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage[a4paper]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage{standalone}
+\usepackage{graphicx}
+\usepackage{cancel}
+\usepackage{enumitem}
 \usepackage{setspace}
 \usepackage{multicol}
 \usepackage{mathtools}
@@ -26,6 +61,13 @@
 
 \
 }
+\newcommand\completefuncion[5]{%
+    \begingroup
+    \setlength\arraycolsep{0pt}
+    #1\colon\begin{array}[t]{c >{{}}c<{{}} c}
+               #2 & \to & #3 \\ #4 & \mapsto & #5 
+            \end{array}%
+    \endgroup}
 
 \newtcbox{\code}{
   on line,

@@ -1,0 +1,75 @@
+\subsection*{Support Vector Machine formula deduction}
+
+We have a cloud of points in a higher-dimensional space and we want a plane that separates the ones marked human and the one marked murine\futnotetext\footnotetext{Those are what we call tags: $+1$ for human and $-1$ for murine chains.}. But we do not only want \emph{one} that does that, we need the plane that does that the best: that is the one that maximizes the distance to the closest points.
+
+We \emph{must} assume that the two groups of points are separable by a plane in our space and let us say the distance\futnotetext\footnotetext{Distance from one set to another is defined as the minimum distance from one point of one set to a point of the other one. Those two (or more) points will be called support vectors.} between the two clouds is $2d$; we will need this later.
+
+Our solution will have the form:
+\begin{equation*}
+    \bm w^T \bm X + b = 0,
+\end{equation*}
+where $\bm w$ is the vector perpendicular to the solution plane, $\bm X$ is a variable-coordinate vector and $b$ is a real number we will call bias.
+
+Since the norm of $\bm w$ is arbitrary, we can set $\left\| \bm w \right\|=  1/d$. Thus, any of our data points inputted in the funtion $\bm{x}\mapsto \left|   \bm w^T \bm{x}+b\right|  $ will give an output greater or equal to $1$ (the nearest ones will give 1, otherwise strictly grater than 1).\futnotetext\footnotetext{Notice that $\bm x$ and $\textbf x$ are different, in fact, $\bm x_i$ is the data point $\textbf{x}_i $ in the transformed space ($\varphi(\textbf{x}_i)=\bm x_i$, being $\varphi$ the transformation of our space such that $\varphi(\textbf{x}_i)\cdot\varphi(\textbf{x}_j)=\bm x_i^T\bm x_j=\operatorname k(\textbf x_i,\textbf x_j)$).}
+
+Furthermore, we know whether the result will be negative and then inverted by the absolute value. The ones such that \(\bm w^T \bm{x}_i+b\le -1\) will have also the negative tag: $s_i=-1$. Thus, $$\left(   \bm w^T \bm{x}_i+b\right)s_i \ge 1\ \forall i\in\{1,\dots,n\}.$$
+
+Maximizing $d$ is equivalent to minimizing $\left\| \bm w \right\|$, which is again equivalent to minimizing \(\frac{1}{2}\left\| \bm w \right\| ^2\), this will come handy after some computations.
+
+We have a optimization problem subject to restrictions:
+\begin{equation*}
+    \underset{\bm w,\ b}{\text{minimize}} \ \frac{1}{2}\left\| \bm w \right\| ^2,\qquad
+    \text{subject to} \left( \bm w^T \bm{x}_i + b \right) s_i\ge 1 \ \forall i \in\{1,\dots,n\}
+\end{equation*}
+
+We define the Lagrangian with the classification margin:
+\begin{equation*}
+\mathcal{L}(\bm{w}, b, \lambda) = \frac{1}{2} \|\bm{w}\|^2 - \sum_{i=1}^n \lambda_i (s_i(\bm{w}^T \bm{x}_i + b) - 1)
+\end{equation*}
+
+We set the partial derivatives to 0:
+\begin{equation*}
+\nabla_{\bm{w}} \mathcal{L} = 0 \implies \bm{w} = \sum_{i=1}^n \lambda_i s_i \bm{x}_i
+\qquad\qquad
+\frac{\partial \mathcal{L}}{\partial b} = 0 \implies \sum_{i=1}^n \lambda_i s_i = 0
+\end{equation*}
+
+We substitute $\bm{w}$ back into the Lagrangian and apply the restriction for $b$:
+\begin{equation*}
+\mathcal{L}(\lambda_1,\dots,\lambda_n) = \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i \lambda_j s_i s_j \bm{x}_i^T \bm{x}_j - \sum_{i=1}^n \sum_{j=1}^n \lambda_i \lambda_j s_i s_j \bm{x}_i^T \bm{x}_j - b \sum_{i=1}^n \lambda_i s_i + \sum_{i=1}^n \lambda_i
+\end{equation*}
+
+We simplify  to obtain the dual formulation:
+\begin{equation*}
+\mathcal{L}(\lambda_1,\dots,\lambda_n) = \sum_{i=1}^n \lambda_i - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i \lambda_j s_i s_j \bm{x}_i^T \bm{x}_j,
+\end{equation*}
+
+We use our kernel notation for the inner products:
+\begin{equation*}
+\mathcal{L}(\lambda_1,\dots,\lambda_n) = \sum_{i=1}^n \lambda_i - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i \lambda_j s_i s_j \operatorname{k}(\textbf{x}_i, \textbf{x}_j),
+\end{equation*}
+\begin{equation*}
+    \text{with } \sum_{i=1}^n \lambda_i s_i = 0 \text{ and } \lambda_i\ge0\ \forall i\in \left\{ 1,\dots,n \right\} 
+\end{equation*}
+
+This way we find the lagrange multipliers, maximizing the Lagrangian subject to the restrictions given.
+
+For our decision function we just want to know which side of the plane is on. We achieve that plugging the new data point into our plane equation:
+\begin{equation*}
+    \bm w^T \bm{x} +b = \left( \sum_{i=1}^n \lambda_i s_i \bm{x}_i^T \right) \bm{x}+b
+    =
+    \sum_{i=1}^n \lambda_i s_i \bm{x}_i^T \bm{x}+b
+    =
+    \sum_{i=1}^n \lambda_i s_i \operatorname{k}(\textbf x_i, \textbf x)+b
+\end{equation*}
+
+
+\begin{equation*}
+    f:\textbf  x\mapsto b + \sum_{i=1}^n\lambda_i s_i \operatorname k(\textbf x_i,\textbf x)
+\end{equation*}
+
+Also, since $(\bm w^T \bm x_p + b)s_p = 1$ for some support vector $\textbf{x} _p$, 
+expanding $\bm w$:
+\begin{equation*}
+    b=s_p-\sum_{i=1}^n \lambda_i s_i \operatorname k(\textbf x_i, \textbf x_p)
+\end{equation*}
