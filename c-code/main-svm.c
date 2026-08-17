@@ -1,68 +1,109 @@
 #include "head.h"
 
+double AA_MUTATION_PENALTY;
+double WEIGHT_LOG;
+double WEIGHT_PROP;
+double WEIGHT_PENALTY;
+
 void initialize();
 void svm_initNgram(char kernel_char);
-void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int initial_beta_its, int print_svm_to_file, char kernel_char);
-
+void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int initial_beta_its, int print_svm_to_file, char kernel_char, double C_limit);
 
 int main() {
-
-    /*initialization*/
-    printf("\nstarting initialization...\n");
-
     initialize();
 
-    //lambdas
-    double* lambdas = calloc(N_DATA_POINTS, sizeof(double));
-    get_best_lambdas_from_csv(lambdas, N_DATA_POINTS);
-
-    //tags
-    int *signs = malloc(N_DATA_POINTS * sizeof(int));
-    for (int i = 0; i < L_HUMAN_N_LINES; i++) signs[i] = 1;
-    for (int i = 0; i < L_MOUSE_N_LINES; i++) signs[i + L_HUMAN_N_LINES] = -1;
-
-    //gram matrix
-    double **gram = malloc(N_DATA_POINTS * sizeof(double*));
-    for (int i = 0; i < N_DATA_POINTS; i++) { gram[i] = malloc(N_DATA_POINTS * sizeof(double)); }
-    get_matrix_from_file("results/svm/gram/gram_matrix_gaussian.txt", N_DATA_POINTS, gram);
-
-    //learn chains
-    Chain *learn_chs = malloc(N_DATA_POINTS * sizeof(Chain));
-    append_file_to_chain_vector(SEQS FILE_L_HUMAN TXT, L_HUMAN_N_LINES, learn_chs, 0);
-    append_file_to_chain_vector(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES, learn_chs, L_HUMAN_N_LINES);
-
-    //test chains
-    Chain *test_h = malloc(T_HUMAN_N_LINES * sizeof(Chain));
-    append_file_to_chain_vector(SEQS FILE_T_HUMAN TXT, T_HUMAN_N_LINES, test_h, 0);
-    Chain *test_m = malloc(T_MOUSE_N_LINES * sizeof(Chain));
-    append_file_to_chain_vector(SEQS FILE_T_MOUSE TXT, T_MOUSE_N_LINES, test_m, 0);
-
-    printf("initialization complete!\n\n");
-    /**/
-
-    Int2 human, mouse;
-
-    human = test_results_to_file(N_DATA_POINTS, lambdas, signs, learn_chs, test_h, T_HUMAN_N_LINES, 'g', 1);
-    mouse = test_results_to_file(N_DATA_POINTS, lambdas, signs, learn_chs, test_m, T_MOUSE_N_LINES, 'g', -1);
-
-    int total_count = human.x + human.y + mouse.x + mouse.y;
-    int correct = human.x + mouse.x;
-    int failed = human.y + mouse.y;
-    double cor_perc = (double)correct/(double)total_count;
-    double fai_perc = (double)failed/(double)total_count;
-    double F1H = 2. * (double)human.x / (double)(2 * human.x + failed);
-    double F1M = 2. * (double)mouse.x / (double)(2 * mouse.x + failed);
-
-    printf("\n\nresults\n\tF1H: %.5lf\t\tF1M: %.5lf\n\tTH:\t%4d\t\tFM:\t%4d\n\tTM:\t%4d\t\tFH:\t%4d\n\tOK%%: %.5lf\t\tFA%%: %.5lf\n\n\n", F1H, F1M, human.x, human.y, mouse.x, mouse.y, cor_perc, fai_perc);
-
-    free(lambdas);
-    free(signs);
-    for (int i = 0; i < N_DATA_POINTS; i++) free(gram[i]);
-    free(gram);
-    free(learn_chs);
+    Chain *learn_chs, *val_chs, *test_chs;
+    int *learn_tags, *val_tags, *test_tags;
     
+    int n_learn = load_labeled_dataset("seqs/learn.txt", &learn_chs, &learn_tags);
+    int n_val = load_labeled_dataset("seqs/validation.txt", &val_chs, &val_tags);
+    int n_test = load_labeled_dataset("seqs/test.txt", &test_chs, &test_tags);
+
+    if (n_learn == 0 || n_val == 0 || n_test == 0) {
+        fprintf(stderr, "failed to read datasets\n");
+        return 1;
+    }
+
+    double **gram_learn = malloc(n_learn * sizeof(double*));
+    for (int i = 0; i < n_learn; i++) gram_learn[i] = malloc(n_learn * sizeof(double));
+    // svm_gram_matrix(learn_chs, n_learn, gram_learn, 'g');
+    // print_matrix_to_file(gram_learn, n_learn, "results/svm/gram/gram_g.txt");
+    get_matrix_from_file("results/svm/gram/gram_g.txt", n_learn, gram_learn);
+
+    double C_candidates[] = {0.1, 1.0, 10.0, 100.0};
+    int num_C = 4;
+    int runs_per_C = 10; 
+    
+    double best_val_f1 = -1.0;
+    double best_C = 0.0;
+    double *best_overall_lambdas = calloc(n_learn, sizeof(double));
+
+    for (int c_idx = 0; c_idx < num_C; c_idx++) {
+        double current_C = C_candidates[c_idx];
+        double best_energy = 1e30;
+        double *current_best_lambdas = calloc(n_learn, sizeof(double));
+
+        #pragma omp parallel for
+        for (int run = 0; run < runs_per_C; run++) {
+            double *lambdas = calloc(n_learn, sizeof(double));
+            svm_initialize_lambdas(lambdas, learn_tags, n_learn, current_C);
+            
+            double epsilon = 0.1; 
+            int n_betas = 50;
+            double *bets = malloc(n_betas * sizeof(double));
+            bets[0] = svm_initial_beta(lambdas, epsilon, 10000, gram_learn, learn_tags, n_learn, current_C);
+            for (int i = 1; i < n_betas; i++) bets[i] = bets[i-1] * 1.1;
+
+            svm_annealing(gram_learn, learn_tags, n_learn, epsilon, lambdas, bets, n_betas, 10000, 1, current_C, run);
+            
+            double e = svm_energy(gram_learn, learn_tags, lambdas, n_learn);
+            
+            #pragma omp critical
+            {
+                if (e < best_energy) {
+                    best_energy = e;
+                    memcpy(current_best_lambdas, lambdas, n_learn * sizeof(double));
+                }
+            }
+            
+            free(lambdas);
+            free(bets);
+        }
+
+        ConfusionMatrix val_cm = evaluate_set(val_chs, val_tags, n_val, learn_chs, learn_tags, n_learn, current_best_lambdas, 'g', 1);
+        double f1_val = 2.0 * val_cm.TP / (2.0 * val_cm.TP + val_cm.FP + val_cm.FN);
+
+        if (f1_val > best_val_f1) {
+            best_val_f1 = f1_val;
+            best_C = current_C;
+            memcpy(best_overall_lambdas, current_best_lambdas, n_learn * sizeof(double));
+        }
+        
+        free(current_best_lambdas);
+    }
+
+    ConfusionMatrix test_cm_h = evaluate_set(test_chs, test_tags, n_test, learn_chs, learn_tags, n_learn, best_overall_lambdas, 'g', 1);
+    ConfusionMatrix test_cm_m = evaluate_set(test_chs, test_tags, n_test, learn_chs, learn_tags, n_learn, best_overall_lambdas, 'g', -1);
+
+    double F1H = 2.0 * test_cm_h.TP / (2.0 * test_cm_h.TP + test_cm_h.FP + test_cm_h.FN);
+    double F1M = 2.0 * test_cm_m.TP / (2.0 * test_cm_m.TP + test_cm_m.FP + test_cm_m.FN);
+
+    printf("\noptimal results (C = %.2f)\n", best_C);
+    printf("H: TP:%4d, FP:%4d, TN:%4d, FN:%4d | F1: %.5f\n", test_cm_h.TP, test_cm_h.FP, test_cm_h.TN, test_cm_h.FN, F1H);
+    printf("M: TP:%4d, FP:%4d, TN:%4d, FN:%4d | F1: %.5f\n", test_cm_m.TP, test_cm_m.FP, test_cm_m.TN, test_cm_m.FN, F1M);
+
+    free(best_overall_lambdas);
+    for (int i = 0; i < n_learn; i++) free(gram_learn[i]);
+    free(gram_learn);
+    free(learn_chs); free(learn_tags);
+    free(val_chs); free(val_tags);
+    free(test_chs); free(test_tags);
+
     return 0;
 }
+
+
+
 
 void initialize() {
     ini_ran(time(NULL));
@@ -108,11 +149,13 @@ void svm_initNgram(char kernel_char) {
     free(chs);
 }
 
+
+
 /**
  * - epsilon:           10⁻² ~ 10⁰
  * - initial_beta_its:  10²  ~ 10⁴
  */
-void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int initial_beta_its, int print_svm_to_file, char kernel_char) {
+void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int initial_beta_its, int print_svm_to_file, char kernel_char, double C_limit) {
     printf("\nstarting initialization...\n");
 
     ini_ran(time(NULL));
@@ -147,27 +190,52 @@ void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int init
     get_matrix_from_file(gram_file, N_DATA_POINTS, gram);
 
     double *lambdas = calloc(N_DATA_POINTS, sizeof(double));
-    svm_initialize_lambdas(lambdas, chs_s, N_DATA_POINTS);
+    svm_initialize_lambdas(lambdas, chs_s, N_DATA_POINTS, C_limit);
 
     double *bets = malloc(n_betas * sizeof(double));
-    bets[0] = svm_initial_beta(lambdas, epsilon, initial_beta_its, gram, chs_s, N_DATA_POINTS);
+    bets[0] = svm_initial_beta(lambdas, epsilon, initial_beta_its, gram, chs_s, N_DATA_POINTS, C_limit);
     double cooling_rate = 1.1; 
     for (int i = 1; i < n_betas; i++) bets[i] = bets[i-1] * cooling_rate;
 
-    char time_str[80];
-    time_t now = time(NULL);
-    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H:%M:%S", localtime(&now));
-    char run_dir[MAX_STR_LEN];
-    sprintf(run_dir, "results/svm/annealing/batches/betas%05d_iterations%05d/%s", n_betas, its_each_beta, time_str);
-    mkdir_p(run_dir);
-    printf("directory '%s' created!\n", time_str);
-
     printf("initialization complete!\n\n");
 
-    svm_annealing(gram, chs_s, N_DATA_POINTS, epsilon, lambdas, bets, n_betas, its_each_beta, print_svm_to_file, run_dir);
+    svm_annealing(gram, chs_s, N_DATA_POINTS, epsilon, lambdas, bets, n_betas, its_each_beta, print_svm_to_file, C_limit, 0);
 
     free(chs_s);
     free(lambdas);
     for (int i = 0; i < N_DATA_POINTS; i++) free(gram[i]);
     free(gram);
 }
+
+
+
+// void svm_initNvalidation(double *C_candidates, int num_C, int runs_per_C, char *filenme) {
+
+//     printf("starting initialization...\n");
+//     initialize();
+
+//     Chain *learn_chs, *val_chs, *test_chs;
+//     int *learn_tags, *val_tags, *test_tags;
+    
+//     int n_learn = load_labeled_dataset("seqs/learn.txt", &learn_chs, &learn_tags);
+//     int n_val = load_labeled_dataset("seqs/validation.txt", &val_chs, &val_tags);
+//     int n_test = load_labeled_dataset("seqs/test.txt", &test_chs, &test_tags);
+
+//     if (n_learn == 0 || n_val == 0 || n_test == 0) {
+//         fprintf(stderr, "dataset not fount\nrun python script!\n");
+//         return 1;
+//     }
+
+//     double **gram_learn = malloc(n_learn * sizeof(double*));
+//     for (int i = 0; i < n_learn; i++) gram_learn[i] = malloc(n_learn * sizeof(double));
+//     svm_gram_matrix(learn_chs, n_learn, gram_learn, 'g');
+
+
+//     double* lambdas = calloc(N_DATA_POINTS, sizeof(double));
+//     get_best_lambdas_from_csv(lambdas, N_DATA_POINTS);
+//     printf("initialization complete!\n\n");
+
+
+
+    
+// }

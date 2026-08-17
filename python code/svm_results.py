@@ -74,7 +74,8 @@ def aggregate_svm_lambdas():
 
     # Expresión regular para extraer n_betas e iteraciones de la ruta
     # Ejemplo: .../betas00100_iterations01000/...
-    path_parser = re.compile(r'betas(\d+)_iterations(\d+)')
+    path_parser_c = re.compile(r'betas(\d+)_iterations(\d+)_c-limit([0-9.eE+-]+)')
+    path_parser = re.compile(r'betas(\d+)_iterations(\d+)') # Fallback for older format
 
     with open(output_file_path, 'w') as outfile:
         # Escribir la cabecera del CSV
@@ -82,18 +83,25 @@ def aggregate_svm_lambdas():
         with open(lambda_files_found[0], 'r') as f:
             num_lambdas = len(f.read().strip().split('\t')) - 1
         
-        header = "n_betas,n_iterations,energy," + ",".join([f"lambda_{i}" for i in range(num_lambdas)])
+        header = "c_limit,n_betas,n_iterations,energy," + ",".join([f"lambda_{i}" for i in range(num_lambdas)])
         outfile.write(header + "\n")
 
         # Procesar cada archivo encontrado
         for lambda_path in lambda_files_found:
-            match = path_parser.search(lambda_path)
-            if not match:
-                print(f"AVISO: No se pudieron extraer los parámetros de la ruta: {lambda_path}")
-                continue
-
-            n_betas = int(match.group(1))
-            n_iterations = int(match.group(2))
+            match = path_parser_c.search(lambda_path)
+            if match:
+                n_betas = int(match.group(1))
+                n_iterations = int(match.group(2))
+                c_limit = float(match.group(3))
+            else:
+                match = path_parser.search(lambda_path)
+                if match:
+                    n_betas = int(match.group(1))
+                    n_iterations = int(match.group(2))
+                    c_limit = 1.0 # Default C-limit for old format
+                else:
+                    print(f"AVISO: No se pudieron extraer los parámetros de la ruta: {lambda_path}")
+                    continue
 
             with open(lambda_path, 'r') as infile:
                 line = infile.read().strip()
@@ -103,7 +111,7 @@ def aggregate_svm_lambdas():
                 
                 # Los valores están separados por tabuladores. Los reemplazamos por comas para el formato CSV.
                 values = line.replace('\t', ',').rstrip(',')
-                outfile.write(f"{n_betas},{n_iterations},{values}\n")
+                outfile.write(f"{c_limit},{n_betas},{n_iterations},{values}\n")
 
     print(f"\n¡Éxito! Se han agrupado {len(lambda_files_found)} archivos en '{output_file_path}'.")
 
