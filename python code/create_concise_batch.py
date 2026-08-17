@@ -125,13 +125,18 @@ def main():
     print(f"Batch found: {batch_name}")
  
     #create summary folder
-    output_dir = os.path.join(results_dir, 'metropolis_concise', f'concise_batch_{batch_name}')
+    output_dir = os.path.join(results_dir, 'metropolis_concise', f'{batch_name}_concise')
     os.makedirs(output_dir, exist_ok=True)
  
     #copy betas file
     betas_source_path = os.path.join(latest_batch, 'betas.txt')
     if os.path.exists(betas_source_path):
         shutil.copy(betas_source_path, output_dir)
+
+    #copy info file
+    info_source_path = os.path.join(latest_batch, 'info.txt')
+    if os.path.exists(info_source_path):
+        shutil.copy(info_source_path, output_dir)
  
     #process results
     summary_path = os.path.join(output_dir, "concise_summary.txt")

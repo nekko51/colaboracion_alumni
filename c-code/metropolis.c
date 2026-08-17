@@ -415,7 +415,7 @@ int run_metropolis(char* murine_seq, const Chain* human_ref_seq, int n_sweeps, d
 
 void print_info_to_file(const char* batch_dir, int n_betas, int n_sweeps, int n_metropolis, double scale_factor, double cooling_rate, double entropy_q, double cdr_threshold, const CDRRegion* cdr_regions, int n_cdrs) {
     char info_filename[3*MAX_STR_LEN];
-    snprintf(info_filename, sizeof(info_filename), "%s/Info.txt", batch_dir);
+    snprintf(info_filename, sizeof(info_filename), "%s/info.txt", batch_dir);
 
     FILE* f = fopen(info_filename, "w");
     if (f == NULL) {

@@ -1,0 +1,20 @@
+--- Simulation Parameters ---
+n_betas: 25
+n_sweeps: 400
+n_metropolis (runs per murine seed): 10
+
+--- Energy Weights ---
+WEIGHT_LOG: 0.35000
+WEIGHT_PROP: 0.35000
+WEIGHT_PENALTY: 0.30000
+AA_MUTATION_PENALTY: 10.00
+
+--- Beta Generation ---
+scale_factor: 1.00000
+cooling_rate: 1.02000
+
+--- Entropy & CDRs ---
+entropy_order_q: 0.34000
+cdr_entropy_threshold: 3.75000
+Found 1 CDR regions:
+	 CDR 1: from 109 to 112
