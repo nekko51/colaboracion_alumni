@@ -226,10 +226,15 @@ __marimo__/
 *.synctex.gz
 *.synctex(busy)
 *.toc
-
 *.ini
 *.latexmkrc
 
+# --- batches and results ---
 results/svm/annealing/batches/*
 results/svm/decision-function-tests/kernel-g/*
 results/svm/decision-function-tests/kernel-s/*
+results/svm/decision-function-tests/kernel-c/*
+results/svm/decision-function-tests/kernel-l/*
+results/svm/decision-function-tests/kernel-r/*
+results/svm/decision-function-tests/kernel-t/*
+results/svm/gram/*

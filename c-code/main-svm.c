@@ -1,4 +1,14 @@
 #include "head.h"
+/**
+ * 's' for sigmoid (tanh)
+ * 'p' for polynomial
+ * 'l' for linear
+ * 't' for tanimoto
+ * 'c' for cauchy
+ * 'r' for rational quadratic
+ * 'g' for gaussian (RBF)
+ */
+#define ACTUAL_KERNEL 'r'
 
 double AA_MUTATION_PENALTY;
 double WEIGHT_LOG;
@@ -26,13 +36,17 @@ int main() {
 
     double **gram_learn = malloc(n_learn * sizeof(double*));
     for (int i = 0; i < n_learn; i++) gram_learn[i] = malloc(n_learn * sizeof(double));
-    // svm_gram_matrix(learn_chs, n_learn, gram_learn, 'g');
-    // print_matrix_to_file(gram_learn, n_learn, "results/svm/gram/gram_g.txt");
-    get_matrix_from_file("results/svm/gram/gram_g.txt", n_learn, gram_learn);
+    char matrix_filename[MAX_STR_LEN];
+    sprintf(matrix_filename, "results/svm/gram/gram_%c.txt", ACTUAL_KERNEL);
+    svm_gram_matrix(learn_chs, n_learn, gram_learn, ACTUAL_KERNEL);
+    print_matrix_to_file(gram_learn, n_learn, matrix_filename);
+    // get_matrix_from_file(matrix_filename, n_learn, gram_learn);
 
     double C_candidates[] = {0.1, 1.0, 10.0, 100.0};
     int num_C = 4;
-    int runs_per_C = 10; 
+    int runs_per_C = 10;
+    int its_for_initial_beta = 10000;
+    int its_per_beta_annealing = 10000;
     
     double best_val_f1 = -1.0;
     double best_C = 0.0;
@@ -51,10 +65,10 @@ int main() {
             double epsilon = 0.1; 
             int n_betas = 50;
             double *bets = malloc(n_betas * sizeof(double));
-            bets[0] = svm_initial_beta(lambdas, epsilon, 10000, gram_learn, learn_tags, n_learn, current_C);
+            bets[0] = svm_initial_beta(lambdas, epsilon, its_for_initial_beta, gram_learn, learn_tags, n_learn, current_C);
             for (int i = 1; i < n_betas; i++) bets[i] = bets[i-1] * 1.1;
 
-            svm_annealing(gram_learn, learn_tags, n_learn, epsilon, lambdas, bets, n_betas, 10000, 1, current_C, run);
+            svm_annealing(gram_learn, learn_tags, n_learn, epsilon, lambdas, bets, n_betas, its_per_beta_annealing, 1, current_C, run, ACTUAL_KERNEL);
             
             double e = svm_energy(gram_learn, learn_tags, lambdas, n_learn);
             
@@ -70,7 +84,7 @@ int main() {
             free(bets);
         }
 
-        ConfusionMatrix val_cm = evaluate_set(val_chs, val_tags, n_val, learn_chs, learn_tags, n_learn, current_best_lambdas, 'g', 1);
+        ConfusionMatrix val_cm = evaluate_set(val_chs, val_tags, n_val, learn_chs, learn_tags, n_learn, current_best_lambdas, ACTUAL_KERNEL, 1);
         double f1_val = 2.0 * val_cm.TP / (2.0 * val_cm.TP + val_cm.FP + val_cm.FN);
 
         if (f1_val > best_val_f1) {
@@ -82,15 +96,15 @@ int main() {
         free(current_best_lambdas);
     }
 
-    ConfusionMatrix test_cm_h = evaluate_set(test_chs, test_tags, n_test, learn_chs, learn_tags, n_learn, best_overall_lambdas, 'g', 1);
-    ConfusionMatrix test_cm_m = evaluate_set(test_chs, test_tags, n_test, learn_chs, learn_tags, n_learn, best_overall_lambdas, 'g', -1);
+    ConfusionMatrix test_cm_h = evaluate_set(test_chs, test_tags, n_test, learn_chs, learn_tags, n_learn, best_overall_lambdas, ACTUAL_KERNEL, 1);
+    ConfusionMatrix test_cm_m = evaluate_set(test_chs, test_tags, n_test, learn_chs, learn_tags, n_learn, best_overall_lambdas, ACTUAL_KERNEL, -1);
 
     double F1H = 2.0 * test_cm_h.TP / (2.0 * test_cm_h.TP + test_cm_h.FP + test_cm_h.FN);
     double F1M = 2.0 * test_cm_m.TP / (2.0 * test_cm_m.TP + test_cm_m.FP + test_cm_m.FN);
 
-    printf("\noptimal results (C = %.2f)\n", best_C);
-    printf("H: TP:%4d, FP:%4d, TN:%4d, FN:%4d | F1: %.5f\n", test_cm_h.TP, test_cm_h.FP, test_cm_h.TN, test_cm_h.FN, F1H);
-    printf("M: TP:%4d, FP:%4d, TN:%4d, FN:%4d | F1: %.5f\n", test_cm_m.TP, test_cm_m.FP, test_cm_m.TN, test_cm_m.FN, F1M);
+    printf("\noptimal results (C = %.2f, kernel:%c)\n", best_C, ACTUAL_KERNEL);
+    printf("H: TP:%4d, FP:%4d, TN:%4d, FN:%4d | F1H: %.15f\n", test_cm_h.TP, test_cm_h.FP, test_cm_h.TN, test_cm_h.FN, F1H);
+    printf("M: TP:%4d, FP:%4d, TN:%4d, FN:%4d | F1M: %.15f\n", test_cm_m.TP, test_cm_m.FP, test_cm_m.TN, test_cm_m.FN, F1M);
 
     free(best_overall_lambdas);
     for (int i = 0; i < n_learn; i++) free(gram_learn[i]);
@@ -199,7 +213,7 @@ void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int init
 
     printf("initialization complete!\n\n");
 
-    svm_annealing(gram, chs_s, N_DATA_POINTS, epsilon, lambdas, bets, n_betas, its_each_beta, print_svm_to_file, C_limit, 0);
+    svm_annealing(gram, chs_s, N_DATA_POINTS, epsilon, lambdas, bets, n_betas, its_each_beta, print_svm_to_file, C_limit, 0, kernel_char);
 
     free(chs_s);
     free(lambdas);

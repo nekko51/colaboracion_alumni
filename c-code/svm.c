@@ -4,12 +4,12 @@
 
 // @return exp( - SVD_DISTANCE_PROP_FACTOR * chain_sq_distance(a, b))
 double gaussian_radial_basis_function(Chain a, Chain b) {
-    return exp( - SVM_KERNEL_PROP_FACTOR * chain_sq_distance(a, b) );
+    return exp( - SVM_KERNEL_PROP_FACTOR_RBF * chain_sq_distance(a, b) );
 }
 
 
 double sigmoid_function(Chain a, Chain b) {
-    return tanh( SVM_KERNEL_PROP_FACTOR * (chain_dot_product(a, b) + SVM_KERNEL_LAG));
+    return tanh( SVM_KERNEL_PROP_FACTOR_SIG * (chain_dot_product(a, b)) + SVM_KERNEL_LAG_SIG);
 }
 
 double polynomial_inhom_function(Chain a, Chain b) {
@@ -21,15 +21,41 @@ double polynomial_inhom_function(Chain a, Chain b) {
     return ret;
 }
 
+double linear_function(Chain a, Chain b) {
+    return chain_dot_product(a, b) * SVM_KERNEL_PROP_FACTOR_SIG;
+}
+
+double tanimoto_function(Chain a, Chain b) {
+    double dot = chain_dot_product(a, b);
+    return dot / (596. - dot);
+}
+
+double cauchy_function(Chain a, Chain b) {
+    return 1. / (1. + (chain_sq_distance(a, b) / 298.));
+}
+
+double rational_quadratic_function(Chain a, Chain b) {
+    double sq_dist = chain_sq_distance(a, b);
+    return 1. - (sq_dist / (sq_dist + 298.));
+}
+
 /**
  * 's' for sigmoid (tanh)
  * 'p' for polynomial
+ * 'l' for linear
+ * 't' for tanimoto
+ * 'c' for cauchy
+ * 'r' for rational quadratic
  * any other one will be for gaussian (RBF)
  */
 double kernel(Chain a, Chain b, char kernel_char) {
     switch (kernel_char) {
     case 's':   return sigmoid_function(a, b);
     case 'p':   return polynomial_inhom_function(a, b);
+    case 'l':   return linear_function(a, b);
+    case 't':   return tanimoto_function(a, b);
+    case 'c':   return cauchy_function(a, b);
+    case 'r':   return rational_quadratic_function(a, b);
     default:    return gaussian_radial_basis_function(a, b);
     };
 }
@@ -305,10 +331,11 @@ void svm_initialize_lambdas(double *lambdas, int *signs, int dim, double C_limit
  * @param betas beta for each iteration of betas
  * @param itertions_per_beta number of metropolis steps to the vector for each beta in list
  * @param print_to_file 0 for no printing; 1 for printing log of energies, lambda vectors and acceptance
+ * @param kernel_char only used for folder labeling
  * @return parameter ``lambdas`` is used as first lambda vector used and output lambda after annealing
  * more to do: acceptance, outputting energy, printing to file
  */
-void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, double C_limit, int run_id) {
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, double C_limit, int run_id, char kernel_char) {
     printf("starting simulated annealing...\n");
     
     double energy_old = svm_energy(gram_matrix, signs, lambdas, dimension);
@@ -327,7 +354,7 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
     time_t now = time(NULL);
     strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H:%M:%S", localtime(&now));
     char run_dir[MAX_STR_LEN];
-    sprintf(run_dir, "results/svm/annealing/batches/betas%05d_iterations%05d_c-limit%g/%s-%03d", n_betas, iterations_per_beta, C_limit, time_str, run_id);
+    sprintf(run_dir, "results/svm/annealing/batches/betas%05d_iterations%05d_c-limit%g_kernel%c/%s-%03d", n_betas, iterations_per_beta, C_limit, kernel_char, time_str, run_id);
     
     if (print_to_file) {
     
@@ -490,8 +517,8 @@ void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points) {
 
     // Parse the best line to extract lambdas
     char *token = strtok(best_line, ",");
-    // Skip n_betas, n_iterations, and energy
-    for (int i = 0; i < 3; ++i) {
+    // Skip kernel, c_limit, n_betas, n_iterations, and energy
+    for (int i = 0; i < 5; ++i) {
         if (token == NULL) {
             fprintf(stderr, "Error: Malformed CSV line.\n");
             return;

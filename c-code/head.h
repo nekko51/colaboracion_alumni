@@ -54,9 +54,10 @@ extern int CHAR_TO_INT_LUT[256];
 #define BETA_FREEZE 1e10
 
 /*svm parameters*/
-#define SVM_KERNEL_PROP_FACTOR (1./230.1105) // now i know
-#define SVM_PARAMETER_LIMIT 1
-#define SVM_KERNEL_LAG 0
+#define SVM_KERNEL_PROP_FACTOR_RBF (1./230.1105) // now i know
+#define SVM_KERNEL_PROP_FACTOR_SIG (1./298.) //
+#define SVM_KERNEL_LAG_SIG 0.
+#define SVM_KERNEL_LAG 0.
 #define SVM_KERNEL_POW 1
 
 /*Metropolis parameters*/
@@ -244,7 +245,7 @@ double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, cha
 double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char);
 void svm_initialize_lambdas(double *lambdas, int *signs, int dim, double C_limit);
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim, double C_limit);
-void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, double C_limit, int run_id);
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, double C_limit, int run_id, char kernel_char);
 void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points);
 Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign);
 ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Chain* learn_chains, int* learn_tags, int n_learn, double* lambdas, char kernel_char, int target_class);
