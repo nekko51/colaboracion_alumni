@@ -113,13 +113,55 @@ void get_matrix_from_file(char *filename, int dim, double **out) {
     FILE *f = get_file(filename, "r");
     for (int i = 0; i < dim; i++) {
         for (int j = 0; j < dim; j++) {
-            fscanf(f, "%lf\n", &out[i][j]);
+            if (fscanf(f, "%lf\n", &out[i][j]) != 1) {
+                fprintf(stderr, "Error de lectura en la posición [%d][%d]\n", i, j);
+            }
+            printf("progress:\t%5.2f%%\r", (double)(i*dim+j+1)/(double)(dim*dim) * 100.);
+            fflush(stdout);
         }
     }
     fclose(f);
     printf("finished reading gram matrix!\n");
 }
 
+int get_next_labeled_chain(FILE *f, Chain* out, int* tag) {
+    char line[CHAINLEN + 1];
+    if (fscanf(f, "%d\t%298s", tag, line) == 2) {
+        for (int i = 0; i < CHAINLEN; i++) {
+            char_to_Aacid(line[i], &out->aas[i]);
+        }
+        if (*tag == 0) {
+            *tag = -1;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int load_labeled_dataset(const char* filepath, Chain** out_chains, int** out_tags) {
+    FILE *f = get_file((char*)filepath, "r");
+    if (!f) {
+        fprintf(stderr, "Error al abrir el archivo: %s\n", filepath);
+        return 0;
+    }
+    
+    int capacity = 500;
+    int count = 0;
+    *out_chains = malloc(capacity * sizeof(Chain));
+    *out_tags = malloc(capacity * sizeof(int));
+    
+    while (get_next_labeled_chain(f, &(*out_chains)[count], &(*out_tags)[count])) {
+        count++;
+        if (count >= capacity) {
+            capacity *= 2;
+            *out_chains = realloc(*out_chains, capacity * sizeof(Chain));
+            *out_tags = realloc(*out_tags, capacity * sizeof(int));
+        }
+    }
+    
+    fclose(f);
+    return count;
+}
 
 
 // int main() {

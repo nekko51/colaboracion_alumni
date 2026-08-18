@@ -116,7 +116,7 @@ double decision_function(Chain x_input, double bias, double *lambda, int *signs,
 
 
 
-SvmMove svm_propose_move(double *v, int v_dim, double eps, int *signs) {
+SvmMove svm_propose_move(double *v, int v_dim, double eps, int *signs, double C_limit) {
     SvmMove move;
     int intentos = 0;
     double min_delta, max_delta;
@@ -130,15 +130,15 @@ SvmMove svm_propose_move(double *v, int v_dim, double eps, int *signs) {
         } while (move.i == move.j);
 
         double min_di = -v[move.i];
-        double max_di = SVM_PARAMETER_LIMIT - v[move.i];
+        double max_di = C_limit - v[move.i];
         double min_dj, max_dj;
 
         if (signs[move.i] == signs[move.j]) {
-            min_dj = v[move.j] - SVM_PARAMETER_LIMIT;
+            min_dj = v[move.j] - C_limit;
             max_dj = v[move.j];
         } else {
             min_dj = -v[move.j];
-            max_dj = SVM_PARAMETER_LIMIT - v[move.j];
+            max_dj = C_limit - v[move.j];
         }
 
         min_delta = min_di > min_dj ? min_di : min_dj;
@@ -181,7 +181,7 @@ double svm_energy(double **gram_matrix, int *signs, double *lambda, int dim) {
     return sum;
 }
 
-void svm_change(double *v, double *v_, int v_dim, double eps, int *signs) {
+void svm_change(double *v, double *v_, int v_dim, double eps, int *signs, double C_limit) {
     for (int k = 0; k < v_dim; k++) v_[k] = v[k];
 
     int i, j;
@@ -196,15 +196,15 @@ void svm_change(double *v, double *v_, int v_dim, double eps, int *signs) {
         } while (i == j);
 
         double min_di = -v[i];
-        double max_di = SVM_PARAMETER_LIMIT - v[i];
+        double max_di = C_limit - v[i];
         double min_dj, max_dj;
 
         if (signs[i] == signs[j]) {
-            min_dj = v[j] - SVM_PARAMETER_LIMIT;
+            min_dj = v[j] - C_limit;
             max_dj = v[j];
         } else {
             min_dj = -v[j];
-            max_dj = SVM_PARAMETER_LIMIT - v[j];
+            max_dj = C_limit - v[j];
         }
 
         min_delta = min_di > min_dj ? min_di : min_dj;
@@ -230,7 +230,7 @@ int svm_metropolis(double e_old, double e_new, double beta) {
     return 0;
 }
 
-double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim) {
+double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim, double C_limit) {
     printf("starting initial beta computation...\n");
     
     double *F = calloc(dim, sizeof(double));
@@ -243,7 +243,7 @@ double svm_initial_beta(double *initial_lambdas, double eps, int iterations, dou
     double sum = 0.0;
     
     for (int it = 0; it < iterations; it++) {
-        SvmMove move = svm_propose_move(initial_lambdas, dim, eps, signs);
+        SvmMove move = svm_propose_move(initial_lambdas, dim, eps, signs, C_limit);
         
         if (move.delta != 0.0) {
             double d = move.delta;
@@ -270,16 +270,16 @@ double svm_initial_beta(double *initial_lambdas, double eps, int iterations, dou
         ret = (double)iterations / sum;
     }
     
-    printf("finished initial beta computation! b = %.3g\n", ret);
+    printf("initial beta is b = %.3g\n\n", ret);
     return ret;
 }
 
-void svm_initialize_lambdas(double *lambdas, int *signs, int dim) {
+void svm_initialize_lambdas(double *lambdas, int *signs, int dim, double C_limit) {
     double sum_pos = 0.0;
     double sum_neg = 0.0;
 
     for (int i = 0; i < dim; i++) {
-        lambdas[i] = Random() * (SVM_PARAMETER_LIMIT * 0.1);
+        lambdas[i] = Random() * (C_limit * 0.1);
         if (signs[i] == 1) sum_pos += lambdas[i];
         else               sum_neg += lambdas[i];
     }
@@ -293,7 +293,7 @@ void svm_initialize_lambdas(double *lambdas, int *signs, int dim) {
             if (signs[i] == -1) lambdas[i] *= (sum_pos / sum_neg);
         }
     }
-    printf("lambdas initialized!\n");
+    printf("lambdas initialized!\n\n");
 }
 
 /**
@@ -308,7 +308,7 @@ void svm_initialize_lambdas(double *lambdas, int *signs, int dim) {
  * @return parameter ``lambdas`` is used as first lambda vector used and output lambda after annealing
  * more to do: acceptance, outputting energy, printing to file
  */
-void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, char *filename) {
+void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, double C_limit, int run_id) {
     printf("starting simulated annealing...\n");
     
     double energy_old = svm_energy(gram_matrix, signs, lambdas, dimension);
@@ -323,12 +323,22 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
 
     FILE *sum_file = NULL;
     FILE *log_file = NULL;
+    char time_str[80];
+    time_t now = time(NULL);
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H:%M:%S", localtime(&now));
+    char run_dir[MAX_STR_LEN];
+    sprintf(run_dir, "results/svm/annealing/batches/betas%05d_iterations%05d_c-limit%g/%s-%03d", n_betas, iterations_per_beta, C_limit, time_str, run_id);
     
     if (print_to_file) {
-        char summry_file_name[MAX_STR_LEN];
-        char log_file_name[MAX_STR_LEN];
-        sprintf(summry_file_name, "%s/summary.txt", filename);
-        sprintf(log_file_name, "%s/full-log.txt", filename);
+    
+        mkdir_p(run_dir);
+
+        char filename[3*MAX_STR_LEN];
+        char summry_file_name[3*MAX_STR_LEN];
+        char log_file_name[3*MAX_STR_LEN];
+        sprintf(filename, "%s/test-results.txt", run_dir);
+        sprintf(summry_file_name, "%s/summary.txt", run_dir);
+        sprintf(log_file_name, "%s/full-log.txt", run_dir);
 
         sum_file = get_file(summry_file_name, "w");
         log_file = get_file(log_file_name, "w");
@@ -340,12 +350,14 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
     printf("progress:\t%5.2f%%\r", 0.);
     fflush(stdout);
 
+
+
     for (int beta_idx = 0; beta_idx < n_betas; beta_idx++) {
         acceptance_count = 0;
 
         for (int iteration_idx = 0; iteration_idx < iterations_per_beta; iteration_idx++) {
             
-            SvmMove move = svm_propose_move(lambdas, dimension, epsilon, signs);
+            SvmMove move = svm_propose_move(lambdas, dimension, epsilon, signs, C_limit);
 
             if (move.delta != 0.0) {
                 double d = move.delta;
@@ -362,9 +374,9 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
                     lambdas[j] -= d * signs[i] * signs[j];
                     
                     if (lambdas[i] < 0.0) lambdas[i] = 0.0;
-                    if (lambdas[i] > SVM_PARAMETER_LIMIT) lambdas[i] = SVM_PARAMETER_LIMIT;
+                    if (lambdas[i] > C_limit) lambdas[i] = C_limit;
                     if (lambdas[j] < 0.0) lambdas[j] = 0.0;
-                    if (lambdas[j] > SVM_PARAMETER_LIMIT) lambdas[j] = SVM_PARAMETER_LIMIT;
+                    if (lambdas[j] > C_limit) lambdas[j] = C_limit;
 
                     energy_old += delta_E;
                     acceptance_count++;
@@ -410,8 +422,8 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
     }
 
     if (print_to_file) {
-        char res_file_name[MAX_STR_LEN];
-        sprintf(res_file_name, "%s/result-lambdas.txt", filename);
+        char res_file_name[3*MAX_STR_LEN];
+        sprintf(res_file_name, "%s/result-lambdas.txt", run_dir);
         FILE *res_file = get_file(res_file_name, "w");
 
         fprintf(res_file, "%g\t", energy_old);
@@ -425,7 +437,7 @@ void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsil
     }
 
     free(F);
-    printf("\nfinished simulated annealing!\n");
+    printf("finished simulated annealing!\n\n");
 }
 
 /**
@@ -534,3 +546,39 @@ Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *lea
     return (Int2){ .x = correct, .y = n_test_chs - correct };
 }
 
+ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Chain* learn_chains, int* learn_tags, int n_learn, double* lambdas, char kernel_char, int target_class) {
+    printf("starting evaluation...\n");
+    ConfusionMatrix cm = {0, 0, 0, 0};
+    double bias = compute_bias(lambdas, learn_tags, learn_chains, n_learn, kernel_char);
+    
+    char time_str[80];
+    time_t now = time(NULL);
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H:%M:%S", localtime(&now));
+    char run_dir[MAX_STR_LEN];
+    sprintf(run_dir, "results/svm/decision-function-tests/kernel-%c/%s", kernel_char, time_str);
+    mkdir_p(run_dir);
+    printf("directory '%s' created!\n", time_str);
+
+    char filename[2*MAX_STR_LEN];
+    sprintf(filename, "%s/test-results.txt", run_dir);
+
+    FILE *f = get_file(filename, "w");
+    
+    for (int i = 0; i < n_eval; i++) {
+        double dec = decision_function(eval_chains[i], bias, lambdas, learn_tags, learn_chains, n_learn, kernel_char);
+        int predicted = (dec > 0) ? 1 : -1;
+        fprintf(f, "%d\t%.15e\t%.15e\n", eval_tags[i], dec, dec*eval_tags[i]);
+        
+        if (eval_tags[i] == target_class) {
+            if (predicted == target_class) cm.TP++;
+            else cm.FN++;
+        } else {
+            if (predicted == target_class) cm.FP++;
+            else cm.TN++;
+        }
+        printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_eval * 100.);
+        fflush(stdout);
+    }
+    printf("set evaluation complete!\n\n");
+    return cm;
+}

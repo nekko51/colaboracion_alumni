@@ -50,3 +50,68 @@ $$
 b=s_p-\sum_{i=1}^n \lambda_i s_i \operatorname k(\textbf x_i, \textbf x_p),
 $$
 where the $p$-th data point is a support one, that is, the closest to the plane (or any of them) and such that $\lambda_p>0$.
+
+
+\newpage
+\subsection{SVM results}
+
+Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} chain sets for learning and testing, we get outstandingly good results. In the next histograms, we have the distributions of the output of the decision function for \texttt{test\_human} and \texttt{test\_mouse} respectively:
+
+\noindent\begin{minipage}{.45\textwidth}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{images/human-hist.pdf}
+    \caption{Count with respect to value of the output for the \texttt{test\_human} chains.}
+\end{figure}
+\end{minipage}\hfill\noindent\begin{minipage}{.45\textwidth}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{images/mouse-hist.pdf}
+    \caption{Count with respect to value of the output for the \texttt{test\_mouse} chains.}
+\end{figure}
+\end{minipage}
+\vspace\baselineskip
+
+This gets us to the confusion matrix:
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ccc} \cline{2-3}
+        & Human & Murine \\ \hline
+    Tagged as human    & 1360 & 41 \\ \hline
+    Tagged as murine    & 28 & 1338 \\ \hline
+    \end{tabular}
+\end{table}
+
+Counting human as positive, this gets us to a F1\futnotetext\footnotetext{$\text{F1}=\frac{2\cdot \text{TP} }{2\cdot \text{TP}+\text{FN}+\text{FP}   }$} of $\sim 0.9753$\futnotetext\footnotetext{Precisely: $\text{F1}_{\text{H}}=0.975259949802797$.}. On the other hand, being murine the positives, we have an F1 of $\sim 0.9749$\futnotetext\footnotetext{Precisely: $\text{F1}_{\text{M}}=0.974863387978142$.}. This takes us to an overall accuracy\futnotetext\footnotetext{$\text{Acc}=\frac{\text{TP}+\text{TN}  }{\text{TP}+\text{TN}+\text{FP}+\text{FN}    } $} of $\sim 0.9751$\futnotetext\footnotetext{Precisely: $\text{Acc}=  0.975063245392121$.}.
+
+However, those tests were taken with a completely heuristic upper limit, we will call $\lambda_\text{t} $, for the $\lambda$ vector. Since we cannot determine annalytically $\lambda_\text{t} $, we must adjust it as a hyperparameter with a validation data set.
+
+\newpage
+\subsubsection{Validation}
+We have merged all data sets and split them into \texttt{learn}, \texttt{validation}, and \texttt{test}, with $70\%$, $15\%$, and $15\%$ of the chains respectively.
+
+Through this method we get an optimal value for $\lambda_\text{t}=10.0$, having tried with powers of $10$ from $0.01$ to $1000$. Using that hyperparameter, we get the following confusion matrix
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ccc} \cline{2-3}
+        & Human & Murine \\ \hline
+    Tagged as human    & 404 & 4 \\ \hline
+    Tagged as murine    & 6 & 254 \\ \hline
+    \end{tabular}
+\end{table}
+
+And F1 values and accuracy:
+\begin{equation*}
+    \text{F1}_\text{H} = 0.9878\futnotemath\footnotetext{Precisely: $\text{F1}_\text{H} = 0.987775061124694$.}  \qquad
+    \text{F1}_\text{M} = 0.9788\futnotemath\footnotetext{Precisely: $\text{F1}_\text{M} =0.978805394990366$.}  \qquad
+    \text{Acc} = 0.9836\futnotemath\footnotetext{Precisely: $\text{Acc}=0.98355754857997 $} 
+\end{equation*}
+
+The following histogram shows the distribution of the sign-corrected certainty degree, that is, the output of the decision function but sign inverted when it ought to be negative. This way the positive numbers are correct ones and negative are failed tagging:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{images/test-hist.pdf}
+    \caption{Count with respect to sign-corrected certainty degree using self-split learn, validation and test datasets.}
+\end{figure}
