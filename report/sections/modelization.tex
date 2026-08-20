@@ -13,16 +13,31 @@ As you can see, these variables are context-dependent, since there is no referen
 
 \paragraph{Example:} Let's encode the aminoacid cysteine (\code{\textcolor{green!70!black}{C}}). It is the third in the aminoacid list, thus, the first vector should be $v = (0,0,1,0,...,0)$. Cysteine is hydrophobic and small, then: $w= (0,1,0,0,0,1,0,0,0)$, since hydrophobic is in the 2nd position and small in the 6th.
 
-Now changing the context, another usual setting is the so called \textit{Schrödinger's aminoacid}. That will be the average aminoacid, whose elements in both vectors will be *separately* the frequencies of every appearing aminoacid.
+Now changing the context, another setting we will be using is the so called \textit{Schrödinger's aminoacid}. That will be the average aminoacid, whose elements in both vectors will be *separately* the frequencies of every appearing aminoacid.
 
 *Separately* means that the sum of the components of the first list is 1 and the sum of the components of the second list will also be 1.\futnotetext
 \footnotetext{This is true for every kind of aminoacid, whether it is concrete or Schrödinger's.} More specifically: $\sum_{i=1}^{21} v^i = 1\ \wedge\ \sum_{i=1}^{9}w^i=1 $.\futnotetext\footnotetext{Using superindexes for convenience.}
+
+The norm of an aminoacid, $a=v\times w\in\mathcal A$, is defined as:
+\begin{equation*}
+    \left\| a \right\| = \sqrt{\sum_{i=1}^{21} (v^i)^2} 
+\end{equation*}
+When treating with concrete aminoacids, we know that \(\left\| a \right\| = 1\), since only one of the components can be 1.
+
 
 \subsection{Chains}
 
 A chain is an array of 298 aminoacids and it represents a whole antibody. Just as before, we will have concrete (all components must be concrete aminoacids) and Schrödinger's chains (the rest).
 
 This is a $298 \times (21 + 9)$ matrix of split row conditioned frequencies. We will name the space of all possible chains the chain space, $\mathcal C=\mathcal A^{298}$. Thus, $c\in \mathcal C$ will have the form $c=(c_1,...,c_j,...,c_{298})$, where $c_j=v_j\times w_j$ and $v_j=(v_j^1,...,v_j^i,...,v_j^{21}),\ \forall j\in[1,298]\subset\mathbb N$.
+
+The norm of a chain, \(c\in\mathcal C\), is defined as:
+\begin{equation*}
+    \left\| c \right\| = \sqrt{\sum_{i=1}^{298} \left\| c_i \right\| ^2} 
+\end{equation*}
+If $c$ is a concrete chain, then \(\left\| c \right\| =\sqrt{298}\).
+
+
 
 % \subsection{Megachain}
 

@@ -2,7 +2,7 @@
 
 We intend to back up the humanness of the chain outputted by the simulated annealing algorithm with this binary-output method.
 
-The main point of this method is to transform our data space into some other one. In such a way that we can separate the data points with a simple plane, a linear classifier.
+The main point of an SVM (abbreviation of Support Vector Machine) is to transform our data space into some other one in such a way that we can separate the data points with a simple hyperplane, a linear classifier.
 
 We will represent each point with a $n$-dimensional vector, where $n$ is the number of data points. The function that gives us those coordinates is called the kernel.
 
@@ -14,30 +14,43 @@ Our kernel, $\operatorname k:\mathcal C\times\mathcal C\to \mathbb R$,  will be 
 
 After applying the kernel we have a matrix $M\in\mathbb R^{n\times n}$, the Gram matrix, with the coordinates of our data points in the new space. That will be: $[M]_{i,j}=\operatorname k(\textbf{x}_i,\textbf{x}_j)$.
 
-We also have abailable some other alternative kernel functions:
+We also have abailable some other alternative kernel functions:\futnotetext\footnotetext{These constants ($298$ and $596=2\cdot 298$) that are scattered around the functions seem to be arbitrary, but the written functions are already optimized for our use case: they are normalized and centered so that every output is positive and does not surpass 1.}
 
 \begin{multicols}{2}
 \begin{itemize}
     \item Sigmoid function:
     \begin{equation*}
-        \operatorname k(\textbf{x} _i,\textbf{x} _j)=\tanh \Big[ \gamma \big( 
+        \operatorname k(\textbf{x} _i,\textbf{x} _j)=\tanh \frac{
             \left\langle \textbf{x} _i| \textbf{x} _j \right\rangle
-            +r 
-         \big) 
-         \Big]
+        }{
+            298
+        }
+    \end{equation*}
+
+    \item Tanimoto function:
+    \begin{equation*}
+        \operatorname k(\textbf{x} _i,\textbf{x} _j)=\frac{
+            \left\langle \textbf{x} _i| \textbf{x} _j \right\rangle
+        }{596 - \left\langle \textbf{x} _i| \textbf{x} _j \right\rangle}
     \end{equation*}
     
-    \item Polynomial inhomogenuous function: \begin{equation*}
-        \operatorname k(\textbf{x} _i,\textbf{x} _j)=\big( 
-            \left\langle \textbf{x} _i| \textbf{x} _j \right\rangle
-            +r 
-         \big) ^d
+    \item Linear function: \begin{equation*}
+        \operatorname k(\textbf{x} _i,\textbf{x} _j)=
+        \frac{\left\langle \textbf{x} _i| \textbf{x} _j \right\rangle}{298}
+    \end{equation*}
+
+    \item Cauchy function:
+    \begin{equation*}
+        \operatorname k(\textbf{x} _i,\textbf{x} _j)=\frac{
+            298
+        }{298 + \left\| \textbf{x}_i-\textbf{x}_j   \right\|^2 }
     \end{equation*}
 \end{itemize}
 \end{multicols}
-Being $d>0$ and $r$ real constants.
 
-The Gram matrix and the kernel are the tools we need to craft the decision function.
+
+
+The Gram matrix and the kernel are the tools we need in order to craft the decision function.
 
 \subsection{Decision function}
 
@@ -53,26 +66,20 @@ where the $p$-th data point is a support one, that is, the closest to the plane 
 
 
 \newpage
-\subsection{SVM results}
+\section{SVM results}
 
-Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} chain sets for learning and testing, we get outstandingly good results. In the next histograms, we have the distributions of the output of the decision function for \texttt{test\_human} and \texttt{test\_mouse} respectively:
+Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} chain sets for learning and testing, we get outstandingly good results. In the next histogram, we show the distribution of the sign-flipped output of the decision function, that is, positive when correct and negative when failed tagging:
 
-\noindent\begin{minipage}{.45\textwidth}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.99\textwidth]{images/human-hist.pdf}
-    \caption{Count with respect to value of the output for the \texttt{test\_human} chains.}
+    \includegraphics[width=.7\textwidth]{images/goodRBFhist.pdf}
+    \caption{Count with respect to sign-corrected certainty degree.}
 \end{figure}
-\end{minipage}\hfill\noindent\begin{minipage}{.45\textwidth}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.99\textwidth]{images/mouse-hist.pdf}
-    \caption{Count with respect to value of the output for the \texttt{test\_mouse} chains.}
-\end{figure}
-\end{minipage}
-\vspace\baselineskip
+
 
 This gets us to the confusion matrix:
+
+\noindent\begin{minipage}{.45\textwidth}\setlength{\parindent}{15pt}
 \begin{table}[H]
     \centering
     \renewcommand{\arraystretch}{1.5}
@@ -82,16 +89,30 @@ This gets us to the confusion matrix:
     Tagged as murine    & 28 & 1338 \\ \hline
     \end{tabular}
 \end{table}
+\end{minipage}\hfill\noindent\begin{minipage}{.45\textwidth}\setlength{\parindent}{15pt}
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ccc} \cline{2-3}
+    Overall percentages    & Human & Murine \\ \hline
+    Tagged as human    & $49.15\%$ & $1.48\%$ \\ \hline
+    Tagged as murine    & $1.01\%$ & $48.36\%$ \\ \hline
+    \end{tabular}
+\end{table}
+\end{minipage}
+\vspace\baselineskip
 
 Counting human as positive, this gets us to a F1\futnotetext\footnotetext{$\text{F1}=\frac{2\cdot \text{TP} }{2\cdot \text{TP}+\text{FN}+\text{FP}   }$} of $\sim 0.9753$\futnotetext\footnotetext{Precisely: $\text{F1}_{\text{H}}=0.975259949802797$.}. On the other hand, being murine the positives, we have an F1 of $\sim 0.9749$\futnotetext\footnotetext{Precisely: $\text{F1}_{\text{M}}=0.974863387978142$.}. This takes us to an overall accuracy\futnotetext\footnotetext{$\text{Acc}=\frac{\text{TP}+\text{TN}  }{\text{TP}+\text{TN}+\text{FP}+\text{FN}    } $} of $\sim 0.9751$\futnotetext\footnotetext{Precisely: $\text{Acc}=  0.975063245392121$.}.
 
-However, those tests were taken with a completely heuristic upper limit, we will call $\lambda_\text{t} $, for the $\lambda$ vector. Since we cannot determine annalytically $\lambda_\text{t} $, we must adjust it as a hyperparameter with a validation data set.
+However, those tests were taken with a completely heuristic upper limit, we will call $\lambda_\text{t} $, for the $\lambda$ vector. Since we cannot determine $\lambda_\text{t} $ analytically, we must adjust it as a hyperparameter with a validation data set.
 
 \newpage
-\subsubsection{Validation}
+\subsection{Validation}
 We have merged all data sets and split them into \texttt{learn}, \texttt{validation}, and \texttt{test}, with $70\%$, $15\%$, and $15\%$ of the chains respectively.
 
 Through this method we get an optimal value for $\lambda_\text{t}=10.0$, having tried with powers of $10$ from $0.01$ to $1000$. Using that hyperparameter, we get the following confusion matrix
+
+\noindent\begin{minipage}{.45\textwidth}\setlength{\parindent}{15pt}
 \begin{table}[H]
     \centering
     \renewcommand{\arraystretch}{1.5}
@@ -101,6 +122,19 @@ Through this method we get an optimal value for $\lambda_\text{t}=10.0$, having 
     Tagged as murine    & 6 & 254 \\ \hline
     \end{tabular}
 \end{table}
+\end{minipage}\hfill\noindent\begin{minipage}{.45\textwidth}\setlength{\parindent}{15pt}
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ccc} \cline{2-3}
+    Overall percentages    & Human & Murine \\ \hline
+    Tagged as human    & $60.48\%$ & $0.60\%$ \\ \hline
+    Tagged as murine    & $0.90\%$ & $38.02\%$ \\ \hline
+    \end{tabular}
+\end{table}
+\end{minipage}
+\vspace\baselineskip
+
 
 And F1 values and accuracy:
 \begin{equation*}
@@ -109,9 +143,76 @@ And F1 values and accuracy:
     \text{Acc} = 0.9836\futnotemath\footnotetext{Precisely: $\text{Acc}=0.98355754857997 $} 
 \end{equation*}
 
-The following histogram shows the distribution of the sign-corrected certainty degree, that is, the output of the decision function but sign inverted when it ought to be negative. This way the positive numbers are correct ones and negative are failed tagging:
+The following histogram shows the distribution of the sign-corrected certainty degree, as before positive when correct and negative when incorrect tagging:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.8\textwidth]{images/test-hist.pdf}
+    \includegraphics[width=.7\textwidth]{images/test-hist.pdf}
     \caption{Count with respect to sign-corrected certainty degree using self-split learn, validation and test datasets.}
 \end{figure}
+
+\newpage
+\subsection{Cross-validation}
+And with every kernel we presented, we obtain similar reults:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/horizontal-kernels.pdf}
+    \caption{Count with respect to sign-corrected certainty degree using self-split learn, validation and test datasets, for every kernel -- blue Cauchy, green Gaussian, pink Linear, purple Sigmoid, orange Tanimoto.}
+
+\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.65\textwidth]{images/ehwf-kernel.pdf}
+%     \caption{Count with respect to sign-corrected certainty degree using self-split learn, validation and test datasets, for every kernel.}
+% \end{figure}
+
+But that is not quite what we are looking for. In fact, they can look similar in the way that the outputs are distributed into succeeded and failed, but they may not be failing in the same datapoints. This is our solution:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/correlations-graph-bygroup.pdf}
+    \caption{Scatterplots of sign-corrected certainty degree for every kernel vs every other one -- \texttt{c.006} is Cauchy kernel, \texttt{g.013} Gaussian, \texttt{l.006} Linear, \texttt{s.021} Sigmoid, and \texttt{t.006} Tanimoto; mouse datapoints are pink and human ones blue; concentration ellipses are drawn for each tag in concentration levels $0.5$ and $0.9$.}
+\end{figure}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.7\textwidth]{images/correlations-graph.pdf}
+%     \caption{Scatterplots of sign-corrected certainty degree for every kernel vs every other one (density plots in the main diagonal) -- \texttt{c.006} is Cauchy kernel, \texttt{g.013} Gaussian, \texttt{l.006} Linear, \texttt{r.006} Rational quadratic, \texttt{s.021} Sigmoid, and \texttt{t.006} Tanimoto.}
+% \end{figure}
+
+
+We can infere how to evaluate a mixture of the five tests using how they are correlated to eachother. If there is a high correlation index between two tests (like the Gaussian and Cauchy kernels), then we know they are similar and it will not make a difference to ignore one of the two. However, if there is a low correlation index, most likely, we will see that the datapoints one of the tests get wrong the other one will get right and vice-versa.
+
+
+% \begin{table}[H]
+%     \centering
+%     \renewcommand{\arraystretch}{1.5}
+%     \begin{tabular}{ccccccc} \cline{2-7}
+%         \textbf{} & \textbf{Cauchy} & \textbf{Gaussian} & \textbf{Linear} & \textbf{Quadratic} & \textbf{Sigmoid} & \textbf{Tanimoto} \\ \hline \hline
+%         \textbf{Cauchy} & $1.0000$ & $0.9758$ & $0.7101$ & $0.9871$ & $0.5899$ & $0.9195$ \\ \hline
+%         \textbf{Gaussian} & $0.9758$ & $1.0000$ & $0.6301$ & $0.9659$ & $0.5063$ & $0.9327$ \\ \hline
+%         \textbf{Linear} & $0.7101$ & $0.6301$ & $1.0000$ & $0.7184$ & $0.9653$ & $0.5387$ \\ \hline
+%         \textbf{Rat. quadr.} & $0.9871$ & $0.9659$ & $0.7184$ & $1.0000$ & $0.6004$ & $0.9128$ \\ \hline
+%         \textbf{Sigmoid} & $0.5899$ & $0.5063$ & $0.9653$ & $0.6004$ & $1.0000$ & $0.3616$ \\ \hline
+%         \textbf{Tanimoto} & $0.9195$ & $0.9327$ & $0.5387$ & $0.9128$ & $0.3616$ & $1.0000$ \\ \hline
+%     \end{tabular}
+% \end{table}
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+\begin{tabular}{cccccc}\cline{2-6}
+        \textbf{} & \textbf{Cauchy} & \textbf{Gaussian} & \textbf{Linear} & \textbf{Sigmoid} & \textbf{Tanimoto} \\ \hline \hline
+\textbf{Cauchy} & \cellcolor[HTML]{BBE33D}1      & \cellcolor[HTML]{CDEA69}0.9758 & \cellcolor[HTML]{FAFCE4}0.7101  & \cellcolor[HTML]{FCFDEE}0.5899 & \cellcolor[HTML]{F4F9CE}0.9195 \\ \hline
+\textbf{Gaussian} & \cellcolor[HTML]{CDEA69}0.9758 & \cellcolor[HTML]{BBE33D}1      & \cellcolor[HTML]{FBFDEB}0.6301 & \cellcolor[HTML]{FDFEF4}0.5063 & \cellcolor[HTML]{EBF5B7}0.9327 \\ \hline
+\textbf{Linear} & \cellcolor[HTML]{FAFCE4}0.7101 & \cellcolor[HTML]{FBFDEB}0.6301 & \cellcolor[HTML]{BBE33D}1      & \cellcolor[HTML]{D4ED7C}0.9653 & \cellcolor[HTML]{FDFEF2}0.5387 \\ \hline
+\textbf{Sigmoid} & \cellcolor[HTML]{FCFDEE}0.5899 & \cellcolor[HTML]{FDFEF4}0.5063 & \cellcolor[HTML]{D4ED7C}0.9653 & \cellcolor[HTML]{BBE33D}1      & \cellcolor[HTML]{FFFFFF}0.3616 \\ \hline
+\textbf{Tanimoto} & \cellcolor[HTML]{F4F9CE}0.9195 & \cellcolor[HTML]{EBF5B7}0.9327 & \cellcolor[HTML]{FDFEF2}0.5387 & \cellcolor[HTML]{FFFFFF}0.3616 & \cellcolor[HTML]{BBE33D}1     \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+We will use a technique called bagging. Since we have many tests
+
+

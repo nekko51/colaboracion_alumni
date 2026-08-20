@@ -163,16 +163,25 @@ def aggregate_decision_function_tests():
     is_first_validation = True
     is_first_test = True
 
+    # Contador para los nombres de columna simplificados, p.ej. {'c': 1, 'g': 2}
+    kernel_counters = {}
+
     # Procesar cada archivo encontrado
     for i, test_path in enumerate(test_files_found):
-        # Extraer el nombre del kernel y la fecha de la ruta
-        # Generar una cabecera de columna única a partir de la ruta del directorio del test.
-        # Esto es más robusto que depender de una estructura de directorios fija.
-        # e.g., 'results/svm/decision-function-tests/kernel-s/2024-01-01_12-00-00/test-results.txt'
-        # se convierte en 'kernel-s_2024-01-01_12-00-00'
+        # Generar una cabecera de columna única y simplificada como 'c-001'.
         relative_dir = os.path.dirname(os.path.relpath(test_path, tests_dir))
-        column_header = relative_dir.replace(os.sep, '_')
+        
+        try:
+            # Extraer el carácter del kernel de la ruta, p.ej. de 'kernel-c/...'
+            kernel_dir = relative_dir.split(os.sep)[0]
+            kernel_char = kernel_dir.split('-')[-1]
 
+            # Incrementar el contador para este kernel y formatear la cabecera
+            kernel_counters[kernel_char] = kernel_counters.get(kernel_char, 0) + 1
+            column_header = f"{kernel_char}-{kernel_counters[kernel_char]:03d}"
+        except IndexError:
+            print(f"AVISO: No se pudo extraer el kernel de la ruta: {relative_dir}. Usando cabecera genérica.")
+            column_header = f"unknown-{i+1:03d}"
         current_values = []
         try:
             # Primero, leemos todas las líneas para contar las filas
