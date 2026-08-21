@@ -172,14 +172,26 @@ def aggregate_decision_function_tests():
         relative_dir = os.path.dirname(os.path.relpath(test_path, tests_dir))
         
         try:
-            # Extraer el carácter del kernel de la ruta, p.ej. de 'kernel-c/...'
+            # Extrae el directorio base, p.ej. 'kernel-c' o 'kernel-w_C-0.90_W-0.20'
             kernel_dir = relative_dir.split(os.sep)[0]
-            kernel_char = kernel_dir.split('-')[-1]
+            match = re.search(r'kernel-(\w)(?:_C-([0-9.]+)_W-([0-9.]+))?', kernel_dir)
+            
+            if match:
+                kernel_char = match.group(1)
+                if kernel_char == 'w' and match.group(2) and match.group(3):
+                    center = match.group(2)
+                    width = match.group(3)
+                    header_base = f"w_C{center}_W{width}"
+                else:
+                    header_base = kernel_char
+            else:
+                header_base = kernel_dir.split('-')[-1] # Fallback
 
-            # Incrementar el contador para este kernel y formatear la cabecera
-            kernel_counters[kernel_char] = kernel_counters.get(kernel_char, 0) + 1
-            column_header = f"{kernel_char}-{kernel_counters[kernel_char]:03d}"
-        except IndexError:
+            # Incrementa el contador para esta configuración y formatea la cabecera
+            kernel_counters[header_base] = kernel_counters.get(header_base, 0) + 1
+            column_header = f"{header_base}-{kernel_counters[header_base]:03d}"
+            
+        except Exception as e:
             print(f"AVISO: No se pudo extraer el kernel de la ruta: {relative_dir}. Usando cabecera genérica.")
             column_header = f"unknown-{i+1:03d}"
         current_values = []

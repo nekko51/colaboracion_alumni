@@ -40,15 +40,36 @@ double rational_quadratic_function(Chain a, Chain b) {
 }
 
 /**
+ * @param center [0,1]
+ * @param width [0,1]
+ */
+double piecewise_function(Chain a, Chain b, double center, double width) {
+    double x = linear_function(a, b);
+    double left_edge = center - (width / 2.0);
+    double right_edge = center + (width / 2.0);
+
+    if (x < left_edge) {
+        return (SVM_PW_KERNEL_LOW / left_edge) * x;
+    } else if (x <= right_edge) {
+        return ((SVM_PW_KERNEL_HIGH - SVM_PW_KERNEL_LOW) / width) * (x - left_edge) + SVM_PW_KERNEL_LOW;
+    } else {
+        return ((1.0 - SVM_PW_KERNEL_HIGH) / (1.0 - right_edge)) * (x - right_edge) + SVM_PW_KERNEL_HIGH;
+    }
+}
+
+/**
  * 's' for sigmoid (tanh)
  * 'p' for polynomial
  * 'l' for linear
  * 't' for tanimoto
  * 'c' for cauchy
  * 'r' for rational quadratic
+ * 'w' for piecewise function
  * any other one will be for gaussian (RBF)
+ * @param piecewise_function_center [0,1] - only used for piecewise function
+ * @param piecewise_function_width [0,1] - only used for piecewise function 
  */
-double kernel(Chain a, Chain b, char kernel_char) {
+double kernel(Chain a, Chain b, char kernel_char, double piecewise_function_center, double piecewise_function_width) {
     switch (kernel_char) {
     case 's':   return sigmoid_function(a, b);
     case 'p':   return polynomial_inhom_function(a, b);
@@ -56,6 +77,7 @@ double kernel(Chain a, Chain b, char kernel_char) {
     case 't':   return tanimoto_function(a, b);
     case 'c':   return cauchy_function(a, b);
     case 'r':   return rational_quadratic_function(a, b);
+    case 'w':   return piecewise_function(a, b, piecewise_function_center, piecewise_function_width);
     default:    return gaussian_radial_basis_function(a, b);
     };
 }
@@ -76,20 +98,33 @@ double kernel(Chain a, Chain b, char kernel_char) {
  * @brief computes (signed) gram matrix for a series of learn chains
  * @returns a matrix of size n_chains * n_chains
  * 
+ * @param piecewise_function_center [0,1] - only used for piecewise function
+ * @param piecewise_function_width [0,1] - only used for piecewise function 
+ * 
  * @param kernel_char choose the kernel for the outut matrix
  * 
- * - 's' for sigmoid (tanh): tanh( k * (a·b + r) )
+ * - 's' for sigmoid (tanh)
  * 
- * - 'p' for polynomial: ( a·b + r )^d
+ * - 'p' for polynomial
  * 
- * - any other (standard to g) for gaussian RBF: exp( - k * ||a - b|| )
+ * - 'l' for linear
+ * 
+ * - 't' for tanimoto
+ * 
+ * - 'c' for cauchy
+ * 
+ * - 'r' for rational quadratic
+ * 
+ * - 'w' for piecewise function
+ * 
+ * - any other one will be for gaussian (RBF)
  */
-void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char) {
+void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char, double pw_center, double pw_width) {
     printf("starting gram matrix computation...\n");
     for (int i = 0; i < n_chains; i++) {
-        for (int j = 0; j < n_chains; j++) {
-            out[i][j] = kernel(chains[i], chains[j], kernel_char);
-
+        for (int j = i; j < n_chains; j++) {
+            out[i][j] = kernel(chains[i], chains[j], kernel_char, pw_center, pw_width);
+            out[j][i] = out[i][j];
         }
         printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_chains * 100.);
         fflush(stdout);
@@ -107,7 +142,7 @@ void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char
  * 
  */
 
-double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char) {
+double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char, double pw_center, double pw_width) {
     int idx = -1;
     for (int i = 0; i < n_chains; i++) {
         if (lambda[i] > EPSILON) {
@@ -122,15 +157,15 @@ double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, cha
 
     double bias = signs[idx];
     for (int i = 0; i < n_chains; i++) {
-        bias -= lambda[i] * signs[i] * kernel(chains[i], chains[idx], kernel_char);
+        bias -= lambda[i] * signs[i] * kernel(chains[i], chains[idx], kernel_char, pw_center, pw_width);
     }
     return bias;
 }
 
-double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char) {
+double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char, double pw_center, double pw_width) {
     double out = bias;
     for (int i = 0; i < n_chains; i++) {
-        out += lambda[i] * signs[i] * kernel(x_input, chains[i], kernel_char);
+        out += lambda[i] * signs[i] * kernel(x_input, chains[i], kernel_char, pw_center, pw_width);
     }
     return out;
 }
@@ -543,9 +578,9 @@ void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points) {
 /***************************************************end of simulated annealing***************************************************/
 /********************************************************************************************************************************/
 
-Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign) {
+Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign, double pw_center, double pw_width) {
     printf("starting tests...\n");
-    double bias = compute_bias(lambdas, tags, learn_chs, learn_dims, kernel_char);
+    double bias = compute_bias(lambdas, tags, learn_chs, learn_dims, kernel_char, pw_center, pw_width);
 
     char time_str[80];
     time_t now = time(NULL);
@@ -563,7 +598,7 @@ Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *lea
     int correct = 0;
 
     for (int i = 0; i < n_test_chs; i++) {
-        decision_f = decision_function(test_chs[i], bias, lambdas, tags, learn_chs, learn_dims, kernel_char);
+        decision_f = decision_function(test_chs[i], bias, lambdas, tags, learn_chs, learn_dims, kernel_char, pw_center, pw_width);
         if (decision_f * correct_sign > 0) correct++;
         fprintf(f, "%.15e\n", decision_f);
         printf("progress: %5.2f%%\r", (double)(i+1)/(double)n_test_chs * 100.);
@@ -573,16 +608,20 @@ Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *lea
     return (Int2){ .x = correct, .y = n_test_chs - correct };
 }
 
-ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Chain* learn_chains, int* learn_tags, int n_learn, double* lambdas, char kernel_char, int target_class) {
+ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Chain* learn_chains, int* learn_tags, int n_learn, double* lambdas, char kernel_char, int target_class, double pw_center, double pw_width) {
     printf("starting evaluation...\n");
     ConfusionMatrix cm = {0, 0, 0, 0};
-    double bias = compute_bias(lambdas, learn_tags, learn_chains, n_learn, kernel_char);
+    double bias = compute_bias(lambdas, learn_tags, learn_chains, n_learn, kernel_char, pw_center, pw_width);
     
     char time_str[80];
     time_t now = time(NULL);
     strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H:%M:%S", localtime(&now));
     char run_dir[MAX_STR_LEN];
-    sprintf(run_dir, "results/svm/decision-function-tests/kernel-%c/%s", kernel_char, time_str);
+    if (kernel_char == 'w') {
+        sprintf(run_dir, "results/svm/decision-function-tests/kernel-%c_C-%.2lf_W-%.2lf/%s", kernel_char, pw_center, pw_width, time_str);
+    } else {
+        sprintf(run_dir, "results/svm/decision-function-tests/kernel-%c/%s", kernel_char, time_str);
+    }
     mkdir_p(run_dir);
     printf("directory '%s' created!\n", time_str);
 
@@ -592,7 +631,7 @@ ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Cha
     FILE *f = get_file(filename, "w");
     
     for (int i = 0; i < n_eval; i++) {
-        double dec = decision_function(eval_chains[i], bias, lambdas, learn_tags, learn_chains, n_learn, kernel_char);
+        double dec = decision_function(eval_chains[i], bias, lambdas, learn_tags, learn_chains, n_learn, kernel_char, pw_center, pw_width);
         int predicted = (dec > 0) ? 1 : -1;
         fprintf(f, "%d\t%.15e\t%.15e\n", eval_tags[i], dec, dec*eval_tags[i]);
         
@@ -608,4 +647,37 @@ ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Cha
     }
     printf("set evaluation complete!\n\n");
     return cm;
+}
+
+void tot_gram_matrix(char kernel_char, double pw_center, double pw_width) {
+    Chain *learn_chs;
+    int *learn_tags;
+    
+    int n_learn = load_labeled_dataset("seqs/learn.txt", &learn_chs, &learn_tags);
+
+    if (n_learn == 0) {
+        fprintf(stderr, "failed to read datasets\n");
+    }
+
+    double **gram_learn = malloc(n_learn * sizeof(double*));
+    for (int i = 0; i < n_learn; i++) gram_learn[i] = malloc(n_learn * sizeof(double));
+
+    char matrix_filename[MAX_STR_LEN];
+    if (kernel_char == 'w') {
+        sprintf(matrix_filename, "results/svm/gram/gram_%c_C-%.2lf_W-%.2lf.txt", kernel_char, pw_center, pw_width);
+    } else {
+        sprintf(matrix_filename, "results/svm/gram/gram_%c.txt", kernel_char);
+    }
+    FILE *file_check = fopen(matrix_filename, "r");
+    if (file_check) {
+        fclose(file_check);
+        get_matrix_from_file(matrix_filename, n_learn, gram_learn);
+    } else {
+        svm_gram_matrix(learn_chs, n_learn, gram_learn, kernel_char, pw_center, pw_width);
+        print_matrix_to_file(gram_learn, n_learn, matrix_filename);
+    }
+
+    free(learn_chs); free(learn_tags);
+    for (int i = 0; i < N_DATA_POINTS; i++) free(gram_learn[i]);
+    free(gram_learn);
 }

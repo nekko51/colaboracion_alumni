@@ -59,6 +59,8 @@ extern int CHAR_TO_INT_LUT[256];
 #define SVM_KERNEL_LAG_SIG 0.
 #define SVM_KERNEL_LAG 0.
 #define SVM_KERNEL_POW 1
+#define SVM_PW_KERNEL_LOW .2
+#define SVM_PW_KERNEL_HIGH .8
 
 /*Metropolis parameters*/
 extern double AA_MUTATION_PENALTY;
@@ -240,12 +242,15 @@ void first_order_correlations(Chain* input_chains, int n_chains, Chain out_aacid
 
 //svm.c
 double svm_energy(double **gram_matrix, int *signs, double *lambda, int dim);
-void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char);
-double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char);
-double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char);
+void svm_gram_matrix(Chain *chains, int n_chains, double **out, char kernel_char, double pw_center, double pw_width);
+double compute_bias(double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char, double pw_center, double pw_width);
+double decision_function(Chain x_input, double bias, double *lambda, int *signs, Chain *chains, int n_chains, char kernel_char, double pw_center, double pw_width);
 void svm_initialize_lambdas(double *lambdas, int *signs, int dim, double C_limit);
 double svm_initial_beta(double *initial_lambdas, double eps, int iterations, double **gram_matrix, int *signs, int dim, double C_limit);
 void svm_annealing(double **gram_matrix, int *signs, int dimension, double epsilon, double *lambdas, double *betas, int n_betas, int iterations_per_beta, int print_to_file, double C_limit, int run_id, char kernel_char);
 void get_best_lambdas_from_csv(double* best_lambdas, int n_data_points);
-Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign);
-ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Chain* learn_chains, int* learn_tags, int n_learn, double* lambdas, char kernel_char, int target_class);
+Int2 test_results_to_file(int learn_dims, double *lambdas, int *tags, Chain *learn_chs, Chain *test_chs, int n_test_chs, char kernel_char, int correct_sign, double pw_center, double pw_width);
+ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Chain* learn_chains, int* learn_tags, int n_learn, double* lambdas, char kernel_char, int target_class, double pw_center, double pw_width);
+void tot_gram_matrix(char kernel_char, double pw_center, double pw_width);
+
+//cart.c
