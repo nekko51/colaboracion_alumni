@@ -1,4 +1,7 @@
-\subsection*{Support Vector Machine formula deduction}
+\phantomsection
+\subsection*{SVM formula deduction}
+\addcontentsline{toc}{subsection}{SVM formula deduction}
+\label{sec:svm_formula}
 
 We have a cloud of points in a higher-dimensional space and we want a plane that separates the ones marked human and the one marked murine\futnotetext\footnotetext{Those are what we call tags: $+1$ for human and $-1$ for murine chains.}. But we do not only want \emph{one} that does that, we need the plane that does that the best: that is the one that maximizes the distance to the closest points.
 
@@ -10,7 +13,7 @@ Our solution will have the form:
 \end{equation*}
 where $\bm w$ is the vector perpendicular to the solution plane, $\bm X$ is a variable-coordinate vector and $b$ is a real number we will call bias.
 
-Since the norm of $\bm w$ is arbitrary, we can set $\left\| \bm w \right\|=  1/d$. Thus, any of our data points inputted in the funtion $\bm{x}\mapsto \left|   \bm w^T \bm{x}+b\right|  $ will give an output greater or equal to $1$ (the nearest ones will give 1, otherwise strictly grater than 1).\futnotetext\footnotetext{Notice that $\bm x$ and $\textbf x$ are different, in fact, $\bm x_i$ is the data point $\textbf{x}_i $ in the transformed space ($\varphi(\textbf{x}_i)=\bm x_i$, being $\varphi$ the transformation of our space such that $\varphi(\textbf{x}_i)\cdot\varphi(\textbf{x}_j)=\bm x_i^T\bm x_j=\operatorname k(\textbf x_i,\textbf x_j)$).}
+Since the norm of $\bm w$ is arbitrary, we can set $\left\| \bm w \right\|=  1/d$. Thus, any of our data points inputted in the function $\bm{x}\mapsto \left|   \bm w^T \bm{x}+b\right|  $ will give an output greater or equal to $1$ (the nearest ones will give 1, otherwise strictly greater than 1).\futnotetext\footnotetext{Notice that $\bm x$ and $\textbf x$ are different, in fact, $\bm x_i$ is the data point $\textbf{x}_i $ in the transformed space ($\varphi(\textbf{x}_i)=\bm x_i$, being $\varphi$ the transformation of our space such that $\varphi(\textbf{x}_i)\cdot\varphi(\textbf{x}_j)=\bm x_i^T\bm x_j=\operatorname k(\textbf x_i,\textbf x_j)$).}
 
 Furthermore, we know whether the result will be negative and then inverted by the absolute value. The ones such that \(\bm w^T \bm{x}_i+b\le -1\) will have also the negative tag: $s_i=-1$. Thus, $$\left(   \bm w^T \bm{x}_i+b\right)s_i \ge 1\ \forall i\in\{1,\dots,n\}.$$
 
@@ -73,3 +76,16 @@ expanding $\bm w$:
 \begin{equation*}
     b=s_p-\sum_{i=1}^n \lambda_i s_i \operatorname k(\textbf x_i, \textbf x_p)
 \end{equation*}
+
+
+
+\phantomsection
+\subsection*{SVM kernel function comparison}
+\addcontentsline{toc}{subsection}{SVM kernel function comparison}
+\label{sec:svm_comparison}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.9\textwidth]{images/kernel_functions.pdf}
+\end{figure}
+

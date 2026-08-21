@@ -15,7 +15,7 @@ $$I(X;X)=\sum_{x\in\mathcal X}P\big(\{X=x\}\big)\log_2 \frac{P\big(\{X=x\}\big)}
 P\big(\{X=x\}\big)\big)^2}=-\sum_{x\in\mathcal X}P\big(\{X=x\}\big)\log_2P\big(\{X=x\}\big)=S(X),$$
 where $S(X)$ is the entropy of the random variable $X$.
 
-In practice, we will get a $298\times298$ symmetric matrix for aminoacids ($v$-part of the chain) whose diagonal is the entropies of every position. However, for our correlation indeces we would rather have all 1's in the diagonal and the other elements going from 0 to 1. We normalize it as follows:
+In practice, we will get a $298\times298$ symmetric matrix for amino acids ($v$-part of the chain) whose diagonal is the entropies of every position. However, for our correlation indices we would rather have all 1's in the diagonal and the other elements going from 0 to 1. We normalize it as follows:
 $$
 i(X;Y) = \frac{I(X;Y)}{\min\{S(X),S(Y)\}}.
 $$

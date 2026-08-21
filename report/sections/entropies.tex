@@ -1,8 +1,8 @@
 \subsection{Entropies}
 
-We quantify the variability of the aminoacids in a Schrödinger's chain with entropies, applying its expression to both vectors of every aminoacid in that chain. This means the result will be a 298 element list of pairs of entropies.
+We quantify the variability of the amino acids in a Schrödinger's chain with entropies, applying its expression to both vectors of every amino acid in that chain. This means the result will be a 298 element list of pairs of entropies.
 
-The compute them as follows:
+To compute them as follows:
 $$
 S_{v,j}=-\sum_{i=1}^{21}v^i_j\log_2 v^i_j,\quad S_{w,j}=-\sum_{i=1}^{9} w^i_j\log_2w^i_j,\quad S_j=\big(S_{v,j},S_{w,j}\big)\quad \forall j\in[1,298]\subset\mathbb N
 $$

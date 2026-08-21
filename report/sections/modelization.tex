@@ -1,33 +1,33 @@
 \section{Representation and modelization of data}
 
-\subsection{Aminoacids and properties}
-Every aminoacid will be simulated/coded as a 21-dimensional vector of real numbers between 0 and 1 yuxtaposed to a 9-dimensional vector of real numbers between 1 and 0. 
-That is, some aminoacid in our aminoacid space, $a\in\mathcal A$, will be $a=v \times w\in[0,1]^{21}\times[0,1]^{9}=\mathcal A\subset \mathbb R^{21}\times\mathbb R^{9}$.
+\subsection{amino acids and properties}
+Every amino acid will be simulated/coded as a 21-dimensional vector of real numbers between 0 and 1 juxtaposed to a 9-dimensional vector of real numbers between 1 and 0. 
+That is, some amino acid in our amino acid space, $a\in\mathcal A$, will be $a=v \times w\in[0,1]^{21}\times[0,1]^{9}=\mathcal A\subset \mathbb R^{21}\times\mathbb R^{9}$.
 
 \begin{itemize}
-    \item The first list will be a 21-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th aminoacid from the aforementioned aminoacid string.
+    \item The first list will be a 21-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th amino acid from the aforementioned amino acid string.
     \item The second list will be a 9-dimensional vector, whose $i$-th component corresponds to the frequency of the $i$-th property from the aforementioned property list.
 \end{itemize}
 
-As you can see, these variables are context-dependent, since there is no reference for the frequency of aminoacids or properties. Therefore, if it is one that represents an actual aminoacid, all frequencies may be 0 but one of them, which should be 1. Same will happen for the property vector. We will call this a \textit{concrete aminoacid}.
+As you can see, these variables are context-dependent, since there is no reference for the frequency of amino acids or properties. Therefore, if it is one that represents an actual amino acid, all frequencies may be 0 but one of them, which should be 1. Same will happen for the property vector. We will call this a \textit{concrete amino acid}.
 
-\paragraph{Example:} Let's encode the aminoacid cysteine (\code{\textcolor{green!70!black}{C}}). It is the third in the aminoacid list, thus, the first vector should be $v = (0,0,1,0,...,0)$. Cysteine is hydrophobic and small, then: $w= (0,1,0,0,0,1,0,0,0)$, since hydrophobic is in the 2nd position and small in the 6th.
+\paragraph{Example:} Let's encode the amino acid cysteine (\code{\textcolor{green!70!black}{C}}). It is the third in the amino acid list, thus, the first vector should be $v = (0,0,1,0,...,0)$. Cysteine is hydrophobic and small, then: $w= (0,1,0,0,0,1,0,0,0)$, since hydrophobic is in the 2nd position and small in the 6th.
 
-Now changing the context, another setting we will be using is the so called \textit{Schrödinger's aminoacid}. That will be the average aminoacid, whose elements in both vectors will be *separately* the frequencies of every appearing aminoacid.
+Now changing the context, another setting we will be using is the so called \textit{Schrödinger's amino acid}. That will be the average amino acid, whose elements in both vectors will be *separately* the frequencies of every appearing amino acid.
 
 *Separately* means that the sum of the components of the first list is 1 and the sum of the components of the second list will also be 1.\futnotetext
-\footnotetext{This is true for every kind of aminoacid, whether it is concrete or Schrödinger's.} More specifically: $\sum_{i=1}^{21} v^i = 1\ \wedge\ \sum_{i=1}^{9}w^i=1 $.\futnotetext\footnotetext{Using superindexes for convenience.}
+\footnotetext{This is true for every kind of amino acid, whether it is concrete or Schrödinger's.} More specifically: $\sum_{i=1}^{21} v^i = 1\ \wedge\ \sum_{i=1}^{9}w^i=1 $.\futnotetext\footnotetext{Using superscript for convenience.}
 
-The norm of an aminoacid, $a=v\times w\in\mathcal A$, is defined as:
+The norm of an amino acid, $a=v\times w\in\mathcal A$, is defined as:
 \begin{equation*}
     \left\| a \right\| = \sqrt{\sum_{i=1}^{21} (v^i)^2} 
 \end{equation*}
-When treating with concrete aminoacids, we know that \(\left\| a \right\| = 1\), since only one of the components can be 1.
+When treating with concrete amino acids, we know that \(\left\| a \right\| = 1\), since only one of the components can be 1.
 
 
 \subsection{Chains}
 
-A chain is an array of 298 aminoacids and it represents a whole antibody. Just as before, we will have concrete (all components must be concrete aminoacids) and Schrödinger's chains (the rest).
+A chain is an array of 298 amino acids and it represents a whole antibody. Just as before, we will have concrete (all components must be concrete amino acids) and Schrödinger's chains (the rest).
 
 This is a $298 \times (21 + 9)$ matrix of split row conditioned frequencies. We will name the space of all possible chains the chain space, $\mathcal C=\mathcal A^{298}$. Thus, $c\in \mathcal C$ will have the form $c=(c_1,...,c_j,...,c_{298})$, where $c_j=v_j\times w_j$ and $v_j=(v_j^1,...,v_j^i,...,v_j^{21}),\ \forall j\in[1,298]\subset\mathbb N$.
 

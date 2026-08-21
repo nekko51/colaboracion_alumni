@@ -14,7 +14,7 @@ Our kernel, $\operatorname k:\mathcal C\times\mathcal C\to \mathbb R$,  will be 
 
 After applying the kernel we have a matrix $M\in\mathbb R^{n\times n}$, the Gram matrix, with the coordinates of our data points in the new space. That will be: $[M]_{i,j}=\operatorname k(\textbf{x}_i,\textbf{x}_j)$.
 
-We also have abailable some other alternative kernel functions:\futnotetext\footnotetext{These constants ($298$ and $596=2\cdot 298$) that are scattered around the functions seem to be arbitrary, but the written functions are already optimized for our use case: they are normalized and centered so that every output is positive and does not surpass 1.}
+We also have available some other alternative kernel functions:\futnotetext\footnotetext{These constants ($298$ and $596=2\cdot 298$) that are scattered around the functions seem to be arbitrary, but the written functions are already optimized for our use case: they are normalized and centered so that every output is positive and does not surpass 1.}
 
 \begin{multicols}{2}
 \begin{itemize}
@@ -54,7 +54,7 @@ The Gram matrix and the kernel are the tools we need in order to craft the decis
 
 \subsection{Decision function}
 
-Using the lagrange multipliers method for minimization\futnotetext\footnotetext{See apendices for full explaination.}, we get the decision function, $f:\mathcal C\to\mathbb R$:
+Using the lagrange multipliers method for minimization\futnotetext\footnotetext{\hyperref[sec:svm_formula]{See appendix for full derivation.}}, we get the decision function, $f:\mathcal C\to\mathbb R$:
 $$
 f(\textbf x) = b + \sum_{i=1}^n\lambda_i s_i \operatorname k(\textbf x_i,\textbf x),
 $$
@@ -152,7 +152,7 @@ The following histogram shows the distribution of the sign-corrected certainty d
 
 \newpage
 \subsection{Cross-validation}
-And with every kernel we presented, we obtain similar reults:
+And with every kernel we presented, we obtain similar results:
 
 \begin{figure}[H]
     \centering
@@ -181,7 +181,11 @@ But that is not quite what we are looking for. In fact, they can look similar in
 % \end{figure}
 
 
-We can infere how to evaluate a mixture of the five tests using how they are correlated to eachother. If there is a high correlation index between two tests (like the Gaussian and Cauchy kernels), then we know they are similar and it will not make a difference to ignore one of the two. However, if there is a low correlation index, most likely, we will see that the datapoints one of the tests get wrong the other one will get right and vice-versa.
+We can infer how to evaluate a mixture of the five tests using how they are correlated to each other. If there is a high correlation index between two tests (like the Gaussian and Cauchy kernels), then we know they are similar and it will not make a difference to ignore one of the two. However, if there is a low correlation index, most likely, we will see that the datapoints one of the tests get wrong the other one will get right and vice-versa.\futnotetext\footnotetext{Hopefully}
+
+\newpage
+Here we have the correlation matrix:\futnotetext
+\footnotetext{The correlations were expected, to a certain level, because of how similar the functions used as kernel are to eachother. \hyperref[sec:svm_comparison]{See appendix for detail.}}
 
 
 % \begin{table}[H]
