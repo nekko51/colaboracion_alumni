@@ -15,6 +15,7 @@ set(COMMON_SOURCES
     c-code/random.c
     c-code/svm.c
     c-code/utils.c
+    c-code/logreg.c
 )
 
 add_executable(main_svm c-code/main-svm.c ${COMMON_SOURCES})

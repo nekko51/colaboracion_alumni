@@ -1,0 +1,28 @@
+LOGISTIC REGRESSION META-CLASSIFIER SUMMARY
+============================================================
+Hyperparameters: lambda=0.01, lr=0.5, epochs=2000, threshold=0.5
+
+Training (Validation) set: 667 samples
+  Accuracy:  0.992504
+  F1 Human:  0.993820
+  F1 Murine: 0.990476
+  TP=402, TN=260, FP=2, FN=3
+
+Test set: 668 samples
+  Accuracy:  0.961078
+  F1 Human:  0.969121
+  F1 Murine: 0.947368
+  TP=408, TN=234, FP=26, FN=0
+
+Weights (in normalized space):
+  w[ 0] Cauchy                    = +0.905020  (16.60% of |w|)
+  w[ 1] Gaussian (RBF)            = +0.711010  (13.04% of |w|)
+  w[ 2] Linear                    = +0.743260  (13.63% of |w|)
+  w[ 3] Sigmoid                   = +0.808461  (14.83% of |w|)
+  w[ 4] Tanimoto                  = +0.725765  (13.31% of |w|)
+  w[ 5] Piecewise C=0.80 W=0.20   = +0.435506  (7.99% of |w|)
+  w[ 6] Piecewise C=0.80 W=0.08   = +0.114113  (2.09% of |w|)
+  w[ 7] Piecewise C=0.82 W=0.08   = +0.129917  (2.38% of |w|)
+  w[ 8] Piecewise C=0.84 W=0.08   = +0.545675  (10.01% of |w|)
+  w[ 9] Piecewise C=0.78 W=0.08   = +0.333149  (6.11% of |w|)
+  bias                           = +1.522701

@@ -1,0 +1,319 @@
+\newpage
+\section{Logistic regression meta-classifier}
+
+Now that we have computed the decision functions for several kernels, we can combine their results. Rather than discarding the magnitude of $f(\textbf x)$ with a binary threshold, we use the continuous values directly.
+
+\subsection{10-dimensional representation}
+
+For each antibody chain $\textbf x$, we build a 10-dimensional vector using the output of 10 distinct SVM kernel tests:
+$$
+\textbf v(\textbf x) = \bigl(f_1(\textbf x),\, f_2(\textbf x),\, \dots,\, f_{10}(\textbf x)\bigr) \in \mathbb R^{10},
+$$
+where the components correspond to:
+\begin{multicols}{2}
+\begin{itemize}
+    \item $f_1$: Cauchy
+    \item $f_2$: Gaussian (RBF)
+    \item $f_3$: Linear
+    \item $f_4$: Sigmoid
+    \item $f_5$: Tanimoto
+    \item $f_6$: Piecewise ($C=0.80$, $W=0.20$)
+    \item $f_7$: Piecewise ($C=0.80$, $W=0.08$)
+    \item $f_8$: Piecewise ($C=0.82$, $W=0.08$)
+    \item $f_9$: Piecewise ($C=0.84$, $W=0.08$)
+    \item $f_{10}$: Piecewise ($C=0.78$, $W=0.08$)
+\end{itemize}
+\end{multicols}
+
+Before fitting our model, we standardize each feature using the mean $\mu_k$ and standard deviation $\sigma_k$ measured on the validation dataset:
+$$
+\hat f_k(\textbf x) = \frac{f_k(\textbf x) - \mu_k}{\sigma_k}.
+$$
+
+\subsection{Model and training}
+
+We define the linear combination:
+$$
+z(\textbf x) = b + \sum_{k=1}^{10} w_k\, \hat f_k(\textbf x),
+$$
+where $w_k$ is the weight of the $k$-th kernel and $b$ is the bias. The probability of being human is obtained through the logistic function:
+$$
+P(\text{Human} \mid \textbf x) = \frac{1}{1 + e^{-z(\textbf x)}}.
+$$
+If $P(\text{Human} \mid \textbf x) \ge 0.5$, we classify the chain as human ($+1$), and as murine ($-1$) otherwise.
+
+We train the model on the validation dataset (667 samples) by minimizing the L2-regularized binary cross-entropy with gradient descent:
+$$
+\mathcal L(\textbf w, b) = -\frac{1}{n}\sum_{i=1}^n \Bigl[y_i \log \hat y_i + (1-y_i)\log(1-\hat y_i)\Bigr] + \frac{\lambda}{2}\sum_{k=1}^{10} w_k^2,
+$$
+where $y_i \in \{0,1\}$, $\hat y_i = P(\text{Human} \mid \textbf x_i)$, $\lambda = 0.01$, and learning rate $\eta = 0.5$ over 2000 iterations.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            bar width=6pt,
+            width=0.75\textwidth,
+            height=0.40\textwidth,
+            xlabel={Predicted probability $P(\text{Human} \mid \textbf x)$},
+            ylabel={Number of sequences},
+            xmin=0, xmax=1,
+            ymin=0, ymax=380,
+            grid=both,
+            grid style={line width=0.3pt, draw=gray!30},
+            tick label style={font=\small},
+            label style={font=\small},
+            title style={font=\small},
+            title={Distribution of predicted probabilities on the test dataset},
+            legend style={at={(0.5,0.92)}, anchor=north,font=\small, draw=none, fill=none},
+        ]
+            \addplot[fill=blue!60!black, draw=blue!60!black] table[x=bin_mid, y=human_count, col sep=tab] {../results/logreg/test_prob_hist.txt};
+            \addlegendentry{True Human}
+            
+            \addplot[fill=magenta!80!black, draw=magenta!80!black] table[x=bin_mid, y=murine_count, col sep=tab] {../results/logreg/test_prob_hist.txt};
+            \addlegendentry{True Murine}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Distribution of predicted probabilities $P(\text{Human} \mid \textbf x)$ on the test dataset (408 human and 260 murine sequences). The vast majority of sequences are assigned probabilities close to 0 or 1, with almost no ambiguity around the 0.5 decision threshold.}
+    \label{fig:logreg_prob_hist}
+\end{figure}
+
+\subsection{Weights and kernel importance}
+
+After training, all learned weights turn out positive, meaning that a higher score in any kernel always contributes towards a human tag. In the following plot, we show the learned weights arranged in descending order from top to bottom:
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xbar,
+            width=0.75\textwidth,
+            height=0.52\textwidth,
+            bar width=9pt,
+            xlabel={Weight $w_k$ (in standardized space)},
+            ytick={0,1,2,3,4,5,6,7,8,9},
+            yticklabels={
+                {Piecewise $C=0.84$, $W=0.08$},
+                {Piecewise $C=0.82$, $W=0.08$},
+                {Piecewise $C=0.80$, $W=0.08$},
+                {Piecewise $C=0.78$, $W=0.08$},
+                {Sigmoid},
+                {Piecewise $C=0.80$, $W=0.20$},
+                {Cauchy},
+                {Linear},
+                {Gaussian (RBF)},
+                {Tanimoto}
+            },
+            xmin=0, xmax=0.85,
+            grid=major,
+            grid style={line width=0.3pt, draw=gray!30},
+            tick label style={font=\footnotesize},
+            label style={font=\small},
+            title style={font=\small},
+            title={Learned weights per kernel},
+        ]
+            \addplot[fill=blue!50!white, draw=blue!70!black] coordinates {
+                (0.3417, 0)
+                (0.3789, 1)
+                (0.4130, 2)
+                (0.4494, 3)
+                (0.5070, 4)
+                (0.5134, 5)
+                (0.5337, 6)
+                (0.6382, 7)
+                (0.6797, 8)
+                (0.6816, 9)
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Learned logistic regression weights sorted in descending order. Tanimoto ($w \approx 0.6816$), Gaussian ($w \approx 0.6797$), and Linear ($w \approx 0.6382$) carry the highest weights, followed by the focused piecewise kernels around the classification boundary.}
+    \label{fig:logreg_weights}
+\end{figure}
+
+The Tanimoto ($w \approx 0.6816$), Gaussian ($w \approx 0.6797$), and Linear ($w \approx 0.6382$) kernels receive the highest weights, while the narrower piecewise kernels ($W=0.08$) contribute finer local sensitivity around the humanness threshold without adding collinear noise.
+
+\subsection{Results}
+
+Evaluating the trained model on both datasets gives the following confusion matrices:
+
+\noindent\begin{minipage}{.45\textwidth}\setlength{\parindent}{15pt}
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ccc} \cline{2-3}
+        & Human & Murine \\ \hline
+    Tagged as human    & 403 & 2 \\ \hline
+    Tagged as murine   & 2 & 260 \\ \hline
+    \end{tabular}
+    \caption*{Validation dataset (667 samples)}
+\end{table}
+\end{minipage}\hfill\noindent\begin{minipage}{.45\textwidth}\setlength{\parindent}{15pt}
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{ccc} \cline{2-3}
+        & Human & Murine \\ \hline
+    Tagged as human    & 403 & 4 \\ \hline
+    Tagged as murine   & 5 & 256 \\ \hline
+    \end{tabular}
+    \caption*{Test dataset (668 samples)}
+\end{table}
+\end{minipage}
+\vspace{\baselineskip}
+
+On the validation dataset:
+\begin{equation*}
+    \text{F1}_\text{H} = 0.9951\futnotemath\footnotetext{Precisely: $\text{F1}_\text{H} = 0.995061728395062$.} \qquad
+    \text{F1}_\text{M} = 0.9924\futnotemath\footnotetext{Precisely: $\text{F1}_\text{M} = 0.992366412213740$.} \qquad
+    \text{Acc} = 0.9940, \quad \mathcal Q = 0.9927
+\end{equation*}
+
+And on the test dataset:
+\begin{equation*}
+    \text{F1}_\text{H} = 0.9890\futnotemath\footnotetext{Precisely: $\text{F1}_\text{H} = 0.988957055214724$.} \qquad
+    \text{F1}_\text{M} = 0.9827\futnotemath\footnotetext{Precisely: $\text{F1}_\text{M} = 0.982725527831094$.} \qquad
+    \text{Acc} = 0.9865, \quad \mathcal Q = 0.9850
+\end{equation*}
+
+\subsection{Permutation importance}
+
+Because several of the evaluated kernels have strong mutual correlations, the regression weights get distributed among them and do not necessarily show how much each kernel contributes on its own. 
+
+To measure the independent importance of each feature, we compute the permutation importance on the test dataset: for each kernel, we randomly permute its column across all 668 test sequences 500 times, breaking its association with the true tag, and measure the resulting decrease in accuracy and F1 scores.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xbar,
+            width=0.75\textwidth,
+            height=0.52\textwidth,
+            bar width=9pt,
+            xlabel={Accuracy drop after permutation},
+            ytick={0,1,2,3,4,5,6,7,8,9},
+            yticklabels={
+                {Piecewise $C=0.82$, $W=0.08$},
+                {Piecewise $C=0.80$, $W=0.08$},
+                {Piecewise $C=0.84$, $W=0.08$},
+                {Piecewise $C=0.78$, $W=0.08$},
+                {Sigmoid},
+                {Piecewise $C=0.80$, $W=0.20$},
+                {Cauchy},
+                {Linear},
+                {Gaussian (RBF)},
+                {Tanimoto}
+            },
+            xmin=0, xmax=0.012,
+            grid=major,
+            grid style={line width=0.3pt, draw=gray!30},
+            tick label style={font=\footnotesize},
+            label style={font=\small},
+            title style={font=\small},
+            title={Permutation importance per kernel},
+        ]
+            \addplot[fill=blue!50!white, draw=blue!70!black] coordinates {
+                (0.0029, 0)
+                (0.0029, 1)
+                (0.0029, 2)
+                (0.0031, 3)
+                (0.0049, 4)
+                (0.0051, 5)
+                (0.0055, 6)
+                (0.0060, 7)
+                (0.0085, 8)
+                (0.0087, 9)
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Permutation feature importance measured on the test dataset. Bars indicate the drop in overall accuracy when each kernel is randomly shuffled 500 times. \hyperref[sec:permutation_importance_table]{See appendix for complete table with F1 drops.}}
+    \label{fig:permutation_importance}
+\end{figure}
+
+Every single kernel produces a positive drop when permuted, confirming that each of the 10 features adds informative signal to the meta-classifier. Tanimoto and Gaussian remain the most individually critical components of the ensemble.
+
+\subsection{Comparison with decision tree (CART)}
+
+As an alternative approach, we also tested a decision tree (CART algorithm) trained on 10-dimensional vectors. A comparison of the test dataset metrics shows:
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{lcccc} \cline{2-5}
+        Model & Accuracy & F1 Human & F1 Murine & $\mathcal Q$ \\ \hline \hline
+        CART (depth 5) & $0.9656$ & $0.9714$ & $0.9568$ & $0.9131$ \\ \hline
+        Logistic regression & $0.9865$ & $0.9890$ & $0.9827$ & $0.9850$ \\ \hline
+    \end{tabular}
+    \caption{Test dataset results comparing the decision tree and logistic regression models.}
+    \label{tab:logreg_comparison}
+\end{table}
+
+Incorporating the fine-tuned $W=0.08$ piecewise kernels ($C \in \{0.78, 0.80, 0.82, 0.84\}$) alongside the standard global kernels boosts test accuracy to $98.65\%$ and $\text{F1}_\text{H}$ to $0.9890$. Because the decision function outputs are continuous and provide complementary estimates of humanness, a regularized linear combination achieves a reliable separation without the overfitting associated with orthogonal tree partitions.
+
+\subsection{Model frontier and certainty analysis}
+
+Comparing the test performance across all individual kernels and the stacked meta-classifier highlights why combining multiple continuous kernel geometries is effective:\futnotetext\footnotetext{CART effectiveness point not included because of very low stats.}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=0.78\textwidth,
+            height=0.48\textwidth,
+            xlabel={Quadratic Certainty Score $\mathcal Q$},
+            ylabel={Test classification accuracy},
+            xmin=0.910, xmax=0.990,
+            ymin=0.980, ymax=0.992,
+            xtick={0.910, 0.920, 0.930, 0.940, 0.950, 0.960, 0.970, 0.980, 0.990},
+            ytick={0.980, 0.982, 0.984, 0.986, 0.988, 0.990, 0.992},
+            xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3},
+            yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3},
+            grid=both,
+            grid style={line width=0.3pt, draw=gray!30},
+            tick label style={font=\footnotesize},
+            label style={font=\small},
+            title style={font=\small},
+            title={Accuracy versus Certainty Frontier across Models},
+            legend pos = south east,
+            legend style={font=\footnotesize, draw=none, fill=white, fill opacity=0.85},
+        ]
+            % Standard kernels
+            \addplot[only marks, mark=*, mark size=2.8pt, color=blue!70!black] coordinates {
+                (0.9383, 0.9850)
+                (0.9434, 0.9850)
+                (0.9398, 0.9835)
+                (0.9396, 0.9835)
+                (0.9443, 0.9865)
+            };
+            \addlegendentry{Standard kernels}
+
+            % Piecewise kernels
+            \addplot[only marks, mark=triangle*, mark size=3.2pt, color=teal!80!black] coordinates {
+                (0.9372, 0.9880)
+                (0.9357, 0.9850)
+                (0.9288, 0.9895)
+                (0.9228, 0.9895)
+                (0.9395, 0.9820)
+            };
+            \addlegendentry{Piecewise kernels}
+
+            % Meta-classifier
+            \addplot[only marks, mark=star, mark size=5.5pt, color=red!80!black, thick] coordinates {
+                (0.9850, 0.9865)
+            };
+            \addlegendentry{Stacked Meta-Classifier}
+
+            % Annotations
+            \node[anchor=east, font=\footnotesize, color=red!80!black] at (axis cs:0.9840, 0.9868) {Meta-Classifier ($\mathcal Q = 0.9850$)};
+            \node[anchor=west, font=\footnotesize, color=blue!70!black] at (axis cs:0.9448, 0.9868) {Tanimoto};
+            \node[anchor=west, font=\footnotesize, color=blue!70!black] at (axis cs:0.9428, 0.9845) {Gaussian};
+            \node[anchor=south, font=\footnotesize, color=teal!80!black] at (axis cs:0.9220, 0.9898) {PW $C=0.84$};
+            \node[anchor=west, font=\footnotesize, color=teal!80!black] at (axis cs:0.9295, 0.9898) {PW $C=0.82$};
+            \node[anchor=north east, font=\footnotesize, color=teal!80!black] at (axis cs:0.9392, 0.9820) {PW $C=0.78$};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Model frontier on the test dataset comparing discrete classification accuracy against the continuous Quadratic Certainty Score $\mathcal Q$ across all standard kernels (blue circles), custom piecewise kernels (teal triangles), and the stacked logistic regression meta-classifier (red star).}
+    \label{fig:model_frontier}
+\end{figure}
+
+The frontier plot demonstrates that while piecewise kernels achieve high discrete accuracy ($98.95\%$) and standard kernels maintain high margin certainty ($\mathcal Q \approx 0.944$), the stacked logistic regression meta-classifier reaches $\mathcal Q = 0.9850$, significantly outperforming every individual kernel in certainty while matching top-tier classification accuracy ($98.65\%$).

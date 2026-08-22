@@ -261,6 +261,65 @@ def aggregate_decision_function_tests():
     write_aggregated_file(output_validation_path, validation_tags, validation_results)
     write_aggregated_file(output_test_path, test_tags, test_results)
 
+
+def calculate_quadratic_certainty(filepath):
+    """
+    Calculates the normalized Quadratic Certainty Score (Brier-based accuracy)
+    from a 'test-results.txt' file, measuring both correctness and margin confidence.
+    
+    Metric formulation:
+      B = 1 - (1/n) * sum_{i=1}^n (1 - sigma(s_i * f(x_i)))^2
+    
+    Returns a dictionary with accuracy, F1 scores, and quadratic certainty in [0, 1].
+    """
+    import math
+    total = 0
+    sq_err_sum = 0.0
+    correct = 0
+    tp = fp = fn = tn = 0
+
+    with open(filepath, 'r') as f:
+        for line in f:
+            if not line.strip() or line.startswith('#'):
+                continue
+            parts = line.strip().split('\t')
+            tag = int(parts[0])
+            if len(parts) >= 3:
+                cert = float(parts[2]) # s * f
+            elif len(parts) == 2:
+                cert = tag * float(parts[1])
+            else:
+                continue
+
+            # Sigmoid probability of the ground-truth class
+            prob_true = 1.0 / (1.0 + math.exp(-min(max(cert, -500), 500)))
+            sq_err_sum += (1.0 - prob_true) ** 2
+            total += 1
+
+            if cert > 0:
+                correct += 1
+                if tag == 1: tp += 1
+                else: tn += 1
+            else:
+                if tag == 1: fn += 1
+                else: fp += 1
+
+    brier_acc = 1.0 - (sq_err_sum / total) if total > 0 else 0.0
+    acc = correct / total if total > 0 else 0.0
+    f1_h = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else 0.0
+    f1_m = 2 * tn / (2 * tn + fp + fn) if (2 * tn + fp + fn) > 0 else 0.0
+
+    return {
+        'filepath': filepath,
+        'total': total,
+        'accuracy': acc,
+        'f1_human': f1_h,
+        'f1_murine': f1_m,
+        'quadratic_certainty': brier_acc,
+        'tp': tp, 'tn': tn, 'fp': fp, 'fn': fn
+    }
+
+
 if __name__ == "__main__":
     aggregate_svm_lambdas()
     aggregate_svm_summaries()

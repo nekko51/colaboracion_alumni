@@ -10,8 +10,6 @@
  * 'w' for piecewise function
  */
 #define ACTUAL_KERNEL 'w'
-#define PW_CENTER .2
-#define PW_WIDTH .2
 
 double AA_MUTATION_PENALTY;
 double WEIGHT_LOG;
@@ -19,7 +17,7 @@ double WEIGHT_PROP;
 double WEIGHT_PENALTY;
 
 void initialize();
-void svm_initNgram(char kernel_char);
+void svm_initNgram(char kernel_char, double pw_center, double pw_width);
 void svm_initNannealing(double epsilon, int its_each_beta, int n_betas, int initial_beta_its, int print_svm_to_file, char kernel_char, double C_limit);
 void svm_many_tests(double *C_candidates, int num_C, int runs_per_C, int n_betas, int its_for_initial_beta, int its_per_beta_annealing, char actual_kernel, double pw_center, double pw_width);
 
@@ -30,12 +28,11 @@ int main() {
     int its_for_initial_beta = 10000;
     int its_per_beta_annealing = 10000;
     int n_betas = 50;
-    double center = .9;
-    double width = .2;
+    double center = .78;
+    double width = .08;
 
 
-        svm_many_tests(C_candidates, num_C, runs_per_C, n_betas, its_for_initial_beta, its_per_beta_annealing, 'w', center, width);
-
+    svm_many_tests(C_candidates, num_C, runs_per_C, n_betas, its_for_initial_beta, its_per_beta_annealing, 'w', center, width);
 
 
 }
@@ -49,7 +46,7 @@ void initialize() {
     initialize_char_to_int_LUT();
 }
 
-void svm_initNgram(char kernel_char) {
+void svm_initNgram(char kernel_char, double pw_center, double pw_width) {
     printf("\nstarting initialization...\n");
 
     initialize();
@@ -66,7 +63,7 @@ void svm_initNgram(char kernel_char) {
     append_file_to_chain_vector(SEQS FILE_L_MOUSE TXT, L_MOUSE_N_LINES, chs, L_HUMAN_N_LINES);
     printf("initialization complete!\n\n");
 
-    svm_gram_matrix(chs, N_DATA_POINTS, gram, kernel_char, PW_CENTER, PW_WIDTH);
+    svm_gram_matrix(chs, N_DATA_POINTS, gram, kernel_char, pw_center, pw_width);
     char result_gram[MAX_STR_LEN];
     switch (kernel_char) {
     case 's':   

@@ -1,0 +1,147 @@
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{groupplot}[
+            group style={
+                group size=5 by 5,
+                horizontal sep=4pt,
+                vertical sep=4pt,
+                ylabels at=edge left,
+                xlabels at=edge bottom,
+            },
+            width=2.45cm,
+            height=2.45cm,
+            scale only axis,
+            xtick={0, 1, 2},
+            ytick={0, 1, 2},
+            xmin=-0.5, xmax=3.0,
+            ymin=-0.5, ymax=3.0,
+            tick label style={font=\tiny},
+            grid=both,
+            grid style={line width=0.2pt, draw=gray!25},
+        ]
+        % Diagonal (Cauchy)
+        
+extgroupplot[title={ootnotesize Cauchy}, title style={yshift=-1.2ex}, yticklabels=\empty]
+            ddplot[fill=blue!40!white, draw=blue!70!black, ybar, bar width=1.5pt] table[x=bin_mid, y=Cauchy, col sep=tab] {../results/svm/plots/kernels_hist_comparison.txt};
+        % Scatter Cauchy (y) vs Gaussian (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=c, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=c, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Cauchy (y) vs Linear (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=c, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=c, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Cauchy (y) vs Sigmoid (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=c, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=c, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Cauchy (y) vs Tanimoto (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=c, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=c, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Gaussian (y) vs Cauchy (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=g, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=g, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Diagonal (Gaussian)
+        
+extgroupplot[title={ootnotesize Gaussian}, title style={yshift=-1.2ex}, yticklabels=\empty]
+            ddplot[fill=blue!40!white, draw=blue!70!black, ybar, bar width=1.5pt] table[x=bin_mid, y=Gaussian, col sep=tab] {../results/svm/plots/kernels_hist_comparison.txt};
+        % Scatter Gaussian (y) vs Linear (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=g, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=g, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Gaussian (y) vs Sigmoid (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=g, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=g, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Gaussian (y) vs Tanimoto (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=g, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=g, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Linear (y) vs Cauchy (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=l, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=l, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Linear (y) vs Gaussian (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=l, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=l, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Diagonal (Linear)
+        
+extgroupplot[title={ootnotesize Linear}, title style={yshift=-1.2ex}, yticklabels=\empty]
+            ddplot[fill=blue!40!white, draw=blue!70!black, ybar, bar width=1.5pt] table[x=bin_mid, y=Linear, col sep=tab] {../results/svm/plots/kernels_hist_comparison.txt};
+        % Scatter Linear (y) vs Sigmoid (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=l, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=l, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Linear (y) vs Tanimoto (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=l, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=l, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Sigmoid (y) vs Cauchy (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=s, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=s, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Sigmoid (y) vs Gaussian (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=s, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=s, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Sigmoid (y) vs Linear (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=s, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=s, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Diagonal (Sigmoid)
+        
+extgroupplot[title={ootnotesize Sigmoid}, title style={yshift=-1.2ex}, yticklabels=\empty]
+            ddplot[fill=blue!40!white, draw=blue!70!black, ybar, bar width=1.5pt] table[x=bin_mid, y=Sigmoid, col sep=tab] {../results/svm/plots/kernels_hist_comparison.txt};
+        % Scatter Sigmoid (y) vs Tanimoto (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=s, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=s, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Tanimoto (y) vs Cauchy (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=t, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=t, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Tanimoto (y) vs Gaussian (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=t, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=t, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Tanimoto (y) vs Linear (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=t, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=t, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Scatter Tanimoto (y) vs Sigmoid (x)
+            
+extgroupplot[xticklabels=\empty, yticklabels=\empty]
+                ddplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=t, col sep=tab] {../results/svm/plots/splom5_human.txt};
+                ddplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=t, col sep=tab] {../results/svm/plots/splom5_murine.txt};
+        % Diagonal (Tanimoto)
+        
+extgroupplot[title={ootnotesize Tanimoto}, title style={yshift=-1.2ex}, yticklabels=\empty]
+            ddplot[fill=blue!40!white, draw=blue!70!black, ybar, bar width=1.5pt] table[x=bin_mid, y=Tanimoto, col sep=tab] {../results/svm/plots/kernels_hist_comparison.txt};
+        \end{groupplot}
+    \end{tikzpicture}
+    \caption{Scatterplot matrix of sign-corrected certainty degrees for the five standard kernels: human datapoints in blue and murine in pink. Diagonal panels show the individual certainty distributions.}
+    \label{fig:splom5}
+\end{figure}

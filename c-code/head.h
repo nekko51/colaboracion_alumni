@@ -254,3 +254,48 @@ ConfusionMatrix evaluate_set(Chain* eval_chains, int* eval_tags, int n_eval, Cha
 void tot_gram_matrix(char kernel_char, double pw_center, double pw_width);
 
 //cart.c
+
+//logreg.c
+typedef struct {
+    double lambda;
+    double learning_rate;
+    int epochs;
+    double threshold;
+} LogregParams;
+
+typedef struct {
+    double weights[64];
+    double bias;
+    double feature_mean[64];
+    double feature_std[64];
+    int n_features;
+    LogregParams params;
+} LogregModel;
+
+typedef struct {
+    double features[64];
+    int label;
+    int n_features;
+} LogregSample;
+
+typedef struct {
+    LogregSample *samples;
+    int n_samples;
+    int n_features;
+} LogregDataset;
+
+LogregParams logreg_default_params(void);
+LogregModel* logreg_fit(const LogregDataset *dataset, const LogregParams *params, double *out_loss_history, int *out_n_history);
+int logreg_predict(const LogregModel *model, const double *raw_features);
+double logreg_predict_prob(const LogregModel *model, const double *raw_features);
+ConfusionMatrix logreg_evaluate(const LogregModel *model, const LogregDataset *dataset, int target_class);
+void logreg_print_metrics(const LogregModel *model, const LogregDataset *dataset, const char *name);
+void logreg_print_weights(const LogregModel *model, const char **feature_names);
+int logreg_load_dataset(const char *filepath, LogregDataset *out, int n_features);
+void logreg_free_dataset(LogregDataset *dataset);
+int logreg_save_model(const LogregModel *model, const char *filepath);
+LogregModel* logreg_load_model(const char *filepath);
+void logreg_free_model(LogregModel *model);
+void logreg_save_scores(const LogregModel *model, const LogregDataset *dataset, const char *filepath);
+void logreg_save_loss_curve(const double *loss_history, int n, const char *filepath);
+void logreg_train_and_test(const char *val_file, const char *test_file, const LogregParams *params);
