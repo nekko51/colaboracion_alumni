@@ -252,7 +252,7 @@ And with every standard kernel we presented, we obtain similar results:
             \addlegendentry{Sigmoid}
         \end{axis}
     \end{tikzpicture}
-    \caption{Density distributions of sign-corrected certainty degrees $s \cdot f(\textbf x)$ on the test dataset for distance-based kernels (left) and inner product-based kernels (right). Values greater than zero ($s \cdot f > 0$) are correct classifications, and values below zero ($s \cdot f < 0$) are errors.}
+    \caption{Density distributions of sign-corrected certainty degrees on the test dataset for distance-based kernels (left) and inner product-based kernels (right). Positive values correspond to correct classifications, and negative values to errors.}
     \label{fig:family_histograms}
 \end{figure}
 
@@ -266,7 +266,7 @@ Here we have the correlation matrix for the five standard kernels:\futnotetext
 
 \input{sections/correlation_matrix.tex}
 
-As we can see from both the scatterplot matrix and the correlation heatmap, the five standard kernels are very correlated ($r > 0.96$ for all pairs, and $r \approx 0.998$ between Linear and Sigmoid). Because these functions are smooth across the whole range $[0, 1]$, they apply a uniform scale and do not focus on the narrow similarity interval where antibodies switch from murine to human.
+As we can see from both the scatterplot matrix and the correlation table, the five standard kernels are very correlated ($r > 0.96$ for all pairs, and $r \approx 0.998$ between Linear and Sigmoid). Because these functions are smooth across the whole range $[0, 1]$, they apply a uniform scale and do not focus on the narrow similarity interval where antibodies switch from murine to human.
 
 \newpage
 \subsection{Custom piecewise kernels}
