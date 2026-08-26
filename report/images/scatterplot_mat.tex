@@ -1,0 +1,140 @@
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=.8]
+        \begin{groupplot}[
+            group style={
+                group size=5 by 5,
+                horizontal sep=3pt,
+                vertical sep=3pt,
+            },
+            width=2.8cm,
+            height=2.1cm,
+            scale only axis,
+            xtick={-2, 0, 2},
+            ytick={-2, 0, 2},
+            xmin=-2.6, xmax=2.6,
+            ymin=-2.6, ymax=2.6,
+            tick label style={font=\tiny},
+            label style={font=\footnotesize},
+            grid=both,
+            grid style={line width=0.2pt, draw=gray!25},
+        ]
+        % --- Row 1: Cauchy (y) ---
+        % Diagonal (1,1): Cauchy
+        \nextgroupplot[ylabel={Cauchy}, xticklabels=\empty]
+            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
+            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=c_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{c_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+        % (1,2)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (1,3)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (1,4)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (1,5)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+
+        % --- Row 2: Gaussian (y) ---
+        % (2,1)
+        \nextgroupplot[ylabel={Gaussian}, xticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % Diagonal (2,2): Gaussian
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
+            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=g_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{g_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+        % (2,3)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (2,4)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (2,5)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+
+        % --- Row 3: Linear (y) ---
+        % (3,1)
+        \nextgroupplot[ylabel={Linear}, xticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (3,2)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % Diagonal (3,3): Linear
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
+            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=l_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{l_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+        % (3,4)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (3,5)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+
+        % --- Row 4: Sigmoid (y) ---
+        % (4,1)
+        \nextgroupplot[ylabel={Sigmoid}, xticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (4,2)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (4,3)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % Diagonal (4,4): Sigmoid
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
+            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=s_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{s_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+        % (4,5)
+        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+
+        % --- Row 5: Tanimoto (y) & all x-axis labels ---
+        % (5,1)
+        \nextgroupplot[ylabel={Tanimoto}, xlabel={Cauchy}]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (5,2)
+        \nextgroupplot[yticklabels=\empty, xlabel={Gaussian}]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (5,3)
+        \nextgroupplot[yticklabels=\empty, xlabel={Linear}]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % (5,4)
+        \nextgroupplot[yticklabels=\empty, xlabel={Sigmoid}]
+            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
+            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+        % Diagonal (5,5): Tanimoto
+        \nextgroupplot[yticklabels=\empty, xlabel={Tanimoto}]
+            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
+            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=t_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{t_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
+        \end{groupplot}
+    \end{tikzpicture}
+    \caption{Scatterplot matrix of raw decision function outputs $f(\textbf x)$ for the five standard kernels. Off-diagonal panels show pairwise scatter distributions (human in blue, murine in pink). Diagonal panels display mirrored bilateral density estimates, with human density plotted upward ($y \ge 0$) and murine density mirrored downward ($y \le 0$) to eliminate visual occlusion and maintain uniform axis scaling across the matrix.}
+    \label{fig:splom5}
+\end{figure}

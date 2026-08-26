@@ -1,0 +1,80 @@
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[c]{0.6\textwidth}
+    \small
+    \begin{equation*}
+    \operatorname k(\textbf x_i, \textbf x_j) = \begin{cases}
+        \dfrac{L}{C - \frac{W}{2}}\, x, & x < C - \dfrac{W}{2} \\[14pt]
+        \dfrac{H - L}{W}\!\left(x - C + \dfrac{W}{2}\right)\! + L, & \left|x - C\right| \le \dfrac{W}{2} \\[14pt]
+        \dfrac{1 - H}{1 - C - \frac{W}{2}}\!\left(x - C - \dfrac{W}{2}\right)\! + H, & x > C + \dfrac{W}{2}
+    \end{cases}
+    \end{equation*}
+    \vspace{4pt}
+    \centering
+    \footnotesize where $x = \frac{\langle \textbf x_i \mid \textbf x_j \rangle}{298} \in [0, 1]$, with baseline levels $L = 0.2$ and $H = 0.8$.
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.35\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=1.05, >=Stealth, font=\footnotesize]
+        \def\xlen{3.80}
+        \def\ylen{2.80}
+        \def\xleft{2.00}
+        \def\xright{3.00}
+        \def\yL{0.56}
+        \def\yH{2.24}
+
+        % Shaded transition band
+        \fill[teal!14, opacity=0.9] (\xleft, 0) rectangle (\xright, \ylen);
+        \fill[blue!5, opacity=0.5] (0, 0) rectangle (\xleft, \yL);
+        \fill[blue!5, opacity=0.5] (\xright, \yH) rectangle (\xlen, \ylen);
+
+        % Grid/axes
+        \draw[->, thick, gray!70] (-0.1, 0) -- (\xlen + 0.5, 0) node[right, black, font=\footnotesize] {$x$};
+        \draw[->, thick, gray!70] (0, -0.1) -- (0, \ylen + 0.45) node[above, black, font=\footnotesize] {$k(x)$};
+
+        % Dashed guide lines to axes
+        \draw[dashed, gray!50, line width=0.4pt] (\xleft, 0) -- (\xleft, \yL) -- (0, \yL);
+        \draw[dashed, gray!50, line width=0.4pt] (\xright, 0) -- (\xright, \yH) -- (0, \yH);
+        \draw[dashed, gray!40, line width=0.4pt] (\xlen, 0) -- (\xlen, \ylen) -- (0, \ylen);
+
+        % The Piecewise curve
+        \draw[line width=1.4pt, blue!75!black] (0, 0) -- (\xleft, \yL);
+        \draw[line width=2.4pt, teal!85!black] (\xleft, \yL) -- (\xright, \yH);
+        \draw[line width=1.4pt, blue!75!black] (\xright, \yH) -- (\xlen, \ylen);
+
+        % Breakpoints
+        \fill[blue!75!black] (0, 0) circle (1.6pt);
+        \fill[teal!85!black] (\xleft, \yL) circle (2.0pt);
+        \fill[teal!85!black] (\xright, \yH) circle (2.0pt);
+        \fill[blue!75!black] (\xlen, \ylen) circle (1.6pt);
+
+        % Ticks on x axis
+        \node[below, font=\scriptsize] at (0, -0.05) {$0$};
+        \node[below, font=\scriptsize, align=center] at (\xleft - 0.05, -0.05) {$C \!-\! \frac{W}{2}$};
+        \node[below, font=\scriptsize, align=center] at (\xright + 0.05, -0.05) {$C \!+\! \frac{W}{2}$};
+        \node[below, font=\scriptsize] at (\xlen, -0.05) {$1$};
+
+        % Ticks on y axis
+        \node[left, font=\scriptsize] at (-0.05, 0) {$0$};
+        \node[left, font=\scriptsize] at (-0.05, \yL) {$L$};
+        \node[left, font=\scriptsize] at (-0.05, \yH) {$H$};
+        \node[left, font=\scriptsize] at (-0.05, \ylen) {$1$};
+
+        % Top Width indicator
+        \draw[<->, thick, teal!90!black] (\xleft, \ylen + 0.15) -- (\xright, \ylen + 0.15) node[midway, above, font=\scriptsize] {$W$};
+
+        % Callout annotations
+        \node[font=\scriptsize, align=center, text=teal!90!black] (ramp_txt) at (1.8, 1.6) {Transition\\ramp};
+        % \draw[->, line width=0.5pt, teal!90!black] (ramp_txt.east) to[out=0, in=145] (2.40, 1.40);
+
+        \node[font=\tiny, align=center, text=blue!85!black] at (1, 0.70) {Noise suppression};
+        % \draw[->, line width=0.4pt, blue!75!black] (1.00, 0.70) -- (1.00, 0.35);
+
+        \node[font=\tiny, align=center, text=blue!85!black] at (3.6, 2.0) {Saturation};
+        % \draw[->, line width=0.4pt, blue!75!black] (3.35, 1.80) -- (3.35, 2.45);
+
+    \end{tikzpicture}
+    \end{minipage}
+    \caption{Mathematical definition and schematic mapping of the custom piecewise linear kernel. A narrow transition band of width $W$ centered at $C$ magnifies subtle sequence differences near the decision threshold ($\Delta k = \frac{H-L}{W}\Delta x \gg \Delta x$), while dissimilar ($x < C - W/2$) and highly similar ($x > C + W/2$) sequence pairs are compressed into muted baseline regions.}
+    \label{fig:piecewise_mapping}
+\end{figure}

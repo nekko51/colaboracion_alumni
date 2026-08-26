@@ -66,7 +66,7 @@ where the $p$-th data point is a support one, that is, the closest to the plane 
 \newpage
 \section{SVM results}
 
-Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} chain sets for learning and testing, we get outstandingly good results. In the next histogram, we show the distribution of the sign-flipped output of the decision function, that is, positive when correct and negative when failed tagging:
+Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} sets for training and testing, we get the following results. In this histogram, we show the distribution of the sign-corrected certainty degree (positive when correct and negative when failed tagging):
 
 \begin{figure}[H]
     \centering
@@ -86,7 +86,7 @@ Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, an
             label style={font=\small},
             title style={font=\small},
             title={Distribution of certainty degree on the initial test set ($n=2767$)},
-            legend style={at={(0.05,0.92)}, anchor=north west, font=\small, draw=none, fill=none},
+            legend style={at={(0.95,0.92)}, anchor=north east, font=\small, draw=none, fill=none},
         ]
             \addplot[fill=blue!50!white, draw=blue!70!black] table[x=bin_mid, y=total_count, col sep=tab] {../results/svm/plots/good_rbf_hist.txt};
             \addlegendentry{All chains}
@@ -184,7 +184,7 @@ The following histogram shows the distribution of the sign-corrected certainty d
             label style={font=\small},
             title style={font=\small},
             title={Distribution of certainty degree on the self-split test dataset ($n=668$)},
-            legend style={at={(0.05,0.92)}, anchor=north west, font=\small, draw=none, fill=none},
+            legend style={at={(0.95,0.92)}, anchor=north east, font=\small, draw=none, fill=none},
         ]
             \addplot[fill=blue!50!white, draw=blue!70!black] table[x=bin_mid, y=total_count, col sep=tab] {../results/svm/plots/test_rbf_hist.txt};
             \addlegendentry{All chains ($n=668$)}
@@ -206,10 +206,10 @@ And with every standard kernel we presented, we obtain similar results:
         \begin{axis}[
             width=0.48\textwidth,
             height=0.3\textwidth,
-            xlabel={Decision function output $f(\textbf x)$},
+            xlabel={Sign-corrected certainty degree $s \cdot f(\textbf x)$},
             ylabel={Density},
-            xmin=-2.5, xmax=2.5,
-            ymin=0, ymax=1.05,
+            xmin=-0.8, xmax=2.8,
+            ymin=0, ymax=1.55,
             grid=both,
             grid style={line width=0.3pt, draw=gray!30},
             tick label style={font=\footnotesize},
@@ -218,16 +218,14 @@ And with every standard kernel we presented, we obtain similar results:
             title={Distance-based kernels},
             legend style={at={(0.05,0.95)}, anchor=north west, font=\footnotesize, draw=none, fill=none},
         ]
-            \addplot[color=green!60!black, thick, smooth] table[x=x, y=Gaussian, col sep=tab] {../results/svm/plots/density_families_raw.txt};
+            \addplot[color=green!60!black, thick, smooth] table[x=x, y=Gaussian, col sep=tab] {../results/svm/plots/density_families.txt};
             \addlegendentry{Gaussian}
 
-            \addplot[color=blue!70!black, thick, smooth] table[x=x, y=Cauchy, col sep=tab] {../results/svm/plots/density_families_raw.txt};
+            \addplot[color=blue!70!black, thick, smooth] table[x=x, y=Cauchy, col sep=tab] {../results/svm/plots/density_families.txt};
             \addlegendentry{Cauchy}
 
-            \addplot[color=orange!80!black, thick, smooth] table[x=x, y=Tanimoto, col sep=tab] {../results/svm/plots/density_families_raw.txt};
+            \addplot[color=orange!80!black, thick, smooth] table[x=x, y=Tanimoto, col sep=tab] {../results/svm/plots/density_families.txt};
             \addlegendentry{Tanimoto}
-
-            \draw[red!80!black, thick, dashed] (axis cs:0, 0) -- (axis cs:0, 1.0);
         \end{axis}
     \end{tikzpicture}
     \hfill
@@ -235,10 +233,10 @@ And with every standard kernel we presented, we obtain similar results:
         \begin{axis}[
             width=0.48\textwidth,
             height=0.3\textwidth,
-            xlabel={Decision function output $f(\textbf x)$},
+            xlabel={Sign-corrected certainty degree $s \cdot f(\textbf x)$},
             ylabel={Density},
-            xmin=-2.5, xmax=2.5,
-            ymin=0, ymax=1.15,
+            xmin=-0.8, xmax=2.8,
+            ymin=0, ymax=1.55,
             grid=both,
             grid style={line width=0.3pt, draw=gray!30},
             tick label style={font=\footnotesize},
@@ -247,477 +245,49 @@ And with every standard kernel we presented, we obtain similar results:
             title={Inner product-based kernels},
             legend style={at={(0.05,0.95)}, anchor=north west, font=\footnotesize, draw=none, fill=none},
         ]
-            \addplot[color=teal!80!black, thick, smooth] table[x=x, y=Linear, col sep=tab] {../results/svm/plots/density_families_raw.txt};
+            \addplot[color=teal!80!black, thick, smooth] table[x=x, y=Linear, col sep=tab] {../results/svm/plots/density_families.txt};
             \addlegendentry{Linear}
 
-            \addplot[color=purple!80!black, thick, smooth] table[x=x, y=Sigmoid, col sep=tab] {../results/svm/plots/density_families_raw.txt};
+            \addplot[color=purple!80!black, thick, smooth] table[x=x, y=Sigmoid, col sep=tab] {../results/svm/plots/density_families.txt};
             \addlegendentry{Sigmoid}
-
-            \draw[red!80!black, thick, dashed] (axis cs:0, 0) -- (axis cs:0, 1.10);
         \end{axis}
     \end{tikzpicture}
-    \caption{Empirical bimodal density distributions of raw decision function outputs $f(\textbf x)$ on the test dataset split by kernel mathematical formulation: distance-based kernels (left) and inner product-based kernels (right). Murine sequences populate the left mode ($f < 0$) and human sequences the right mode ($f > 0$).}
+    \caption{Density distributions of sign-corrected certainty degrees $s \cdot f(\textbf x)$ on the test dataset for distance-based kernels (left) and inner product-based kernels (right). Values greater than zero ($s \cdot f > 0$) are correct classifications, and values below zero ($s \cdot f < 0$) are errors.}
     \label{fig:family_histograms}
 \end{figure}
 
-To inspect how their predictions relate to each other, we plot the full scatterplot matrix of raw decision function outputs $f(\textbf x)$ in Figure \ref{fig:splom5}.
+To see how their predictions relate to each other, we plot the scatterplot matrix of decision function outputs $f(\textbf x)$ in Figure \ref{fig:splom5}.
 
-\begin{figure}[H]
-    \centering
-    \begin{tikzpicture}[scale=.8]
-        \begin{groupplot}[
-            group style={
-                group size=5 by 5,
-                horizontal sep=3pt,
-                vertical sep=3pt,
-            },
-            width=2.8cm,
-            height=2.1cm,
-            scale only axis,
-            xtick={-2, 0, 2},
-            ytick={-2, 0, 2},
-            xmin=-2.6, xmax=2.6,
-            ymin=-2.6, ymax=2.6,
-            tick label style={font=\tiny},
-            label style={font=\footnotesize},
-            grid=both,
-            grid style={line width=0.2pt, draw=gray!25},
-        ]
-        % --- Row 1: Cauchy (y) ---
-        % Diagonal (1,1): Cauchy
-        \nextgroupplot[ylabel={Cauchy}, xticklabels=\empty]
-            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
-            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=c_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{c_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-        % (1,2)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (1,3)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (1,4)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (1,5)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=c, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=c, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
+\input{images/scatterplot_mat.tex}
 
-        % --- Row 2: Gaussian (y) ---
-        % (2,1)
-        \nextgroupplot[ylabel={Gaussian}, xticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % Diagonal (2,2): Gaussian
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
-            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=g_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{g_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-        % (2,3)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (2,4)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (2,5)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=g, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=g, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-
-        % --- Row 3: Linear (y) ---
-        % (3,1)
-        \nextgroupplot[ylabel={Linear}, xticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (3,2)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % Diagonal (3,3): Linear
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
-            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=l_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{l_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-        % (3,4)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (3,5)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=l, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=l, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-
-        % --- Row 4: Sigmoid (y) ---
-        % (4,1)
-        \nextgroupplot[ylabel={Sigmoid}, xticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (4,2)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (4,3)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % Diagonal (4,4): Sigmoid
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
-            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=s_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{s_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-        % (4,5)
-        \nextgroupplot[xticklabels=\empty, yticklabels=\empty]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=t, y=s, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=t, y=s, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-
-        % --- Row 5: Tanimoto (y) & all x-axis labels ---
-        % (5,1)
-        \nextgroupplot[ylabel={Tanimoto}, xlabel={Cauchy}]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=c, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=c, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (5,2)
-        \nextgroupplot[yticklabels=\empty, xlabel={Gaussian}]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=g, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=g, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (5,3)
-        \nextgroupplot[yticklabels=\empty, xlabel={Linear}]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=l, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=l, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % (5,4)
-        \nextgroupplot[yticklabels=\empty, xlabel={Sigmoid}]
-            \addplot[only marks, mark=*, mark size=0.5pt, color=blue!60!black, opacity=0.45] table[x=s, y=t, col sep=tab] {../results/svm/plots/splom5_raw_human.txt};
-            \addplot[only marks, mark=*, mark size=0.5pt, color=magenta!80!black, opacity=0.45] table[x=s, y=t, col sep=tab] {../results/svm/plots/splom5_raw_murine.txt};
-        % Diagonal (5,5): Tanimoto
-        \nextgroupplot[yticklabels=\empty, xlabel={Tanimoto}]
-            \addplot[gray!40, thin] coordinates {(-2.5, 0) (2.5, 0)};
-            \addplot[color=blue!70!black, fill=blue!20!white, fill opacity=0.35, thick] table[x=x, y=t_h, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-            \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{t_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
-        \end{groupplot}
-    \end{tikzpicture}
-    \caption{Scatterplot matrix of raw decision function outputs $f(\textbf x)$ for the five standard kernels. Off-diagonal panels show pairwise scatter distributions (human in blue, murine in pink). Diagonal panels display mirrored bilateral density estimates, with human density plotted upward ($y \ge 0$) and murine density mirrored downward ($y \le 0$) to eliminate visual occlusion and maintain uniform axis scaling across the matrix.}
-    \label{fig:splom5}
-\end{figure}
-
-The off-diagonal panels display pairwise scatterplots between kernel outputs, separating human samples (blue) from murine samples (pink). On the diagonal, each kernel displays a mirrored bilateral density estimate: the human density distribution rises upward into the positive vertical half ($y \ge 0$), whereas the murine distribution is mirrored downward into the negative half ($y \le 0$). This back-to-back formulation eliminates visual occlusion between the two classes, associates class sign directly with vertical orientation, and maintains a uniform symmetric scale ($[-2.5, 2.5]$) across all twenty-five subplots in the matrix.
-
+\newpage
 Here we have the correlation matrix for the five standard kernels:\futnotetext
 \footnotetext{The correlations were expected, to a certain level, because of how similar the functions used as kernel are to each other. \hyperref[sec:svm_comparison]{See appendix for detail.}}
 
-\begin{figure}[H]
-    \centering
-    \begin{tikzpicture}[scale=0.92, every node/.style={transform shape}]
-        \fill[color={rgb,255:red,12;green,44;blue,128}] (-0.685, 3.365) rectangle (0.685, 4.235);
-        \node[text=white, font=\small] at (0.000, 3.800) {1.0000};
-        \fill[color={rgb,255:red,18;green,53;blue,136}] (0.765, 3.365) rectangle (2.135, 4.235);
-        \node[text=white, font=\small] at (1.450, 3.800) {0.9976};
-        \fill[color={rgb,255:red,65;green,127;blue,200}] (2.215, 3.365) rectangle (3.585, 4.235);
-        \node[text=white, font=\small] at (2.900, 3.800) {0.9799};
-        \fill[color={rgb,255:red,81;green,150;blue,218}] (3.665, 3.365) rectangle (5.035, 4.235);
-        \node[text=white, font=\small] at (4.350, 3.800) {0.9743};
-        \fill[color={rgb,255:red,19;green,56;blue,138}] (5.115, 3.365) rectangle (6.485, 4.235);
-        \node[text=white, font=\small] at (5.800, 3.800) {0.9970};
-        \fill[color={rgb,255:red,18;green,53;blue,136}] (-0.685, 2.415) rectangle (0.685, 3.285);
-        \node[text=white, font=\small] at (0.000, 2.850) {0.9976};
-        \fill[color={rgb,255:red,12;green,44;blue,128}] (0.765, 2.415) rectangle (2.135, 3.285);
-        \node[text=white, font=\small] at (1.450, 2.850) {1.0000};
-        \fill[color={rgb,255:red,91;green,156;blue,221}] (2.215, 2.415) rectangle (3.585, 3.285);
-        \node[text=white, font=\small] at (2.900, 2.850) {0.9727};
-        \fill[color={rgb,255:red,121;green,176;blue,228}] (3.665, 2.415) rectangle (5.035, 3.285);
-        \node[text=black, font=\small] at (4.350, 2.850) {0.9675};
-        \fill[color={rgb,255:red,22;green,59;blue,141}] (5.115, 2.415) rectangle (6.485, 3.285);
-        \node[text=white, font=\small] at (5.800, 2.850) {0.9962};
-        \fill[color={rgb,255:red,65;green,127;blue,200}] (-0.685, 1.465) rectangle (0.685, 2.335);
-        \node[text=white, font=\small] at (0.000, 1.900) {0.9799};
-        \fill[color={rgb,255:red,91;green,156;blue,221}] (0.765, 1.465) rectangle (2.135, 2.335);
-        \node[text=white, font=\small] at (1.450, 1.900) {0.9727};
-        \fill[color={rgb,255:red,12;green,44;blue,128}] (2.215, 1.465) rectangle (3.585, 2.335);
-        \node[text=white, font=\small] at (2.900, 1.900) {1.0000};
-        \fill[color={rgb,255:red,15;green,50;blue,133}] (3.665, 1.465) rectangle (5.035, 2.335);
-        \node[text=white, font=\small] at (4.350, 1.900) {0.9985};
-        \fill[color={rgb,255:red,72;green,138;blue,209}] (5.115, 1.465) rectangle (6.485, 2.335);
-        \node[text=white, font=\small] at (5.800, 1.900) {0.9773};
-        \fill[color={rgb,255:red,81;green,150;blue,218}] (-0.685, 0.515) rectangle (0.685, 1.385);
-        \node[text=white, font=\small] at (0.000, 0.950) {0.9743};
-        \fill[color={rgb,255:red,121;green,176;blue,228}] (0.765, 0.515) rectangle (2.135, 1.385);
-        \node[text=black, font=\small] at (1.450, 0.950) {0.9675};
-        \fill[color={rgb,255:red,15;green,50;blue,133}] (2.215, 0.515) rectangle (3.585, 1.385);
-        \node[text=white, font=\small] at (2.900, 0.950) {0.9985};
-        \fill[color={rgb,255:red,12;green,44;blue,128}] (3.665, 0.515) rectangle (5.035, 1.385);
-        \node[text=white, font=\small] at (4.350, 0.950) {1.0000};
-        \fill[color={rgb,255:red,97;green,160;blue,222}] (5.115, 0.515) rectangle (6.485, 1.385);
-        \node[text=black, font=\small] at (5.800, 0.950) {0.9717};
-        \fill[color={rgb,255:red,19;green,56;blue,138}] (-0.685, -0.435) rectangle (0.685, 0.435);
-        \node[text=white, font=\small] at (0.000, 0.000) {0.9970};
-        \fill[color={rgb,255:red,22;green,59;blue,141}] (0.765, -0.435) rectangle (2.135, 0.435);
-        \node[text=white, font=\small] at (1.450, 0.000) {0.9962};
-        \fill[color={rgb,255:red,72;green,138;blue,209}] (2.215, -0.435) rectangle (3.585, 0.435);
-        \node[text=white, font=\small] at (2.900, 0.000) {0.9773};
-        \fill[color={rgb,255:red,97;green,160;blue,222}] (3.665, -0.435) rectangle (5.035, 0.435);
-        \node[text=black, font=\small] at (4.350, 0.000) {0.9717};
-        \fill[color={rgb,255:red,12;green,44;blue,128}] (5.115, -0.435) rectangle (6.485, 0.435);
-        \node[text=white, font=\small] at (5.800, 0.000) {1.0000};
-        \node[anchor=east, font=\small] at (-0.905, 3.800) {Cauchy};
-        \node[anchor=east, font=\small] at (-0.905, 2.850) {Gaussian};
-        \node[anchor=east, font=\small] at (-0.905, 1.900) {Linear};
-        \node[anchor=east, font=\small] at (-0.905, 0.950) {Sigmoid};
-        \node[anchor=east, font=\small] at (-0.905, 0.000) {Tanimoto};
-        \node[anchor=south, font=\small] at (0.000, 4.425) {Cauchy};
-        \node[anchor=south, font=\small] at (1.450, 4.425) {Gaussian};
-        \node[anchor=south, font=\small] at (2.900, 4.425) {Linear};
-        \node[anchor=south, font=\small] at (4.350, 4.425) {Sigmoid};
-        \node[anchor=south, font=\small] at (5.800, 4.425) {Tanimoto};
-        \fill[color={rgb,255:red,223;green,240;blue,253}] (7.375, -0.475) rectangle (7.775, -0.416);
-        \fill[color={rgb,255:red,219;green,238;blue,252}] (7.375, -0.416) rectangle (7.775, -0.356);
-        \fill[color={rgb,255:red,215;green,236;blue,251}] (7.375, -0.356) rectangle (7.775, -0.297);
-        \fill[color={rgb,255:red,212;green,233;blue,250}] (7.375, -0.297) rectangle (7.775, -0.237);
-        \fill[color={rgb,255:red,208;green,231;blue,249}] (7.375, -0.237) rectangle (7.775, -0.178);
-        \fill[color={rgb,255:red,204;green,229;blue,249}] (7.375, -0.178) rectangle (7.775, -0.119);
-        \fill[color={rgb,255:red,201;green,226;blue,248}] (7.375, -0.119) rectangle (7.775, -0.059);
-        \fill[color={rgb,255:red,197;green,224;blue,247}] (7.375, -0.059) rectangle (7.775, 0.000);
-        \fill[color={rgb,255:red,193;green,222;blue,246}] (7.375, 0.000) rectangle (7.775, 0.059);
-        \fill[color={rgb,255:red,190;green,219;blue,245}] (7.375, 0.059) rectangle (7.775, 0.119);
-        \fill[color={rgb,255:red,186;green,217;blue,244}] (7.375, 0.119) rectangle (7.775, 0.178);
-        \fill[color={rgb,255:red,182;green,214;blue,243}] (7.375, 0.178) rectangle (7.775, 0.238);
-        \fill[color={rgb,255:red,179;green,212;blue,242}] (7.375, 0.238) rectangle (7.775, 0.297);
-        \fill[color={rgb,255:red,175;green,210;blue,241}] (7.375, 0.297) rectangle (7.775, 0.356);
-        \fill[color={rgb,255:red,171;green,207;blue,240}] (7.375, 0.356) rectangle (7.775, 0.416);
-        \fill[color={rgb,255:red,168;green,205;blue,240}] (7.375, 0.416) rectangle (7.775, 0.475);
-        \fill[color={rgb,255:red,164;green,203;blue,239}] (7.375, 0.475) rectangle (7.775, 0.534);
-        \fill[color={rgb,255:red,160;green,200;blue,238}] (7.375, 0.534) rectangle (7.775, 0.594);
-        \fill[color={rgb,255:red,157;green,198;blue,237}] (7.375, 0.594) rectangle (7.775, 0.653);
-        \fill[color={rgb,255:red,153;green,196;blue,236}] (7.375, 0.653) rectangle (7.775, 0.713);
-        \fill[color={rgb,255:red,149;green,193;blue,235}] (7.375, 0.713) rectangle (7.775, 0.772);
-        \fill[color={rgb,255:red,145;green,191;blue,234}] (7.375, 0.772) rectangle (7.775, 0.831);
-        \fill[color={rgb,255:red,142;green,189;blue,233}] (7.375, 0.831) rectangle (7.775, 0.891);
-        \fill[color={rgb,255:red,138;green,186;blue,232}] (7.375, 0.891) rectangle (7.775, 0.950);
-        \fill[color={rgb,255:red,134;green,184;blue,231}] (7.375, 0.950) rectangle (7.775, 1.009);
-        \fill[color={rgb,255:red,131;green,182;blue,231}] (7.375, 1.009) rectangle (7.775, 1.069);
-        \fill[color={rgb,255:red,127;green,179;blue,230}] (7.375, 1.069) rectangle (7.775, 1.128);
-        \fill[color={rgb,255:red,123;green,177;blue,229}] (7.375, 1.128) rectangle (7.775, 1.188);
-        \fill[color={rgb,255:red,120;green,175;blue,228}] (7.375, 1.188) rectangle (7.775, 1.247);
-        \fill[color={rgb,255:red,116;green,172;blue,227}] (7.375, 1.247) rectangle (7.775, 1.306);
-        \fill[color={rgb,255:red,112;green,170;blue,226}] (7.375, 1.306) rectangle (7.775, 1.366);
-        \fill[color={rgb,255:red,109;green,167;blue,225}] (7.375, 1.366) rectangle (7.775, 1.425);
-        \fill[color={rgb,255:red,105;green,165;blue,224}] (7.375, 1.425) rectangle (7.775, 1.484);
-        \fill[color={rgb,255:red,101;green,163;blue,223}] (7.375, 1.484) rectangle (7.775, 1.544);
-        \fill[color={rgb,255:red,98;green,160;blue,222}] (7.375, 1.544) rectangle (7.775, 1.603);
-        \fill[color={rgb,255:red,94;green,158;blue,222}] (7.375, 1.603) rectangle (7.775, 1.663);
-        \fill[color={rgb,255:red,90;green,156;blue,221}] (7.375, 1.663) rectangle (7.775, 1.722);
-        \fill[color={rgb,255:red,87;green,153;blue,220}] (7.375, 1.722) rectangle (7.775, 1.781);
-        \fill[color={rgb,255:red,83;green,151;blue,219}] (7.375, 1.781) rectangle (7.775, 1.841);
-        \fill[color={rgb,255:red,79;green,149;blue,218}] (7.375, 1.841) rectangle (7.775, 1.900);
-        \fill[color={rgb,255:red,77;green,146;blue,216}] (7.375, 1.900) rectangle (7.775, 1.959);
-        \fill[color={rgb,255:red,75;green,144;blue,214}] (7.375, 1.959) rectangle (7.775, 2.019);
-        \fill[color={rgb,255:red,73;green,141;blue,212}] (7.375, 2.019) rectangle (7.775, 2.078);
-        \fill[color={rgb,255:red,72;green,138;blue,210}] (7.375, 2.078) rectangle (7.775, 2.138);
-        \fill[color={rgb,255:red,70;green,136;blue,207}] (7.375, 2.138) rectangle (7.775, 2.197);
-        \fill[color={rgb,255:red,68;green,133;blue,205}] (7.375, 2.197) rectangle (7.775, 2.256);
-        \fill[color={rgb,255:red,67;green,131;blue,203}] (7.375, 2.256) rectangle (7.775, 2.316);
-        \fill[color={rgb,255:red,65;green,128;blue,201}] (7.375, 2.316) rectangle (7.775, 2.375);
-        \fill[color={rgb,255:red,63;green,125;blue,198}] (7.375, 2.375) rectangle (7.775, 2.434);
-        \fill[color={rgb,255:red,62;green,123;blue,196}] (7.375, 2.434) rectangle (7.775, 2.494);
-        \fill[color={rgb,255:red,60;green,120;blue,194}] (7.375, 2.494) rectangle (7.775, 2.553);
-        \fill[color={rgb,255:red,59;green,118;blue,192}] (7.375, 2.553) rectangle (7.775, 2.612);
-        \fill[color={rgb,255:red,57;green,115;blue,189}] (7.375, 2.612) rectangle (7.775, 2.672);
-        \fill[color={rgb,255:red,55;green,112;blue,187}] (7.375, 2.672) rectangle (7.775, 2.731);
-        \fill[color={rgb,255:red,54;green,110;blue,185}] (7.375, 2.731) rectangle (7.775, 2.791);
-        \fill[color={rgb,255:red,52;green,107;blue,183}] (7.375, 2.791) rectangle (7.775, 2.850);
-        \fill[color={rgb,255:red,50;green,105;blue,180}] (7.375, 2.850) rectangle (7.775, 2.909);
-        \fill[color={rgb,255:red,49;green,102;blue,178}] (7.375, 2.909) rectangle (7.775, 2.969);
-        \fill[color={rgb,255:red,47;green,99;blue,176}] (7.375, 2.969) rectangle (7.775, 3.028);
-        \fill[color={rgb,255:red,45;green,97;blue,174}] (7.375, 3.028) rectangle (7.775, 3.087);
-        \fill[color={rgb,255:red,44;green,94;blue,171}] (7.375, 3.087) rectangle (7.775, 3.147);
-        \fill[color={rgb,255:red,42;green,92;blue,169}] (7.375, 3.147) rectangle (7.775, 3.206);
-        \fill[color={rgb,255:red,40;green,89;blue,167}] (7.375, 3.206) rectangle (7.775, 3.266);
-        \fill[color={rgb,255:red,39;green,86;blue,165}] (7.375, 3.266) rectangle (7.775, 3.325);
-        \fill[color={rgb,255:red,37;green,84;blue,162}] (7.375, 3.325) rectangle (7.775, 3.384);
-        \fill[color={rgb,255:red,35;green,81;blue,160}] (7.375, 3.384) rectangle (7.775, 3.444);
-        \fill[color={rgb,255:red,34;green,79;blue,158}] (7.375, 3.444) rectangle (7.775, 3.503);
-        \fill[color={rgb,255:red,32;green,76;blue,156}] (7.375, 3.503) rectangle (7.775, 3.562);
-        \fill[color={rgb,255:red,30;green,73;blue,153}] (7.375, 3.562) rectangle (7.775, 3.622);
-        \fill[color={rgb,255:red,29;green,71;blue,151}] (7.375, 3.622) rectangle (7.775, 3.681);
-        \fill[color={rgb,255:red,27;green,68;blue,149}] (7.375, 3.681) rectangle (7.775, 3.741);
-        \fill[color={rgb,255:red,26;green,66;blue,147}] (7.375, 3.741) rectangle (7.775, 3.800);
-        \fill[color={rgb,255:red,24;green,63;blue,144}] (7.375, 3.800) rectangle (7.775, 3.859);
-        \fill[color={rgb,255:red,22;green,60;blue,142}] (7.375, 3.859) rectangle (7.775, 3.919);
-        \fill[color={rgb,255:red,21;green,58;blue,140}] (7.375, 3.919) rectangle (7.775, 3.978);
-        \fill[color={rgb,255:red,19;green,55;blue,138}] (7.375, 3.978) rectangle (7.775, 4.038);
-        \fill[color={rgb,255:red,17;green,53;blue,135}] (7.375, 4.038) rectangle (7.775, 4.097);
-        \fill[color={rgb,255:red,16;green,50;blue,133}] (7.375, 4.097) rectangle (7.775, 4.156);
-        \fill[color={rgb,255:red,14;green,47;blue,131}] (7.375, 4.156) rectangle (7.775, 4.216);
-        \fill[color={rgb,255:red,12;green,45;blue,129}] (7.375, 4.216) rectangle (7.775, 4.275);
-        \draw[gray!70, line width=0.4pt] (7.375, -0.475) rectangle (7.775, 4.275);
-        \draw[gray!80, line width=0.4pt] (7.775, -0.475) -- (7.895, -0.475);
-        \node[anchor=west, font=\footnotesize] at (7.925, -0.475) {0.95};
-        \draw[gray!80, line width=0.4pt] (7.775, 0.475) -- (7.895, 0.475);
-        \node[anchor=west, font=\footnotesize] at (7.925, 0.475) {0.96};
-        \draw[gray!80, line width=0.4pt] (7.775, 1.425) -- (7.895, 1.425);
-        \node[anchor=west, font=\footnotesize] at (7.925, 1.425) {0.97};
-        \draw[gray!80, line width=0.4pt] (7.775, 2.375) -- (7.895, 2.375);
-        \node[anchor=west, font=\footnotesize] at (7.925, 2.375) {0.98};
-        \draw[gray!80, line width=0.4pt] (7.775, 3.325) -- (7.895, 3.325);
-        \node[anchor=west, font=\footnotesize] at (7.925, 3.325) {0.99};
-        \draw[gray!80, line width=0.4pt] (7.775, 4.275) -- (7.895, 4.275);
-        \node[anchor=west, font=\footnotesize] at (7.925, 4.275) {1.00};
-        \node[rotate=-90, anchor=south, font=\small] at (9.025, 1.900) {Pearson correlation $r$};
-    \end{tikzpicture}
-    \caption{Correlation heatmap across the raw decision function outputs $f(\textbf x)$ of the five standard kernels on the test dataset.}
-    \label{fig:correlations_standard}
-\end{figure}
+\input{sections/correlation_matrix.tex}
 
-As we can see from both the scatterplot matrix and the correlation heatmap, the five standard kernels exhibit strong collinearity within their respective families ($r > 0.96$ across all standard pairs, and $r \approx 0.998$ between Linear and Sigmoid). Because these functions are smooth and monotonic across the entire similarity range $[0, 1]$, they apply a uniform global scaling and cannot focus specifically on the narrow similarity window where antibodies transition between human and murine.
+As we can see from both the scatterplot matrix and the correlation heatmap, the five standard kernels are very correlated ($r > 0.96$ for all pairs, and $r \approx 0.998$ between Linear and Sigmoid). Because these functions are smooth across the whole range $[0, 1]$, they apply a uniform scale and do not focus on the narrow similarity interval where antibodies switch from murine to human.
 
 \newpage
 \subsection{Custom piecewise kernels}
-To address this limitation, we designed a custom piecewise linear kernel function that allows us to concentrate the gradient of the similarity metric in a customizable band of width $W$ centered at $C$:
+To focus on this boundary region, we define a piecewise linear kernel with a ramp of width $W$ centered at $C$:
 
-\begin{figure}[H]
-    \centering
-    \begin{minipage}[c]{0.6\textwidth}
-    \small
-    \begin{equation*}
-    \operatorname k(\textbf x_i, \textbf x_j) = \begin{cases}
-        \dfrac{L}{C - \frac{W}{2}}\, x, & x < C - \dfrac{W}{2} \\[14pt]
-        \dfrac{H - L}{W}\!\left(x - C + \dfrac{W}{2}\right)\! + L, & \left|x - C\right| \le \dfrac{W}{2} \\[14pt]
-        \dfrac{1 - H}{1 - C - \frac{W}{2}}\!\left(x - C - \dfrac{W}{2}\right)\! + H, & x > C + \dfrac{W}{2}
-    \end{cases}
-    \end{equation*}
-    \vspace{4pt}
-    \centering
-    \footnotesize where $x = \frac{\langle \textbf x_i \mid \textbf x_j \rangle}{298} \in [0, 1]$, with baseline levels $L = 0.2$ and $H = 0.8$.
-    \end{minipage}\hfill
-    \begin{minipage}[c]{0.35\textwidth}
-    \centering
-    \begin{tikzpicture}[scale=1.05, >=Stealth, font=\footnotesize]
-        \def\xlen{3.80}
-        \def\ylen{2.80}
-        \def\xleft{2.00}
-        \def\xright{3.00}
-        \def\yL{0.56}
-        \def\yH{2.24}
+\input{images/pieceuise.tex}
 
-        % Shaded transition band
-        \fill[teal!14, opacity=0.9] (\xleft, 0) rectangle (\xright, \ylen);
-        \fill[blue!5, opacity=0.5] (0, 0) rectangle (\xleft, \yL);
-        \fill[blue!5, opacity=0.5] (\xright, \yH) rectangle (\xlen, \ylen);
+By choosing a narrow width ($W = 0.08$) and placing the center $C$ in the transition region ($C \in \{0.78, 0.80, 0.82, 0.84\}$), small differences between sequences near the threshold produce large changes in the kernel, while sequences far from the boundary stay in constant regions.
 
-        % Grid/axes
-        \draw[->, thick, gray!70] (-0.1, 0) -- (\xlen + 0.5, 0) node[right, black, font=\footnotesize] {$x$};
-        \draw[->, thick, gray!70] (0, -0.1) -- (0, \ylen + 0.45) node[above, black, font=\footnotesize] {$k(x)$};
-
-        % Dashed guide lines to axes
-        \draw[dashed, gray!50, line width=0.4pt] (\xleft, 0) -- (\xleft, \yL) -- (0, \yL);
-        \draw[dashed, gray!50, line width=0.4pt] (\xright, 0) -- (\xright, \yH) -- (0, \yH);
-        \draw[dashed, gray!40, line width=0.4pt] (\xlen, 0) -- (\xlen, \ylen) -- (0, \ylen);
-
-        % The Piecewise curve
-        \draw[line width=1.4pt, blue!75!black] (0, 0) -- (\xleft, \yL);
-        \draw[line width=2.4pt, teal!85!black] (\xleft, \yL) -- (\xright, \yH);
-        \draw[line width=1.4pt, blue!75!black] (\xright, \yH) -- (\xlen, \ylen);
-
-        % Breakpoints
-        \fill[blue!75!black] (0, 0) circle (1.6pt);
-        \fill[teal!85!black] (\xleft, \yL) circle (2.0pt);
-        \fill[teal!85!black] (\xright, \yH) circle (2.0pt);
-        \fill[blue!75!black] (\xlen, \ylen) circle (1.6pt);
-
-        % Ticks on x axis
-        \node[below, font=\scriptsize] at (0, -0.05) {$0$};
-        \node[below, font=\scriptsize, align=center] at (\xleft - 0.05, -0.05) {$C \!-\! \frac{W}{2}$};
-        \node[below, font=\scriptsize, align=center] at (\xright + 0.05, -0.05) {$C \!+\! \frac{W}{2}$};
-        \node[below, font=\scriptsize] at (\xlen, -0.05) {$1$};
-
-        % Ticks on y axis
-        \node[left, font=\scriptsize] at (-0.05, 0) {$0$};
-        \node[left, font=\scriptsize] at (-0.05, \yL) {$L$};
-        \node[left, font=\scriptsize] at (-0.05, \yH) {$H$};
-        \node[left, font=\scriptsize] at (-0.05, \ylen) {$1$};
-
-        % Top Width indicator
-        \draw[<->, thick, teal!90!black] (\xleft, \ylen + 0.15) -- (\xright, \ylen + 0.15) node[midway, above, font=\scriptsize] {$W$};
-
-        % Callout annotations
-        \node[font=\scriptsize, align=center, text=teal!90!black] (ramp_txt) at (1.8, 1.6) {Transition\\ramp};
-        % \draw[->, line width=0.5pt, teal!90!black] (ramp_txt.east) to[out=0, in=145] (2.40, 1.40);
-
-        \node[font=\tiny, align=center, text=blue!85!black] at (1, 0.70) {Noise suppression};
-        % \draw[->, line width=0.4pt, blue!75!black] (1.00, 0.70) -- (1.00, 0.35);
-
-        \node[font=\tiny, align=center, text=blue!85!black] at (3.6, 2.0) {Saturation};
-        % \draw[->, line width=0.4pt, blue!75!black] (3.35, 1.80) -- (3.35, 2.45);
-
-    \end{tikzpicture}
-    \end{minipage}
-    \caption{Mathematical definition and schematic mapping of the custom piecewise linear kernel. A narrow transition band of width $W$ centered at $C$ magnifies subtle sequence differences near the decision threshold ($\Delta k = \frac{H-L}{W}\Delta x \gg \Delta x$), while dissimilar ($x < C - W/2$) and highly similar ($x > C + W/2$) sequence pairs are compressed into muted baseline regions.}
-    \label{fig:piecewise_mapping}
-\end{figure}
-
-By choosing a narrow width ($W = 0.08$) and positioning the center $C$ in the transition zone ($C \in \{0.78, 0.80, 0.82, 0.84\}$), the ramp acts as a localized magnifier. Sequences far from the boundary are mapped to constant baseline regions, while subtle sequence differences right near the threshold produce sharp changes in the kernel output.
-
-To jointly quantify both discrete classification correctness and continuous margin confidence in a normalized index between 0 and 1, we compute the Quadratic Certainty Score $\mathcal Q$:
-\begin{equation}
+To measure both classification accuracy and margin certainty in a single score between 0 and 1, we define the Quadratic Certainty Score $\mathcal Q$:
+\begin{equation*}
     \mathcal Q = 1 - \frac{1}{n}\sum_{i=1}^n \left(1 - \frac{1}{1 + e^{-s_i f(\textbf x_i)}}\right)^2 \in [0, 1]
-\end{equation}
-where $s_i \in \{-1, +1\}$ is the true tag and $f(\textbf x_i)$ is the decision function output. Decisive, correct predictions contribute close to $1.0$, predictions at the decision boundary contribute $0.75$, and confident misclassifications are penalized quadratically down to $0.0$.
+\end{equation*}
+where $s_i \in \{-1, +1\}$ is the true tag and $f(\textbf x_i)$ is the decision function output. Correct predictions with high margin give values close to $1.0$, predictions on the boundary give $0.75$, and wrong predictions with high margin give values close to $0.0$.
 
-Evaluating these custom kernels on the test dataset reveals strong individual performance (\hyperref[sec:piecewise_results_table]{see appendix for the detailed numerical table}):
+\newpage
+Evaluating these custom kernels on the test dataset gives the results shown in Figure \ref{fig:piecewise_metrics} (\hyperref[sec:piecewise_results_table]{see appendix for the full table}):
 
-\begin{figure}[H]
-    \centering
-    \begin{tikzpicture}
-        \begin{axis}[
-            width=0.75\textwidth,
-            height=0.46\textwidth,
-            xlabel={Quadratic Certainty Score $\mathcal Q$},
-            ylabel={Classification accuracy},
-            xmin=0.920, xmax=0.942,
-            ymin=0.980, ymax=0.992,
-            xtick={0.920, 0.925, 0.930, 0.935, 0.940},
-            ytick={0.980, 0.982, 0.984, 0.986, 0.988, 0.990, 0.992},
-            xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3},
-            yticklabel style={/pgf/number format/fixed, /pgf/number format/precision=3},
-            grid=both,
-            grid style={line width=0.3pt, draw=gray!30},
-            tick label style={font=\footnotesize},
-            label style={font=\small},
-            title style={font=\small},
-            title={Accuracy versus Certainty across Piecewise Kernels},
-            legend pos = south west,
-            legend style={font=\footnotesize, draw=none, fill=white, fill opacity=0.85},
-        ]
-            % W=0.08 points
-            \addplot[only marks, mark=triangle*, mark size=3.5pt, color=teal!80!black] coordinates {
-                (0.9395, 0.9820)
-                (0.9357, 0.9850)
-                (0.9288, 0.9895)
-                (0.9228, 0.9895)
-            };
-            \addlegendentry{Piecewise ($W=0.08$)}
+\input{images/metrix1.tex}
 
-            % W=0.20 point
-            \addplot[only marks, mark=square*, mark size=3.2pt, color=blue!70!black] coordinates {
-                (0.9372, 0.9880)
-            };
-            \addlegendentry{Piecewise ($W=0.20$)}
-
-            % Annotations
-            \node[anchor=north east, font=\footnotesize, color=blue!70!black] at (axis cs:0.9372, 0.9880) {$C=0.80$};
-            \node[anchor=south east, font=\footnotesize, color=teal!80!black] at (axis cs:0.9357, 0.9850) {$C=0.80$};
-            \node[anchor=north west, font=\footnotesize, color=teal!80!black] at (axis cs:0.9288, 0.9895) {$C=0.82$};
-            \node[anchor=north west, font=\footnotesize, color=teal!80!black] at (axis cs:0.9228, 0.9895) {$C=0.84$};
-            \node[anchor=south east, font=\footnotesize, color=teal!80!black] at (axis cs:0.9395, 0.9820) {$C=0.78$};
-        \end{axis}
-    \end{tikzpicture}
-    \caption{Scatterplot of classification accuracy versus Quadratic Certainty Score $\mathcal Q$ across the custom piecewise kernel configurations on the test dataset (\hyperref[sec:piecewise_results_table]{see appendix for complete table}).}
-    \label{fig:piecewise_metrics}
-\end{figure}
-
-The focused piecewise kernels with $C=0.82$ and $C=0.84$ achieve an individual $\text{F1}_\text{H}$ of $0.9915$ and $98.95\%$ accuracy, outperforming all classical kernels on their own.
+The piecewise kernels with $C=0.82$ and $C=0.84$ reach an $\text{F1}_\text{H}$ of $0.9915$ and $98.95\%$ accuracy, higher than any of the five standard kernels.
 
 \begin{figure}[H]
     \centering
@@ -725,8 +295,8 @@ The focused piecewise kernels with $C=0.82$ and $C=0.84$ achieve an individual $
         \begin{axis}[
             width=0.48\textwidth,
             height=0.42\textwidth,
-            xlabel={Gaussian ($s \cdot f_g$)},
-            ylabel={Piecewise $C=0.82$ ($s \cdot f_{pw}$)},
+            xlabel={Gaussian ($f_g$)},
+            ylabel={Piecewise $C=0.82$ ($f_{pw}$)},
             grid=both,
             grid style={line width=0.3pt, draw=gray!30},
             tick label style={font=\footnotesize},
@@ -747,8 +317,8 @@ The focused piecewise kernels with $C=0.82$ and $C=0.84$ achieve an individual $
         \begin{axis}[
             width=0.48\textwidth,
             height=0.42\textwidth,
-            xlabel={Piecewise $C=0.80$ ($s \cdot f_{80}$)},
-            ylabel={Piecewise $C=0.84$ ($s \cdot f_{84}$)},
+            xlabel={Piecewise $C=0.80$ ($f_{80}$)},
+            ylabel={Piecewise $C=0.84$ ($f_{84}$)},
             grid=both,
             grid style={line width=0.3pt, draw=gray!30},
             tick label style={font=\footnotesize},
@@ -764,8 +334,8 @@ The focused piecewise kernels with $C=0.82$ and $C=0.84$ achieve an individual $
             \addlegendentry{Murine}
         \end{axis}
     \end{tikzpicture}
-    \caption{Scatterplots of certainty degree for custom piecewise kernels compared against standard Gaussian (left) and between two fine-tuned piecewise centers (right).}
+    \caption{Scatterplots of decision output for custom piecewise kernels compared against standard Gaussian (left) and between two fine-tuned piecewise centers (right).}
     \label{fig:piecewise_scatter}
 \end{figure}
 
-Having both global topological kernels (Gaussian, Tanimoto, Cauchy, Linear, Sigmoid) and localized piecewise discriminators gives us 10 complementary models. In the next section, we train a logistic regression meta-classifier to learn the optimal weighted combination of all 10 kernel outputs.
+We now have 10 different kernel tests: 5 standard global kernels and 5 piecewise kernels. In the next section, we train a logistic regression model to find the best linear combination of all 10 kernel outputs.

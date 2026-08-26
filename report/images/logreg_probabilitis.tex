@@ -1,0 +1,30 @@
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            bar width=6pt,
+            width=0.75\textwidth,
+            height=0.40\textwidth,
+            xlabel={Predicted probability $P(\text{Human} \mid \textbf x)$},
+            ylabel={Number of sequences},
+            xmin=0, xmax=1,
+            ymin=0, ymax=380,
+            grid=both,
+            grid style={line width=0.3pt, draw=gray!30},
+            tick label style={font=\small},
+            label style={font=\small},
+            title style={font=\small},
+            title={Distribution of predicted probabilities on the test dataset},
+            legend style={at={(0.5,0.92)}, anchor=north,font=\small, draw=none, fill=none},
+        ]
+            \addplot[fill=blue!60!black, draw=blue!60!black] table[x=bin_mid, y=human_count, col sep=tab] {../results/logreg/test_prob_hist.txt};
+            \addlegendentry{True Human}
+            
+            \addplot[fill=magenta!80!black, draw=magenta!80!black] table[x=bin_mid, y=murine_count, col sep=tab] {../results/logreg/test_prob_hist.txt};
+            \addlegendentry{True Murine}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Distribution of predicted probabilities $P(\text{Human} \mid \textbf x)$ on the test dataset (408 human and 260 murine sequences). Most sequences have probabilities close to 0 or 1, with few sequences near 0.5.}
+    \label{fig:logreg_prob_hist}
+\end{figure}
