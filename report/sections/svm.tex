@@ -65,8 +65,9 @@ where the $p$-th data point is a support one, that is, the closest to the plane 
 
 \newpage
 \section{SVM results}
+\label{sec:svm_svm}
 
-Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} sets for training and testing, we get the following results. In this histogram, we show the distribution of the sign-corrected certainty degree (positive when correct and negative when failed tagging):
+Using the \texttt{learn\_human}, \texttt{learn\_mouse}, \texttt{test\_human}, and \texttt{test\_mouse} sets for training\futnotetext\footnotetext{Here, \emph{training} refers to computing the Gram matrix.} and testing, we get the following results. In this histogram, we plot the distribution of our sign-corrected certainty degree, $s \cdot f(\textbf x)$ (positive when the chain is tagged correctly, and negative when misclassified):
 
 \begin{figure}[H]
     \centering
@@ -198,7 +199,7 @@ The following histogram shows the distribution of the sign-corrected certainty d
 
 \newpage
 \subsection{Cross-validation of standard kernels}
-And with every standard kernel we presented, we obtain similar results:
+If we now test the other four standard kernels, the resulting distributions look very similar:
 
 \begin{figure}[H]
     \centering
@@ -252,7 +253,7 @@ And with every standard kernel we presented, we obtain similar results:
             \addlegendentry{Sigmoid}
         \end{axis}
     \end{tikzpicture}
-    \caption{Density distributions of sign-corrected certainty degrees on the test dataset for distance-based kernels (left) and inner product-based kernels (right). Positive values correspond to correct classifications, and negative values to errors.}
+    \caption{Density distributions of the sign-corrected certainty degree on the test dataset for distance-based kernels (left) and inner product-based kernels (right). Values $s \cdot f > 0$ correspond to correct predictions, while $s \cdot f < 0$ represent errors.}
     \label{fig:family_histograms}
 \end{figure}
 
@@ -270,20 +271,20 @@ As we can see from both the scatterplot matrix and the correlation table, the fi
 
 \newpage
 \subsection{Custom piecewise kernels}
-To focus on this boundary region, we define a piecewise linear kernel with a ramp of width $W$ centered at $C$:
+Because the standard kernels scale smoothly over the entire $[0, 1]$ interval, they treat all similarity values uniformly and do not give special weight to the narrow region where murine antibodies switch to human. To focus directly on this decision boundary, we designed a custom piecewise linear kernel with a steep ramp of width $W$ centered at $C$:
 
 \input{images/pieceuise.tex}
 
 By choosing a narrow width ($W = 0.08$) and placing the center $C$ in the transition region ($C \in \{0.78, 0.80, 0.82, 0.84\}$), small differences between sequences near the threshold produce large changes in the kernel, while sequences far from the boundary stay in constant regions.
 
-To measure both classification accuracy and margin certainty in a single score between 0 and 1, we define the Quadratic Certainty Score $\mathcal Q$:
+To measure both classification accuracy and margin certainty in a single score between 0 and 1, we define the quadratic certainty score $\mathcal Q$:
 \begin{equation*}
     \mathcal Q = 1 - \frac{1}{n}\sum_{i=1}^n \left(1 - \frac{1}{1 + e^{-s_i f(\textbf x_i)}}\right)^2 \in [0, 1]
 \end{equation*}
-where $s_i \in \{-1, +1\}$ is the true tag and $f(\textbf x_i)$ is the decision function output. Correct predictions with high margin give values close to $1.0$, predictions on the boundary give $0.75$, and wrong predictions with high margin give values close to $0.0$.
+where $s_i \in \{-1, +1\}$ is the true tag and $f(\textbf x_i)$ is the decision function output. Intuitively, confident correct predictions yield values close to $1.0$, predictions right on the boundary give $0.75$, and confident wrong predictions drop close to $0.0$.
 
 \newpage
-Evaluating these custom kernels on the test dataset gives the results shown in Figure \ref{fig:piecewise_metrics} (\hyperref[sec:piecewise_results_table]{see appendix for the full table}):
+Testing these custom kernels on the test dataset yields the results shown in Figure \ref{fig:piecewise_metrics} (\hyperref[sec:piecewise_results_table]{see appendix for the full table}):
 
 \input{images/metrix1.tex}
 
@@ -338,4 +339,4 @@ The piecewise kernels with $C=0.82$ and $C=0.84$ reach an $\text{F1}_\text{H}$ o
     \label{fig:piecewise_scatter}
 \end{figure}
 
-We now have 10 different kernel tests: 5 standard global kernels and 5 piecewise kernels. In the next section, we train a logistic regression model to find the best linear combination of all 10 kernel outputs.
+This leaves us with 10 distinct kernel tests: 5 standard global kernels and 5 localized piecewise kernels. In the next section, we train a logistic regression model to find the best linear combination of all 10 kernel outputs.

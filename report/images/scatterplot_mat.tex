@@ -135,6 +135,6 @@
             \addplot[color=magenta!80!black, fill=magenta!20!white, fill opacity=0.35, thick] table[x=x, y expr={-\thisrow{t_m}}, col sep=tab] {../results/svm/plots/kde5_raw_diagonal.txt} \closedcycle;
         \end{groupplot}
     \end{tikzpicture}
-    \caption{Scatterplot matrix of raw decision function outputs $f(\textbf x)$ for the five standard kernels. Off-diagonal panels show pairwise scatter distributions (human in blue, murine in pink). Diagonal panels display mirrored bilateral density estimates, with human density plotted upward ($y \ge 0$) and murine density mirrored downward ($y \le 0$) to eliminate visual occlusion and maintain uniform axis scaling across the matrix.}
+    \caption{Scatterplot matrix of decision function outputs $f(\textbf x)$ across the five standard kernels (human in blue, murine in pink). On the diagonals, human density is plotted upward and murine downward to avoid overlap and keep all axes on the same scale.}
     \label{fig:splom5}
 \end{figure}

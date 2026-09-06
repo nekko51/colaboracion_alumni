@@ -1,11 +1,11 @@
 \newpage
 \section{Logistic regression}
 
-Now that we have computed the decision functions for several kernels, we can combine their results. Instead of taking only the sign of $f(\textbf x)$, we use the continuous values directly.
+Now that we have computed the decision functions for several kernels, we can combine their outputs. Instead of just taking the binary sign of $f(\textbf x)$, we use their continuous values directly.
 
 \subsection{10-dimensional representation}
 
-For each antibody chain $\textbf x$, we build a 10-dimensional vector using the output of the 10 SVM kernel tests:
+For each antibody chain $\textbf x$, we build a 10-dimensional vector from the outputs of our 10 SVM kernel tests:
 $$
 \textbf v(\textbf x) = \bigl(f_1(\textbf x),\, f_2(\textbf x),\, \dots,\, f_{10}(\textbf x)\bigr) \in \mathbb R^{10},
 $$
@@ -25,24 +25,24 @@ where the components correspond to:
 \end{itemize}
 \end{multicols}
 
-Before fitting the model, we standardize each feature using the mean $\mu_k$ and standard deviation $\sigma_k$ of the validation dataset:
+Before training, we standardize every feature using the mean $\mu_k$ and standard deviation $\sigma_k$ measured on the validation set:
 $$
 \hat f_k(\textbf x) = \frac{f_k(\textbf x) - \mu_k}{\sigma_k}.
 $$
 
 \subsection{Model and training}
 
-We define the linear combination:
+We take a linear combination of the standardized outputs:
 $$
 z(\textbf x) = b + \sum_{k=1}^{10} w_k\, \hat f_k(\textbf x),
 $$
-where $w_k$ is the weight of the $k$-th kernel and $b$ is the bias. The probability of being human is given by the logistic function:
+where $w_k$ is the weight for the $k$-th kernel and $b$ is the bias. The probability of being human is given by the usual logistic function:
 $$
 P(\text{Human} \mid \textbf x) = \frac{1}{1 + e^{-z(\textbf x)}}.
 $$
-If $P(\text{Human} \mid \textbf x) \ge 0.5$, we classify the chain as human ($+1$), and as murine ($-1$) otherwise.
+If $P(\text{Human} \mid \textbf x) \ge 0.5$, we classify the chain as human ($+1$), and murine ($-1$) otherwise.
 
-We train the model on the validation dataset (667 samples) using gradient descent to minimize the binary cross-entropy loss with L2 regularization:
+We train the model on the validation dataset (667 samples) with gradient descent, minimizing the binary cross-entropy loss with an L2 weight penalty:
 $$
 \mathcal L(\textbf w, b) = -\frac{1}{n}\sum_{i=1}^n \Bigl[y_i \log \hat y_i + (1-y_i)\log(1-\hat y_i)\Bigr] + \frac{\lambda}{2}\sum_{k=1}^{10} w_k^2,
 $$
@@ -51,7 +51,7 @@ where $y_i \in \{0,1\}$, $\hat y_i = P(\text{Human} \mid \textbf x_i)$, $\lambda
 \newpage
 \subsection{Weights and feature importance}
 
-After training, all weights are positive, meaning that a higher score in any kernel pushes the prediction towards human. In the following plot, we show the learned weights in descending order:
+After training, all learned weights turn out to be positive, meaning that higher scores across all kernels consistently push the prediction towards human. In the following plot, we show the learned weights in descending order:
 
 \begin{figure}[H]
     \centering
@@ -101,7 +101,7 @@ After training, all weights are positive, meaning that a higher score in any ker
     \label{fig:logreg_weights}
 \end{figure}
 
-Tanimoto ($w \approx 0.6816$), Gaussian ($w \approx 0.6797$), and Linear ($w \approx 0.6382$) have the largest weights, while the narrow piecewise kernels ($W=0.08$) add extra weight near the decision threshold.
+Tanimoto ($w \approx 0.6816$), Gaussian ($w \approx 0.6797$), and Linear ($w \approx 0.6382$) carry the largest weights, while the narrower piecewise kernels ($W=0.08$) act as fine-tuning corrections right around the decision threshold.
 
 \subsection{Results}
 
@@ -150,7 +150,7 @@ And on the test dataset:
 
 \subsection{Permutation importance}
 
-Because the kernels are correlated, the regression weights are shared among them. To see how much each kernel matters on its own, we compute permutation importance on the test dataset: we shuffle the values of each kernel across the 668 test chains 500 times, and measure the drop in accuracy and F1 scores.
+Because our kernels are strongly correlated (as shown in the heatmap), their regression weights are shared and can somewhat mask each kernel's individual contribution. To isolate how much predictive power each kernel brings on its own, we compute the permutation importance on the test dataset: for each kernel, we randomly shuffle its values across the 668 test chains 500 times and measure the resulting drop in accuracy and F1 scores.
 
 \begin{figure}[H]
     \centering
@@ -200,11 +200,11 @@ Because the kernels are correlated, the regression weights are shared among them
     \label{fig:permutation_importance}
 \end{figure}
 
-Every single kernel causes a drop in accuracy when shuffled, showing that all 10 features help the classifier. Tanimoto and Gaussian have the largest impact.
+Shuffling any of the ten kernels causes a noticeable drop in accuracy, confirming that each one contributes useful information to the final decision. In line with the learned weights, Tanimoto and Gaussian have the largest individual impact.
 
 \subsection{Comparison with decision tree (CART)}
 
-We also tested a decision tree (CART) trained on the same 10-dimensional vectors. A comparison of the test results shows:
+As a baseline comparison, we also trained a decision tree (CART, depth 5) on the exact same 10-dimensional feature vectors. The results on the test set are summarized in Table \ref{tab:logreg_comparison}:
 
 \begin{table}[H]
     \centering
@@ -218,11 +218,11 @@ We also tested a decision tree (CART) trained on the same 10-dimensional vectors
     \label{tab:logreg_comparison}
 \end{table}
 
-The logistic regression model reaches an accuracy of $98.65\%$ and an $\text{F1}_\text{H}$ of $0.9890$. Combining continuous outputs linearly gives a smooth separation without the sharp axis-aligned splits of the decision tree.
+The decision tree is held back by its rigid, axis-aligned cuts in the 10-dimensional space, scoring noticeably lower across all metrics ($\mathcal Q = 0.9131$). In contrast, logistic regression combines the continuous margins linearly into a smooth decision boundary, reaching an accuracy of $98.65\%$ and an $\text{F1}_\text{H}$ of $0.9890$.
 
 \subsection{Accuracy and certainty frontier}
 
-We compare all single kernels and the logistic regression model on the test dataset in Figure \ref{fig:model_frontier}:\futnotetext\footnotetext{CART is not included here because of its lower accuracy and certainty score.}
+To put everything into perspective, we plot the test classification accuracy against our quadratic certainty score $\mathcal Q$ for all individual kernels and the logistic regression model in Figure \ref{fig:model_frontier}:\futnotetext\footnotetext{CART is omitted from the plot since its performance sits well below the axis bounds ($\text{Acc} \approx 0.9656, \mathcal Q \approx 0.9131$).}
 
 \begin{figure}[H]
     \centering
@@ -230,7 +230,7 @@ We compare all single kernels and the logistic regression model on the test data
         \begin{axis}[
             width=0.78\textwidth,
             height=0.48\textwidth,
-            xlabel={Quadratic Certainty Score $\mathcal Q$},
+            xlabel={Quadratic certainty score $\mathcal Q$},
             ylabel={Test classification accuracy},
             xmin=0.910, xmax=0.990,
             ymin=0.980, ymax=0.992,
@@ -243,7 +243,7 @@ We compare all single kernels and the logistic regression model on the test data
             tick label style={font=\footnotesize},
             label style={font=\small},
             title style={font=\small},
-            title={Accuracy versus Certainty Frontier across Models},
+            title={Accuracy versus certainty frontier across models},
             legend pos = south east,
             legend style={font=\footnotesize, draw=none, fill=white, fill opacity=0.85},
         ]
@@ -282,9 +282,9 @@ We compare all single kernels and the logistic regression model on the test data
             \node[anchor=north east, font=\footnotesize, color=teal!80!black] at (axis cs:0.9392, 0.9820) {PW $C=0.78$};
         \end{axis}
     \end{tikzpicture}
-    \caption{Test classification accuracy versus Quadratic Certainty Score $\mathcal Q$ across standard kernels (blue circles), piecewise kernels (teal triangles), and the logistic regression model (red star).}
+    \caption{Test classification accuracy versus quadratic certainty score $\mathcal Q$ across standard kernels (blue circles), piecewise kernels (teal triangles), and the logistic regression model (red star).}
     \label{fig:model_frontier}
 \end{figure}
 
-While piecewise kernels reach $98.95\%$ accuracy and standard kernels reach $\mathcal Q \approx 0.944$, the logistic regression model reaches $\mathcal Q = 0.9850$ and $98.65\%$ accuracy, improving certainty over every individual kernel.
+This frontier highlights the main trade-off: while isolated piecewise kernels achieve slightly higher raw accuracy ($98.95\%$) at the expense of certainty, and standard kernels max out around $\mathcal Q \approx 0.944$, our logistic regression model achieves the best of both worlds. It maintains a high accuracy of $98.65\%$ while dramatically pushing certainty up to $\mathcal Q = 0.9850$, outperforming every single standalone kernel in margin confidence.
 
