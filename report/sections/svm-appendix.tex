@@ -3,7 +3,7 @@
 \addcontentsline{toc}{subsection}{SVM formula deduction}
 \label{sec:svm_formula}
 
-We have a cloud of points in a higher-dimensional space and we want a plane that separates the ones marked human and the one marked murine\futnotetext\footnotetext{Those are what we call tags: $+1$ for human and $-1$ for murine chains.}. But we do not only want \emph{one} that does that, we need the plane that does that the best: that is the one that maximizes the distance to the closest points.
+We have a cloud of points in a higher-dimensional space and we want a plane that separates the ones marked human and the ones marked as murine\futnotetext\footnotetext{Those are what we call tags: $+1$ for human and $-1$ for murine chains.}. But we do not only want \emph{one} that does that, we need the plane that does that the best: that is the one that maximizes the distance to the closest points.
 
 We \emph{must} assume that the two groups of points are separable by a plane in our space and let us say the distance\futnotetext\footnotetext{Distance from one set to another is defined as the minimum distance from one point of one set to a point of the other one. Those two (or more) points will be called support vectors.} between the two clouds is $2d$; we will need this later.
 
@@ -19,7 +19,7 @@ Furthermore, we know whether the result will be negative and then inverted by th
 
 Maximizing $d$ is equivalent to minimizing $\left\| \bm w \right\|$, which is again equivalent to minimizing \(\frac{1}{2}\left\| \bm w \right\| ^2\), this will come handy after some computations.
 
-We have a optimization problem subject to restrictions:
+We have an optimization problem subject to restrictions:
 \begin{equation*}
     \underset{\bm w,\ b}{\text{minimize}} \ \frac{1}{2}\left\| \bm w \right\| ^2,\qquad
     \text{subject to} \left( \bm w^T \bm{x}_i + b \right) s_i\ge 1 \ \forall i \in\{1,\dots,n\}
@@ -72,7 +72,7 @@ $$
 $$
 Watch out: for this step to actually be valid, the result must fall between $0$ and our upper limit hyperparameter $\lambda_t$ (the one from the SVM results section). Randomly hitting a valid number this way is incredibly slow and mathematically unlikely.
 
-Instead, we made the algorithm about 20 times faster by picking just two random indices, $i$ and $j$. We apply a random increment to $\lambda_i$ and simply adjust $\lambda_j$ to balance it out and satisfy the constraint. We take advantage of this localized change in our energy function as well. Calculating the product $\mathbf{x}^TG \mathbf{x}$ from scratch to get $\mathcal{L}$ at every single step is computationally expensive and bogs everything down. Since we are only modifying two components of the $\lambda$ vector, let's not redo all the math. We can keep the last computed energy and just add or subtract the change:
+Instead, we made the algorithm about 20 times faster by picking just two random indices, $i$ and $j$. We apply a random increment to $\lambda_i$ and simply adjust $\lambda_j$ to balance it out and satisfy the constraint. We take advantage of this localized change in our energy function as well. Calculating the product $\mathbf{x}^TG \mathbf{x}$ from scratch to get $\mathcal{L}$ at every single step is computationally expensive and bogs everything down. Since we are only modifying two components of the $\lambda$ vector, we don't need to redo all our math. We can keep the last computed energy and just add or subtract the change:
 $$
 \Delta E = -d (1 - s_is_j) + d s_i (F_i - F_j) + \frac{1}{2} d^2 ([G]_{i,i} + [G]_{j,j} - 2[G]_{i,j})
 $$
