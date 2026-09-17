@@ -64,7 +64,13 @@ Usually, this optimization problem is solved via quadratic programming, which ta
 \addcontentsline{toc}{subsection}{SVM simulated annealing}
 \label{sec:svm_annealing}
 
-The hard part is out of the way: we have our function to optimize. Now we just need the stochastic change function.
+The hard part is out of the way: we have our function to optimize
+\begin{equation*}
+    E(\lambda) = \frac{1}{2}\sum_{k=1}^{n}\sum_{m=1}^{n} \lambda _k \lambda _m s_ks_m[G]_{k,m} - \sum_{k=1}^{n} \lambda _k 
+\end{equation*}
+
+
+Now we just need the stochastic change function.
 
 Let's consider the naïve approach. We could write a loop that adds a random increment to every $\lambda_i$ except the last one, and then forces the constraint to hold by setting that final one to:
 $$
@@ -72,29 +78,101 @@ $$
 $$
 Watch out: for this step to actually be valid, the result must fall between $0$ and our upper limit hyperparameter $\lambda_t$ (the one from the SVM results section). Randomly hitting a valid number this way is incredibly slow and mathematically unlikely.
 
-Instead, we made the algorithm about 20 times faster by picking just two random indices, $i$ and $j$. We apply a random increment to $\lambda_i$ and simply adjust $\lambda_j$ to balance it out and satisfy the constraint. We take advantage of this localized change in our energy function as well. Calculating the product $\mathbf{x}^TG \mathbf{x}$ from scratch to get $\mathcal{L}$ at every single step is computationally expensive and bogs everything down. Since we are only modifying two components of the $\lambda$ vector, we don't need to redo all our math. We can keep the last computed energy and just add or subtract the change:
-$$
-\Delta E = -d (1 - s_is_j) + d s_i (F_i - F_j) + \frac{1}{2} d^2 ([G]_{i,i} + [G]_{j,j} - 2[G]_{i,j})
-$$
-Here, $d$ is our proposed increment $\Delta \lambda_i$, the class labels are $s \in \{-1, 1\}$, $G$ is the kernel Gram matrix, and $F_k = \sum_m \lambda_m s_m [G]_{k,m}$ acts as our running partial evaluation for the $k$-th sample.
+Instead, we made the algorithm about 20\futnotetext\footnotetext{This was measured comparing computation times of the full simulated annealing, going from 40 minutes all the way down to 2 minutes, and also having applied the following optimization on the energy function.} times faster by picking just two random indices, $i$ and $j$. We apply a random increment to $\lambda_i$ and simply adjust $\lambda_j$ to balance it out and satisfy the constraint. 
 
-Let's break down exactly where this comes from. Because of the linear constraint $\sum_{k} \lambda_k s_k = 0$, shifting $\lambda_i$ by $d$ immediately forces $\Delta \lambda_j$ to be $-d s_i s_j$. We can expand the exact difference 
-$$
-\Delta E = E(\lambda + \Delta\lambda) - E(\lambda)
-$$
-from our dual objective energy 
-$$
-E(\lambda) = \frac{1}{2} \sum_{k,m} \lambda_k \lambda_m s_k s_m [G]_{k,m} - \sum_{k} \lambda_k
-$$
-directly into the components of our shortcut equation. First, let's look at the linear portion $-\sum \lambda_k$. The variation here is simply:
-$$
--(\Delta \lambda_i + \Delta \lambda_j) = -(d - d s_i s_j) = -d (1 - s_i s_j)
-$$
-Next, consider the cross interaction between the new increments and the existing values of all the other multipliers in the quadratic form. This gives $\Delta \lambda_i s_i F_i + \Delta \lambda_j s_j F_j$. Since $s_j^2 = 1$, it simplifies neatly to $d s_i (F_i - F_j)$. Finally, the increments also interact with themselves. If we expand the quadratic form exclusively for our modified components $i$ and $j$, we get:
-$$
-\frac{1}{2} \left[ (\Delta \lambda_i s_i)^2 [G]_{i,i} + (\Delta \lambda_j s_j)^2 [G]_{j,j} + 2 (\Delta \lambda_i s_i)(\Delta \lambda_j s_j) [G]_{i,j} \right]
-$$
-which collapses straight into $\frac{1}{2} d^2 ([G]_{i,i} + [G]_{j,j} - 2 [G]_{i,j})$.
+Say in the next iteration \(\lambda _i\mapsto \lambda _i'\) and \(\lambda _j\mapsto \lambda _j'\) and define the difference \(\Delta \lambda_i=\lambda _i'- \lambda _i=d\). We must satisfy \(\sum_{}^{} \lambda _ks_k=0\), therefore \(\lambda _is_i+\lambda _js_j=\lambda _i's_i+\lambda _j's_j\), and so:
+\begin{equation*}
+    \Delta \lambda_j = \lambda _j'-\lambda _j=-ds_is_j
+\end{equation*}
+
+
+We take advantage of this localized change in our energy function as well. Calculating the product $\mathbf{x}^TG \mathbf{x}$ from scratch to get $\mathcal{L}$ at every single step is computationally expensive and bogs everything down. Since we are only modifying two components of the $\lambda$ vector, we need not to redo all our math.
+
+Thus, we have the energy before the change \(E(\lambda )\), just like already shown, and the energy after a change \(\Delta \lambda\) is
+\begin{equation*}
+    E(\lambda+\Delta \lambda) =
+    \frac{1}{2}\sum_{k\neq i,j}^{n} \sum_{m\neq i,j}^{n} \lambda _k \lambda _m s_ks_m[G]_{k,m} -\sum_{k\neq i,j}^{n} \lambda _k + E_1' + E_2' + E_3'
+\end{equation*}
+
+The  not explicitly shown quantities, \(E_i\), are the ones that were modified (with the change in the \(i\)-th and \(j\)-th components) with the addition of the \(\Delta \lambda\) to the imput. Starting with the easy one, from the \(\lambda_k\) summation:
+\begin{equation*}
+    E_1' = -\lambda _i'-\lambda _j'
+\end{equation*}
+
+Now with the double summation, we want the addends that contain an \(\lambda _i\) or (inclusive) \(\lambda_j\). We'll do it first with the terms that only contain one modified lambda.
+\begin{align*}
+    E_2' &= \frac{1}{2}\sum_{m\neq i,j}^{n} \left(  \lambda _i'\lambda _ms_is_m[G]_{i,m} +  \lambda _j'\lambda _ms_js_m[G]_{j,m}  \right)+
+    \frac{1}{2}\sum_{k\neq i,j}^{n}  \left( 
+    \lambda _k \lambda _i's_ks_i[G]_{k,i} +
+    \lambda _k \lambda _j's_ks_j[G]_{k,j}
+     \right) \\
+     &= \sum_{\beta\neq i,j}^{n} \left(  \lambda _i'\lambda _\beta s_is_\beta [G]_{i,\beta } +  \lambda _j'\lambda _\beta s_js_\beta [G]_{j,\beta }  \right)
+\end{align*}
+Using \(F_\alpha = \sum_{\beta\neq i,j}^{n}\lambda _\beta s_\beta [G]_{\beta ,\alpha } \)\futnotetext\footnotetext{In the code, we use \(F_\alpha = \sum_{\beta=1}^{n}\lambda _\beta s_\beta [G]_{\beta ,\alpha } \) which can be proven to be equivalent in the final expression.}:
+\begin{equation*}
+    E_2 = \lambda _i's_i F_i + \lambda _j's_jF_j
+\end{equation*}
+
+
+Finally, the terms that contain both lambdas modified:
+\begin{equation*}
+    E_3'=\frac{1}{2}\lambda _i'^2s_i^2[G]_{i,i}+
+    \frac{1}{2}\lambda _j'^2s_j^2[G]_{j,j}+
+    2\cdot \frac{1}{2}\lambda_i'\lambda_j's_is_j[G]_{i,j}=
+    \frac{1}{2}\lambda _i'^2[G]_{i,i}+
+    \frac{1}{2}\lambda _j'^2[G]_{j,j}+
+    \lambda_i'\lambda_j's_is_j[G]_{i,j}
+\end{equation*}
+
+We take the difference \(\Delta E (\lambda)=E(\lambda+\Delta \lambda)-E(\lambda)\):
+\begin{align*}
+    \Delta E(\lambda )
+    &= E_1'+E_2'+E_3'-\left( E_1+E_2+E_3 \right) 
+    =\Delta E_1 + \Delta E_2 +\Delta E_3
+    \\
+    \Delta E_1&= -\lambda _i'-\lambda _j' - (-\lambda _i-\lambda _j)=-d(1-s_is_j)\\
+    \Delta E_2&= \lambda _i's_i F_i + \lambda _j's_jF_j - (\lambda _i's_i F_i + \lambda _j's_jF_j) = d s_i (F_i - F_j)\\
+    \Delta E_3&= 
+    \frac{1}{2}(\lambda _i'^2-\lambda _i^2)[G]_{i,i}+
+    \frac{1}{2}(\lambda _j'^2-\lambda _j^2)[G]_{j,j}+
+    (\lambda_i'\lambda_j'-\lambda _i \lambda _j)s_is_j[G]_{i,j}=\\
+    &=\frac{1}{2} d^2 ([G]_{i,i} + [G]_{j,j} - 2 [G]_{i,j})
+\end{align*}
+
+Thus:
+\begin{equation*}
+    \Delta E(\lambda)=
+    ds_i(F_i-F_j)-d(1-s_is_j)+\frac{1}{2} d^2 \left([G]_{i,i} + [G]_{j,j} - 2 [G]_{i,j}\right)
+\end{equation*}
+
+
+
+
+
+
+% We can keep the last computed energy and just add or subtract the change:
+% $$
+% \Delta E = -d (1 - s_is_j) + d s_i (F_i - F_j) + \frac{1}{2} d^2 ([G]_{i,i} + [G]_{j,j} - 2[G]_{i,j})
+% $$
+% Here, $d$ is our proposed increment $\Delta \lambda_i$, the class labels are $s \in \{-1, 1\}$, $G$ is the kernel Gram matrix, and $F_k = \sum_m \lambda_m s_m [G]_{k,m}$ acts as our running partial evaluation for the $k$-th sample.
+
+% Let's break down exactly where this comes from. Because of the linear constraint $\sum_{k} \lambda_k s_k = 0$, shifting $\lambda_i$ by $d$ immediately forces $\Delta \lambda_j$ to be $-d s_i s_j$. We can expand the exact difference 
+% $$
+% \Delta E = E(\lambda + \Delta\lambda) - E(\lambda)
+% $$
+% from our dual objective energy 
+% $$
+% E(\lambda) = \frac{1}{2} \sum_{k,m} \lambda_k \lambda_m s_k s_m [G]_{k,m} - \sum_{k} \lambda_k
+% $$
+% directly into the components of our shortcut equation. First, let's look at the linear portion $-\sum \lambda_k$. The variation here is simply:
+% $$
+% -(\Delta \lambda_i + \Delta \lambda_j) = -(d - d s_i s_j) = -d (1 - s_i s_j)
+% $$
+% Next, consider the cross interaction between the new increments and the existing values of all the other multipliers in the quadratic form. This gives $\Delta \lambda_i s_i F_i + \Delta \lambda_j s_j F_j$. Since $s_j^2 = 1$, it simplifies neatly to $d s_i (F_i - F_j)$. Finally, the increments also interact with themselves. If we expand the quadratic form exclusively for our modified components $i$ and $j$, we get:
+% $$
+% \frac{1}{2} \left[ (\Delta \lambda_i s_i)^2 [G]_{i,i} + (\Delta \lambda_j s_j)^2 [G]_{j,j} + 2 (\Delta \lambda_i s_i)(\Delta \lambda_j s_j) [G]_{i,j} \right]
+% $$
+% which collapses straight into $\frac{1}{2} d^2 ([G]_{i,i} + [G]_{j,j} - 2 [G]_{i,j})$.
 
 By tracking these $F$ values, which only require an $\mathcal{O}(n)$ update whenever we accept a move, we bring the complexity of calculating the energy difference for any proposed stochastic jump crashing down from $\mathcal{O}(n^2)$ to just $\mathcal{O}(1)$. This mathematical shortcut is precisely what makes simulating millions of iterations computationally viable.
 
