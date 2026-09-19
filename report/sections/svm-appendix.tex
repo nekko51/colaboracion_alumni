@@ -86,7 +86,7 @@ Say in the next iteration \(\lambda _i\mapsto \lambda _i'\) and \(\lambda _j\map
 \end{equation*}
 
 
-We take advantage of this localized change in our energy function as well. Calculating the product $\mathbf{x}^TG \mathbf{x}$ from scratch to get $\mathcal{L}$ at every single step is computationally expensive and bogs everything down. Since we are only modifying two components of the $\lambda$ vector, we need not to redo all our math.
+We take advantage of this localized change in our energy function as well. Calculating the product $\mathbf{x}^TG \mathbf{x}$ from scratch to get $E$ at every single step is computationally expensive and bogs everything down. Since we are only modifying two components of the $\lambda$ vector, we need not redo all our math.
 
 Thus, we have the energy before the change \(E(\lambda )\), just like already shown, and the energy after a change \(\Delta \lambda\) is
 \begin{equation*}
@@ -99,7 +99,7 @@ The  not explicitly shown quantities, \(E_i\), are the ones that were modified (
     E_1' = -\lambda _i'-\lambda _j'
 \end{equation*}
 
-Now with the double summation, we want the addends that contain an \(\lambda _i\) or (inclusive) \(\lambda_j\). We'll do it first with the terms that only contain one modified lambda.
+Now with the double summation, we want the addends that contain a \(\lambda _i\) or (inclusive) \(\lambda_j\). We'll do it first with the terms that only contain one modified lambda.
 \begin{align*}
     E_2' &= \frac{1}{2}\sum_{m\neq i,j}^{n} \left(  \lambda _i'\lambda _ms_is_m[G]_{i,m} +  \lambda _j'\lambda _ms_js_m[G]_{j,m}  \right)+
     \frac{1}{2}\sum_{k\neq i,j}^{n}  \left( 
